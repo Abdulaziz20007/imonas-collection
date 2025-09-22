@@ -197,14 +197,34 @@ async def handle_media_concurrent(update: Update, context: ContextTypes.DEFAULT_
             )
             return
 
-        # Check if there's already an active order for this user
-        existing_order_id = context.user_data.get('awaiting_order_id')
-        if existing_order_id:
-            # User is adding more files to existing order
-            order_id = existing_order_id
-            logger.info(f"Adding file to existing order {order_id}")
+        # Check current user state for file collection
+        user_state = context.user_data.get('state')
+
+        if user_state == 'collecting_files':
+            # User is in file collection mode - add to existing order
+            order_id = context.user_data.get('collecting_order_id')
+            if not order_id:
+                # State inconsistency - reset and create new order
+                logger.warning(f"User {user_id} in collecting_files state but no collecting_order_id found")
+                context.user_data.clear()
+                order_id = await async_db_service.create_order(
+                    user_id=user['id'],
+                    collection_id=active_collection['id'],
+                    amount=None,
+                    original_message_id=forward_message_id,
+                    original_channel_id=channel_id
+                )
+                if not order_id:
+                    await message.reply_text("❌ Buyurtma yaratishda xatolik yuz berdi.")
+                    return
+                context.user_data['collecting_order_id'] = order_id
+                context.user_data['state'] = 'collecting_files'
+
+            logger.info(f"Adding file to collecting order {order_id}")
+
+
         else:
-            # Create new order immediately (non-blocking)
+            # First file - create new order and enter collection state
             order_id = await async_db_service.create_order(
                 user_id=user['id'],
                 collection_id=active_collection['id'],
@@ -216,24 +236,20 @@ async def handle_media_concurrent(update: Update, context: ContextTypes.DEFAULT_
                 await message.reply_text("❌ Buyurtma yaratishda xatolik yuz berdi.")
                 return
 
-        # INSTANT RESPONSE: Immediately prompt for series (only for new orders)
-        if not existing_order_id:
-            context.user_data['awaiting_order_id'] = order_id
-            context.user_data['state'] = 'awaiting_series_amount'
+            # Set file collection state
+            context.user_data['state'] = 'collecting_files'
+            context.user_data['collecting_order_id'] = order_id
 
-            cancel_keyboard = InlineKeyboardMarkup([
-                [InlineKeyboardButton("❌ Bekor qilish", callback_data=f"cancel_order_{order_id}")]
-            ])
+            logger.info(f"Created new order {order_id} and entered file collection mode")
 
-            await message.reply_text("📝 Seriyani kiriting", reply_markup=cancel_keyboard)
-        else:
-            # For additional files, just acknowledge receipt
-            await message.reply_text("✅ Fayl qo'shildi. Seriyani kiriting yoki qo'shimcha fayllar yuboring.")
 
         # ADD FILE TO ORDER: Immediately add file placeholder to order
         # Use placeholder entry (status=pending) to avoid premature notifications
         await async_db_service.add_order_file_placeholder(order_id, file_unique_id)
         logger.info(f"Added file placeholder {file_unique_id} to order {order_id}")
+
+        # MANAGE FINALIZATION TIMER: Schedule or reschedule 2-second timer
+        await _schedule_file_collection_finalization(context, order_id, user_id)
 
         # REMOVE IMMEDIATE NOTIFICATION: Only send final notification after series is provided
         # This prevents the confusing "Kutilmoqda..." and "Yuklanmoqda..." messages
@@ -735,3 +751,120 @@ async def _send_immediate_realtime_notification(
 
     except Exception as e:
         logger.error(f"Failed to send immediate realtime notification for order {order_id}: {e}", exc_info=True)
+
+
+async def _schedule_file_collection_finalization(context: ContextTypes.DEFAULT_TYPE, order_id: int, user_id: int) -> None:
+    """Schedule or reschedule the file collection finalization timer."""
+    try:
+        # Create unique job name for this user
+        job_name = f"finalize_order_{user_id}"
+
+        # Cancel any existing finalization job for this user
+        if context.job_queue:
+            existing_jobs = context.job_queue.get_jobs_by_name(job_name)
+            for job in existing_jobs:
+                job.schedule_removal()
+                logger.debug(f"Cancelled existing finalization job {job_name}")
+
+        # Store job name in user_data for cleanup purposes
+        context.user_data['finalization_job_name'] = job_name
+
+        # Schedule new finalization job (configurable delay)
+        delay_time = int(getattr(config, 'ORDER_DELAY_TIME', 2) or 2)  # Default to 2 seconds if not set
+        if context.job_queue:
+            context.job_queue.run_once(
+                finalize_file_collection,
+                when=delay_time,  # Use configurable delay from ORDER_DELAY_TIME
+                chat_id=context._chat_id,
+                user_id=user_id,
+                name=job_name,
+                data={'order_id': order_id, 'user_id': user_id}
+            )
+            logger.info(f"Scheduled file collection finalization for order {order_id} in {delay_time} seconds")
+        else:
+            # Fallback using asyncio if JobQueue is not available
+            logger.warning("JobQueue not available, using asyncio fallback for finalization")
+
+            # Cancel existing task if any
+            existing_task = context.user_data.get('finalization_task')
+            if existing_task and not existing_task.done():
+                existing_task.cancel()
+
+            # Create new delayed task
+            async def delayed_finalization():
+                try:
+                    await asyncio.sleep(delay_time)
+                    await _finalize_file_collection_direct(context, order_id, user_id)
+                except asyncio.CancelledError:
+                    logger.debug(f"Finalization task cancelled for order {order_id}")
+                except Exception as e:
+                    logger.error(f"Error in delayed finalization for order {order_id}: {e}")
+
+            task = asyncio.create_task(delayed_finalization())
+            context.user_data['finalization_task'] = task
+
+    except Exception as e:
+        logger.error(f"Error scheduling file collection finalization: {e}")
+
+
+async def finalize_file_collection(context: ContextTypes.DEFAULT_TYPE) -> None:
+    """
+    JobQueue callback to finalize file collection and prompt for series.
+    This function is called when the 2-second timer expires.
+    """
+    try:
+        job = context.job
+        if not job or not job.data:
+            logger.error("finalize_file_collection called without job data")
+            return
+
+        order_id = job.data.get('order_id')
+        user_id = job.data.get('user_id')
+
+        if not order_id or not user_id:
+            logger.error("finalize_file_collection missing order_id or user_id")
+            return
+
+        await _finalize_file_collection_direct(context, order_id, user_id)
+
+    except Exception as e:
+        logger.error(f"Error in finalize_file_collection callback: {e}")
+
+
+async def _finalize_file_collection_direct(context: ContextTypes.DEFAULT_TYPE, order_id: int, user_id: int) -> None:
+    """Direct implementation of file collection finalization."""
+    try:
+        # Check if user is still in collecting_files state
+        if context.user_data.get('state') != 'collecting_files':
+            logger.debug(f"User {user_id} no longer in collecting_files state, skipping finalization")
+            return
+
+        # Check if the order_id matches
+        if context.user_data.get('collecting_order_id') != order_id:
+            logger.debug(f"Order ID mismatch for user {user_id}, skipping finalization")
+            return
+
+        # Transition user state to awaiting series amount
+        context.user_data['state'] = 'awaiting_series_amount'
+        context.user_data['awaiting_order_id'] = order_id
+
+        # Clean up collection-specific state
+        context.user_data.pop('collecting_order_id', None)
+        context.user_data.pop('finalization_job_name', None)
+        context.user_data.pop('finalization_task', None)
+
+        # Send series prompt to user
+        cancel_keyboard = InlineKeyboardMarkup([
+            [InlineKeyboardButton("❌ Bekor qilish", callback_data=f"cancel_order_{order_id}")]
+        ])
+
+        await context.bot.send_message(
+            chat_id=user_id,
+            text="📝 Seriyani kiriting",
+            reply_markup=cancel_keyboard
+        )
+
+        logger.info(f"Successfully finalized file collection for order {order_id} and prompted for series")
+
+    except Exception as e:
+        logger.error(f"Error in _finalize_file_collection_direct for order {order_id}: {e}")

@@ -644,6 +644,13 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
                 await update.message.reply_text(edit_response, reply_markup=edit_keyboard, parse_mode="Markdown")
                 return
 
+        # Check if user is in file collection mode - ignore text input
+        if context.user_data.get('state') == 'collecting_files':
+            await update.message.reply_text(
+                "✅ Fayllarni qabul qilyapman. Iltimos, fayllarni yuborib tugating yoki 2 soniya kuting."
+            )
+            return
+
         # Check if user is replying with an amount
         if context.user_data.get('state') == 'awaiting_series_amount':
             # Ensure this is a pure text message (no media, files, or other content)

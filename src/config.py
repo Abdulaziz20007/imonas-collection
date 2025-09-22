@@ -91,6 +91,14 @@ class Config:
         except Exception:
             # Fallback to existing value if parsing fails
             pass
+        # Load order delay time for prompting series number (seconds)
+        try:
+            loaded_delay = get_setting('order_delay_time', None)
+            if loaded_delay is not None:
+                cls.ORDER_DELAY_TIME = int(loaded_delay)
+        except Exception:
+            # Keep existing env/default value on parse error
+            pass
         # Optionally load timezone from config DB
         try:
             tz = get_setting('timezone')

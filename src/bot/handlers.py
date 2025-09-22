@@ -162,6 +162,10 @@ async def handle_media(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
             for job in existing_jobs:
                 job.schedule_removal()
             job_context = {"user_data": context.user_data.copy() if context.user_data else {}}
+            try:
+                logger.info(f"Using ORDER_DELAY_TIME: {getattr(config, 'ORDER_DELAY_TIME', 1)} seconds for job {job_name}")
+            except Exception:
+                pass
             context.job_queue.run_once(
                 prompt_for_series,
                 when=int(getattr(config, 'ORDER_DELAY_TIME', 1) or 1),

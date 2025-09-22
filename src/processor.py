@@ -909,6 +909,7 @@ class MessageProcessor:
                                     ),
                                     timeout=timeout_seconds
                                 )
+                                logger.info(f"Real-time notification sent for order {order_id}")
                             elif file_path.lower().endswith(('.mp4', '.webm', '.mov')):
                                 await asyncio.wait_for(
                                     context.bot.send_video(
@@ -919,6 +920,7 @@ class MessageProcessor:
                                     ),
                                     timeout=timeout_seconds
                                 )
+                                logger.info(f"Real-time notification sent for order {order_id}")
                             else:
                                 await asyncio.wait_for(
                                     context.bot.send_photo(
@@ -929,6 +931,7 @@ class MessageProcessor:
                                     ),
                                     timeout=timeout_seconds
                                 )
+                                logger.info(f"Real-time notification sent for order {order_id}")
                         except Exception as e:
                             logger.error(f"Error sending file for order {order_id}: {e}")
                             # Suppress fallback text-only message; automatic retries will reattempt media
@@ -939,44 +942,56 @@ class MessageProcessor:
                     # Multiple files - send as media group
                     media_group = []
                     valid_files = []
-                    
-                    for j, file_path in enumerate(file_paths):
-                        if os.path.exists(file_path):
+                    opened_files = []
+
+                    try:
+                        for j, file_path in enumerate(file_paths):
+                            if os.path.exists(file_path):
+                                try:
+                                    # Open file in binary mode for Telegram API
+                                    file_obj = open(file_path, 'rb')
+                                    opened_files.append(file_obj)
+
+                                    # Add caption only to the first file
+                                    caption = notification_text if j == 0 else None
+                                    if file_path.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.tif', '.webp', '.ico', '.svg')):
+                                        media_group.append(InputMediaPhoto(media=file_obj, caption=caption))
+                                    elif file_path.lower().endswith(('.mp4', '.webm', '.mov')):
+                                        media_group.append(InputMediaVideo(media=file_obj, caption=caption))
+                                    else:
+                                        media_group.append(InputMediaPhoto(media=file_obj, caption=caption))
+                                    valid_files.append(file_path)
+                                except Exception as e:
+                                    logger.error(f"Error preparing file {file_path} for order {order_id}: {e}")
+
+                        if media_group:
                             try:
-                                # Add caption only to the first file
-                                caption = notification_text if j == 0 else None
-                                if file_path.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.tif', '.webp', '.ico', '.svg')):
-                                    media_group.append(InputMediaPhoto(media=file_path, caption=caption))
-                                elif file_path.lower().endswith(('.mp4', '.webm', '.mov')):
-                                    media_group.append(InputMediaVideo(media=file_path, caption=caption))
-                                else:
-                                    media_group.append(InputMediaPhoto(media=file_path, caption=caption))
-                                valid_files.append(file_path)
+                                # Calculate timeout based on total file size
+                                total_size = sum(os.path.getsize(f) if os.path.exists(f) else 0 for f in valid_files)
+                                timeout_seconds = min(600, max(120, total_size // 50000))  # 120s-600s for media groups
+
+                                await asyncio.wait_for(
+                                    context.bot.send_media_group(
+                                        chat_id=config.GROUP_ID,
+                                        media=media_group,
+                                        message_thread_id=int(config.REALTIME_ORDERS_TOPIC_ID)
+                                    ),
+                                    timeout=timeout_seconds
+                                )
+                                logger.info(f"Real-time notification sent for order {order_id}")
                             except Exception as e:
-                                logger.error(f"Error preparing file {file_path} for order {order_id}: {e}")
-                    
-                    if media_group:
-                        try:
-                            # Calculate timeout based on total file size
-                            total_size = sum(os.path.getsize(f) if os.path.exists(f) else 0 for f in valid_files)
-                            timeout_seconds = min(600, max(120, total_size // 50000))  # 120s-600s for media groups
-                            
-                            await asyncio.wait_for(
-                                context.bot.send_media_group(
-                                    chat_id=config.GROUP_ID,
-                                    media=media_group,
-                                    message_thread_id=int(config.REALTIME_ORDERS_TOPIC_ID)
-                                ),
-                                timeout=timeout_seconds
-                            )
-                        except Exception as e:
-                            logger.error(f"Error sending media group for order {order_id}: {e}")
-                            # Suppress text-only fallback; automatic retries will reattempt media group
-                    else:
-                        # No valid files found; do not send text-only fallback
-                        logger.warning(f"No valid files to send for order {order_id}")
-                
-                logger.info(f"Real-time notification sent for order {order_id}")
+                                logger.error(f"Error sending media group for order {order_id}: {e}")
+                                # Do not log misleading success message on failure
+                        else:
+                            # No valid files found; do not send text-only fallback
+                            logger.warning(f"No valid files to send for order {order_id}")
+                    finally:
+                        # Always close opened files to prevent resource leaks
+                        for file_obj in opened_files:
+                            try:
+                                file_obj.close()
+                            except:
+                                pass
             else:
                 logger.warning("GROUP_ID or REALTIME_ORDERS_TOPIC_ID not configured")
             
@@ -1546,8 +1561,23 @@ class MessageProcessor:
 
                 # Cancel the order (delete it)
                 if self.db_service.delete_order(order_id, user['id']):
-                    # Clear user state
+                    # Clean up file collection state if necessary
                     if context:
+                        # Cancel any pending finalization timer
+                        job_name = context.user_data.get('finalization_job_name')
+                        if job_name and context.job_queue:
+                            existing_jobs = context.job_queue.get_jobs_by_name(job_name)
+                            for job in existing_jobs:
+                                job.schedule_removal()
+                                logger.debug(f"Cancelled finalization job {job_name} during order cancellation")
+
+                        # Cancel any asyncio finalization task
+                        finalization_task = context.user_data.get('finalization_task')
+                        if finalization_task and not finalization_task.done():
+                            finalization_task.cancel()
+                            logger.debug(f"Cancelled finalization task during order cancellation")
+
+                        # Clear user state
                         context.user_data.clear()
 
                     logger.info(f"CANCEL_ORDER: SUCCESS - Order {order_id} cancelled by user {user_id}")
