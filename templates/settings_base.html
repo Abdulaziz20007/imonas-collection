@@ -1,0 +1,280 @@
+{% extends "base.html" %} {% block title %}Admin Settings{% endblock %} {% block
+content %}
+<style>
+  .admin-main {
+    padding: 1.5rem 1rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .settings-navbar {
+    background: var(--bg-secondary);
+    border: 1px solid var(--separator);
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+  }
+
+  .settings-nav-tabs {
+    display: flex;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-bottom: 1px solid var(--separator);
+  }
+
+  .settings-nav-tab {
+    flex: 1;
+    border: none;
+    background: none;
+  }
+
+  .settings-nav-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem 0.75rem;
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border-right: 1px solid var(--separator);
+    min-height: 60px;
+    width: 100%;
+  }
+
+  .settings-nav-tab:last-child .settings-nav-link {
+    border-right: none;
+  }
+
+  .settings-nav-link:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+  }
+
+  .settings-nav-link.active {
+    background: linear-gradient(135deg, var(--primary-600), var(--info-600));
+    color: white;
+    position: relative;
+  }
+
+  .settings-nav-link.active::after {
+    content: "";
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--primary-600);
+  }
+
+  .settings-section {
+    background: var(--bg-secondary);
+    border: 1px solid var(--separator);
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+
+  .settings-section-header {
+    padding: 1rem;
+    background: linear-gradient(
+      135deg,
+      var(--bg-tertiary),
+      var(--bg-quaternary)
+    );
+    border-bottom: 1px solid var(--separator);
+  }
+
+  .settings-section-content {
+    padding: 1.5rem;
+  }
+
+  .settings-form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .settings-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+  }
+
+  .save-button-container {
+    position: sticky;
+    bottom: 0;
+    background: rgba(var(--bg-secondary-rgb), 0.95);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--separator);
+    padding: 1rem;
+    margin: 0 -1.5rem;
+    margin-top: 1.5rem;
+  }
+
+  /* Mobile responsive styles */
+  @media (max-width: 768px) {
+    .admin-main {
+      padding: 1rem 0.75rem;
+    }
+
+    .settings-nav-tabs {
+      flex-direction: column;
+    }
+
+    .settings-nav-link {
+      border-right: none;
+      border-bottom: 1px solid var(--separator);
+      min-height: 50px;
+      padding: 0.75rem;
+    }
+
+    .settings-nav-tab:last-child .settings-nav-link {
+      border-bottom: none;
+    }
+
+    .settings-form-grid {
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+    }
+
+    .settings-section-content {
+      padding: 1rem;
+    }
+
+    .save-button-container {
+      margin: 0 -1rem;
+      margin-top: 1rem;
+    }
+  }
+
+  /* Extra small mobile styles */
+  @media (max-width: 480px) {
+    .admin-main {
+      padding: 0.75rem 0.5rem;
+    }
+
+    .settings-section-content {
+      padding: 0.75rem;
+    }
+
+    .save-button-container {
+      margin: 0 -0.75rem;
+      margin-top: 0.75rem;
+    }
+  }
+</style>
+
+<main class="admin-main">
+  <!-- Page Header -->
+  <div class="card mb-4">
+    <div class="card-body p-3">
+      <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+          <div class="p-2 bg-primary rounded">
+            <i class="fas fa-cogs text-white fs-5"></i>
+          </div>
+          <div>
+            <h4 class="mb-0 fw-semibold">Admin Settings Panel</h4>
+            <p class="text-muted mb-0 small d-none d-md-block">
+              Tizim sozlamalari va konfiguratsiyalar
+            </p>
+          </div>
+        </div>
+        <div class="d-flex gap-2">
+          <a href="/" class="btn btn-outline-primary btn-sm">
+            <i class="fas fa-arrow-left me-1"></i>
+            <span class="d-none d-md-inline">Dashboard</span>
+            <span class="d-md-none">Back</span>
+          </a>
+          <a href="/auth/logout" class="btn btn-outline-danger btn-sm">
+            <i class="fas fa-sign-out-alt me-1"></i>
+            <span class="d-none d-md-inline">Logout</span>
+            <span class="d-md-none">Exit</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flash Messages (converted to toast) -->
+  {% with messages = get_flashed_messages(request) %} {% if messages %}
+  <script>
+    // Show flash messages as toasts when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      {% for msg in messages %}
+      const messageType = "{{ msg.category }}" === "danger" ? "error" : "{{ msg.category }}";
+      if (window.toast) {
+        window.toast[messageType]("{{ msg.message }}");
+      } else {
+        showToast(messageType, '', "{{ msg.message }}");
+      }
+      {% endfor %}
+    });
+  </script>
+  {% endif %} {% endwith %}
+
+  <!-- Settings Navigation -->
+  <nav class="settings-navbar">
+    <ul class="settings-nav-tabs">
+      <li class="settings-nav-tab">
+        <a
+          href="/settings"
+          class="settings-nav-link {% if current_tab == 'telegram' %}active{% endif %}"
+        >
+          <i class="fab fa-telegram-plane"></i>
+          <span>Telegram</span>
+        </a>
+      </li>
+      <li class="settings-nav-tab">
+        <a
+          href="/settings/userbot"
+          class="settings-nav-link {% if current_tab == 'userbot' %}active{% endif %}"
+        >
+          <i class="fas fa-robot"></i>
+          <span>Userbot</span>
+        </a>
+      </li>
+      <li class="settings-nav-tab">
+        <a
+          href="/settings/payment"
+          class="settings-nav-link {% if current_tab == 'payment' %}active{% endif %}"
+        >
+          <i class="fas fa-credit-card"></i>
+          <span>To'lov</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Settings Content -->
+  <div class="settings-section">
+    <div class="settings-section-header">
+      <div class="d-flex align-items-center gap-3">
+        <div class="p-2 rounded-3" style="background: var(--primary)">
+          {% block settings_icon %}
+          <i class="fas fa-cogs text-white"></i>
+          {% endblock %}
+        </div>
+        <div>
+          <h5 class="mb-0 fw-bold">
+            {% block settings_title %}Settings{% endblock %}
+          </h5>
+          <small class="text-muted"
+            >{% block settings_description %}Configuration settings{% endblock
+            %}</small
+          >
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section-content">
+      {% block settings_content %}
+      <!-- Settings content will be inserted here -->
+      {% endblock %}
+    </div>
+  </div>
+</main>
+
+{% endblock %}

@@ -1,0 +1,22 @@
+# Telegram Bot Integration
+python-telegram-bot[job-queue]>=20.7
+
+# Environment Variables
+python-dotenv>=1.0.0
+
+# Web Server Dependencies
+fastapi>=0.100.0
+uvicorn>=0.20.0
+jinja2>=3.1.0
+itsdangerous>=2.0.0
+
+# Userbot for automated payment processing
+telethon>=1.30.0
+
+# AI/ML for receipt processing
+google-generativeai>=0.3.0
+pillow>=9.0.0
+ffmpeg-python>=0.2.0
+
+# HTTP Client for optimized downloads
+aiohttp>=3.8.0

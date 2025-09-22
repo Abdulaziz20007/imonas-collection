@@ -1,0 +1,104 @@
+{% extends "base.html" %} {% block title %}Sahifa Topilmadi - Buyurtmalar
+Boshqaruvi{% endblock %} {% block content %}
+<div class="container-fluid">
+  <div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8 col-sm-10">
+      <div class="text-center py-5">
+        <!-- 404 Icon -->
+        <div class="mb-4">
+          <i
+            class="fas fa-question-circle display-1"
+            style="color: var(--text-tertiary)"
+          ></i>
+        </div>
+
+        <!-- 404 Title -->
+        <h1 class="display-1 fw-bold mb-3" style="color: var(--text-primary)">
+          404
+        </h1>
+        <h2 class="h3 mb-3" style="color: var(--text-secondary)">
+          Sahifa Topilmadi
+        </h2>
+
+        <!-- Error Message -->
+        <div class="card mb-4">
+          <div class="card-body">
+            <p class="text-muted mb-0">
+              <i class="fas fa-circle-info me-2"></i>
+              Siz qidirayotgan sahifa mavjud emas yoki ko'chirilgan.
+            </p>
+          </div>
+        </div>
+
+        <!-- Helpful Suggestions -->
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <div class="card h-100">
+              <div class="card-body text-center">
+                <i
+                  class="fas fa-house fa-2x mb-3 text-primary"
+                  style="color: var(--accent) !important"
+                ></i>
+                <h5 class="card-title">Bosh Sahifaga O'tish</h5>
+                <p class="card-text small text-muted">
+                  Kolleksiyalar ko'rinishiga qaytish
+                </p>
+                <a href="/" class="btn btn-primary">
+                  <i class="fas fa-house me-2"></i>
+                  Bosh Sahifa
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card h-100">
+              <div class="card-body text-center">
+                <i
+                  class="fas fa-folder-open fa-2x mb-3 text-info"
+                  style="color: var(--accent) !important"
+                ></i>
+                <h5 class="card-title">Kolleksiyalarni Ko'rish</h5>
+                <p class="card-text small text-muted">
+                  Barcha mavjud kolleksiyalarni ko'rish
+                </p>
+                <a href="/collections" class="btn btn-outline-secondary">
+                  <i class="fas fa-grip-horizontal me-2"></i>
+                  Kolleksiyalar
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Back Button -->
+        <div class="d-flex justify-content-center gap-3">
+          <button type="button" onclick="history.back()" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2" aria-hidden="true"></i>
+            Orqaga
+          </button>
+          <button
+            type="button"
+            onclick="window.location.reload()"
+            class="btn btn-outline-primary"
+          >
+            <i class="fas fa-arrow-rotate-right me-2" aria-hidden="true"></i>
+            Yangilash
+          </button>
+        </div>
+
+        <!-- Additional Help -->
+        <div class="mt-5">
+          <small class="text-muted">
+            <i class="fas fa-circle-question me-1"></i>
+            Agar bu xato deb hisoblasangiz, URL ni tekshiring yoki keyinroq
+            qaytadan urinib ko'ring.
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %} {% block scripts %}
+<!-- No additional scripts needed for minimal design -->
+{% endblock %}

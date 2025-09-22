@@ -1,0 +1,984 @@
+{% extends "settings_base.html" %} {% block settings_icon %}
+<i class="fas fa-robot text-white"></i>
+{% endblock %} {% block settings_title %}Userbot Settings{% endblock %} {% block
+settings_description %}Telegram userbot connection management{% endblock %} {%
+block settings_content %}
+
+<style>
+  .userbot-container {
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  .userbot-card {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border-radius: 1rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--separator);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .userbot-card:hover {
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
+  }
+
+  /* State-specific styles */
+  .state-authorized {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+  }
+
+  .state-disconnected {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    color: white;
+  }
+
+  .state-error {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+  }
+
+  .state-connecting {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+  }
+
+  .state-header {
+    padding: 2rem;
+    text-align: center;
+  }
+
+  .status-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 24px;
+  }
+
+  .status-icon.pulse {
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+
+  .user-display {
+    font-size: 1.3rem;
+    font-weight: 600;
+    font-family: "SF Mono", "Monaco", "Cascadia Code", monospace;
+    margin: 0.5rem 0;
+    letter-spacing: 1px;
+    word-break: break-all;
+  }
+
+  .status-message {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    margin-bottom: 1.5rem;
+  }
+
+  .error-details {
+    font-size: 0.8rem;
+    opacity: 0.8;
+    margin-top: 0.5rem;
+    font-style: italic;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .action-button {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .action-button:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.4);
+    color: white;
+    transform: translateY(-1px);
+  }
+
+  .action-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .primary-button {
+    background: white;
+    color: #374151;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 14px 32px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+
+  .primary-button:hover {
+    background: #f3f4f6;
+    color: #1f2937;
+    transform: translateY(-1px);
+  }
+
+  .danger-button {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+  }
+
+  .danger-button:hover {
+    background: rgba(239, 68, 68, 0.25);
+    border-color: rgba(239, 68, 68, 0.4);
+  }
+
+  /* Login form styles */
+  .login-form {
+    padding: 2rem;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+  }
+
+  .form-title {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .form-subtitle {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+  }
+
+  .login-input {
+    width: 100%;
+    padding: 1rem;
+    border: 1px solid var(--separator);
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    margin-bottom: 1rem;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    box-sizing: border-box;
+  }
+
+  /* Password visibility toggle */
+  .password-wrapper {
+    position: relative;
+  }
+
+  .toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px;
+  }
+
+  .login-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 0.125rem rgba(var(--accent-rgb), 0.25);
+  }
+
+  .phone-input {
+    text-align: center;
+    font-family: "SF Mono", "Monaco", "Cascadia Code", monospace;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+  }
+
+  .code-input {
+    text-align: center;
+    font-family: "SF Mono", "Monaco", "Cascadia Code", monospace;
+    font-size: 1.4rem;
+    letter-spacing: 3px;
+    font-weight: 600;
+  }
+
+  .form-button {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+  }
+
+  .form-button:hover:not(:disabled) {
+    background: linear-gradient(135deg, #2563eb, #1e40af);
+    transform: translateY(-1px);
+  }
+
+  .form-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .secondary-button {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--separator);
+  }
+
+  .secondary-button:hover:not(:disabled) {
+    background: var(--bg-tertiary);
+    border-color: var(--separator);
+    color: var(--text-primary);
+  }
+
+  /* Utility classes */
+  .hidden {
+    display: none !important;
+  }
+
+  .fade-in {
+    animation: fadeIn 0.5s ease;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .spinner {
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Toast notifications */
+  .toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #1f2937;
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    max-width: 400px;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s ease;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .toast.error {
+    background: #dc2626;
+  }
+
+  .toast.success {
+    background: #059669;
+  }
+
+  .toast.warning {
+    background: #d97706;
+  }
+
+  /* Loading overlay */
+  .loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+  }
+
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top: 3px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+</style>
+
+<div class="userbot-container">
+  <div class="userbot-card" id="userbot-main">
+    <!-- Loading overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+      <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Main status display -->
+    <div id="status-display" class="state-header">
+      <div id="status-icon" class="status-icon">
+        <i class="fas fa-robot"></i>
+      </div>
+      <div id="user-display" class="user-display">Checking status...</div>
+      <div id="status-message" class="status-message">
+        Please wait while we check the userbot connection
+      </div>
+      <div id="error-details" class="error-details hidden"></div>
+      <div id="action-buttons" class="action-buttons">
+        <!-- Dynamic buttons will be inserted here -->
+      </div>
+    </div>
+
+    <!-- Login Forms -->
+    <!-- Phone form -->
+    <div id="phone-form-container" class="login-form hidden">
+      <h5 class="form-title">Connect Userbot Account</h5>
+      <p class="form-subtitle">Enter your Telegram phone number to begin</p>
+      <form id="phone-form">
+        <input
+          type="tel"
+          class="login-input phone-input"
+          id="phone_input"
+          placeholder="+1234567890"
+          value="{{ settings.userbot_phone_number or '' }}"
+          autocomplete="tel"
+          required
+        />
+        <div class="password-wrapper">
+          <input
+            type="password"
+            class="login-input"
+            id="password_input"
+            placeholder="2FA Password (if enabled)"
+            value="{{ settings.userbot_password or '' }}"
+            autocomplete="current-password"
+          />
+          <button
+            type="button"
+            id="toggle_password_btn"
+            class="toggle-password"
+            aria-label="Show password"
+            onclick="togglePasswordVisibility()"
+          >
+            <i class="fas fa-eye"></i>
+          </button>
+        </div>
+        <button type="submit" class="form-button">
+          <i class="fas fa-paper-plane me-2"></i>Send Verification Code
+        </button>
+        <button
+          type="button"
+          class="form-button secondary-button"
+          onclick="cancelLogin()"
+        >
+          Cancel
+        </button>
+      </form>
+    </div>
+
+    <!-- Code verification form -->
+    <div id="code-form-container" class="login-form hidden">
+      <h5 class="form-title">Enter Verification Code</h5>
+      <p id="code-subtitle" class="form-subtitle">
+        Enter the 5-digit code sent to your phone
+      </p>
+      <form id="code-form">
+        <input
+          type="text"
+          class="login-input code-input"
+          id="code_input"
+          placeholder="12345"
+          maxlength="5"
+          pattern="[0-9]{5}"
+          autocomplete="one-time-code"
+          required
+        />
+        <button type="submit" class="form-button">
+          <i class="fas fa-check me-2"></i>Verify & Connect
+        </button>
+        <button
+          type="button"
+          class="form-button secondary-button"
+          onclick="backToPhone()"
+        >
+          Back
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Global state
+  let currentState = "CHECKING";
+  let isProcessing = false;
+  let statusPollInterval = null;
+  let currentPhone = "";
+
+  // State management
+  const STATES = {
+    CHECKING: "CHECKING",
+    DISCONNECTED: "DISCONNECTED",
+    AUTHORIZED: "AUTHORIZED",
+    ERROR: "ERROR",
+    CONNECTING: "CONNECTING",
+    AWAITING_CODE: "AWAITING_CODE",
+  };
+
+  // Initialize on page load
+  document.addEventListener("DOMContentLoaded", function () {
+    setupEventListeners();
+    startStatusPolling();
+    updateStatus(); // Initial check
+  });
+
+  function setupEventListeners() {
+    // Phone form
+    document
+      .getElementById("phone-form")
+      .addEventListener("submit", handlePhoneSubmit);
+
+    // Code form
+    document
+      .getElementById("code-form")
+      .addEventListener("submit", handleCodeSubmit);
+
+    // Auto-format inputs
+    document
+      .getElementById("phone_input")
+      .addEventListener("input", formatPhoneInput);
+    document
+      .getElementById("code_input")
+      .addEventListener("input", formatCodeInput);
+  }
+
+  function startStatusPolling() {
+    // Poll every 3 seconds
+    statusPollInterval = setInterval(updateStatus, 3000);
+  }
+
+  function stopStatusPolling() {
+    if (statusPollInterval) {
+      clearInterval(statusPollInterval);
+      statusPollInterval = null;
+    }
+  }
+
+  // Status management
+  async function updateStatus() {
+    try {
+      const response = await fetch("/api/userbot/status");
+      const data = await response.json();
+
+      if (data.success && data.status) {
+        processStatusUpdate(data.status);
+      } else {
+        setState(STATES.ERROR, "Failed to get status", data.message);
+      }
+    } catch (error) {
+      console.error("Status check failed:", error);
+      setState(
+        STATES.ERROR,
+        "Connection error",
+        "Failed to check userbot status"
+      );
+    }
+  }
+
+  function processStatusUpdate(status) {
+    const { state, authorized, connected, me, error, debug } = status;
+
+    // Log debug information to console for troubleshooting
+    if (debug) {
+      console.log("🐛 DEBUG: Userbot status debug info:", debug);
+
+      // Check for critical issues
+      if (debug.task_status === "FAILED" && debug.task_exception) {
+        console.error(
+          "💥 CRITICAL: Userbot background task crashed!",
+          debug.task_exception
+        );
+        showToast(`Background task crashed: ${debug.task_exception}`, "error");
+      }
+
+      if (debug.reason) {
+        console.log("🔍 DEBUG: Status reason:", debug.reason);
+      }
+    }
+
+    if (state === "AUTHORIZED" && authorized && me) {
+      setState(
+        STATES.AUTHORIZED,
+        me.display_name || me.phone || "Connected",
+        "Userbot is connected and active"
+      );
+    } else if (state === "ERROR" || error) {
+      const errorMsg = error || "Unknown error occurred";
+      const debugInfo = debug?.reason ? ` (${debug.reason})` : "";
+      setState(STATES.ERROR, "Connection Error", errorMsg + debugInfo);
+    } else if (state === "CONNECTED") {
+      setState(STATES.CONNECTING, "Connected", "Connected but not authorized");
+    } else {
+      const reason = debug?.reason || "No userbot connection";
+      setState(STATES.DISCONNECTED, "Not Connected", reason);
+    }
+  }
+
+  function setState(state, title, message, details = null) {
+    if (currentState === state && !details) return; // Avoid unnecessary updates
+
+    currentState = state;
+
+    // Update UI elements
+    updateStateUI(state, title, message, details);
+    updateActionButtons(state);
+    hideAllForms();
+  }
+
+  function updateStateUI(state, title, message, details) {
+    const card = document.getElementById("userbot-main");
+    const icon = document.getElementById("status-icon");
+    const userDisplay = document.getElementById("user-display");
+    const statusMessage = document.getElementById("status-message");
+    const errorDetails = document.getElementById("error-details");
+
+    // Remove all state classes
+    card.className = "userbot-card";
+
+    // Update based on state
+    switch (state) {
+      case STATES.AUTHORIZED:
+        card.classList.add("state-authorized");
+        icon.innerHTML = '<i class="fas fa-check"></i>';
+        icon.classList.remove("pulse");
+        break;
+
+      case STATES.DISCONNECTED:
+        card.classList.add("state-disconnected");
+        icon.innerHTML = '<i class="fas fa-robot"></i>';
+        icon.classList.remove("pulse");
+        break;
+
+      case STATES.ERROR:
+        card.classList.add("state-error");
+        icon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+        icon.classList.remove("pulse");
+        break;
+
+      case STATES.CONNECTING:
+      case STATES.CHECKING:
+        card.classList.add("state-connecting");
+        icon.innerHTML = '<i class="fas fa-sync"></i>';
+        icon.classList.add("pulse");
+        break;
+
+      default:
+        card.classList.add("state-disconnected");
+        icon.innerHTML = '<i class="fas fa-robot"></i>';
+        icon.classList.remove("pulse");
+    }
+
+    userDisplay.textContent = title;
+    statusMessage.textContent = message;
+
+    if (details) {
+      errorDetails.textContent = details;
+      errorDetails.classList.remove("hidden");
+    } else {
+      errorDetails.classList.add("hidden");
+    }
+  }
+
+  function updateActionButtons(state) {
+    const container = document.getElementById("action-buttons");
+    container.innerHTML = "";
+
+    switch (state) {
+      case STATES.AUTHORIZED:
+        container.appendChild(
+          createButton(
+            "Disconnect",
+            "fas fa-power-off",
+            logout,
+            "action-button danger-button"
+          )
+        );
+        break;
+
+      case STATES.DISCONNECTED:
+        container.appendChild(
+          createButton(
+            "Connect Account",
+            "fas fa-plug",
+            startConnection,
+            "primary-button"
+          )
+        );
+        break;
+
+      case STATES.ERROR:
+        container.appendChild(
+          createButton(
+            "Clean Session",
+            "fas fa-broom",
+            cleanSession,
+            "action-button"
+          )
+        );
+        container.appendChild(
+          createButton(
+            "Try Again",
+            "fas fa-redo",
+            startConnection,
+            "primary-button"
+          )
+        );
+        break;
+
+      case STATES.CONNECTING:
+      case STATES.CHECKING:
+        // No buttons during transitional states
+        break;
+    }
+  }
+
+  function createButton(text, icon, onClick, className = "action-button") {
+    const button = document.createElement("button");
+    button.className = className;
+    button.innerHTML = `<i class="${icon} me-2"></i>${text}`;
+    button.onclick = onClick;
+    return button;
+  }
+
+  // Form management
+  function hideAllForms() {
+    document.getElementById("phone-form-container").classList.add("hidden");
+    document.getElementById("code-form-container").classList.add("hidden");
+    document.getElementById("status-display").classList.remove("hidden");
+  }
+
+  function showPhoneForm() {
+    document.getElementById("status-display").classList.add("hidden");
+    document.getElementById("code-form-container").classList.add("hidden");
+    document.getElementById("phone-form-container").classList.remove("hidden");
+
+    setTimeout(() => document.getElementById("phone_input").focus(), 100);
+  }
+
+  function showCodeForm(phone) {
+    document.getElementById("status-display").classList.add("hidden");
+    document.getElementById("phone-form-container").classList.add("hidden");
+    document.getElementById("code-form-container").classList.remove("hidden");
+    document.getElementById(
+      "code-subtitle"
+    ).textContent = `Code sent to ${phone}`;
+
+    setTimeout(() => document.getElementById("code_input").focus(), 100);
+  }
+
+  // Actions
+  function startConnection() {
+    if (isProcessing) return;
+    showPhoneForm();
+  }
+
+  function cancelLogin() {
+    hideAllForms();
+    updateStatus();
+  }
+
+  function backToPhone() {
+    showPhoneForm();
+  }
+
+  async function logout() {
+    if (!confirm("Are you sure you want to disconnect the userbot?")) return;
+
+    await performAction(
+      "/api/userbot/logout",
+      "Disconnecting...",
+      "Userbot disconnected successfully"
+    );
+  }
+
+  async function cleanSession() {
+    if (
+      !confirm(
+        "Clean all userbot session files? This will force disconnect any active sessions."
+      )
+    )
+      return;
+
+    await performAction(
+      "/api/userbot/clean-session",
+      "Cleaning session...",
+      "Session cleaned successfully"
+    );
+  }
+
+  // Form handlers
+  async function handlePhoneSubmit(e) {
+    e.preventDefault();
+    if (isProcessing) return;
+
+    const phone = document.getElementById("phone_input").value.trim();
+    const password = document.getElementById("password_input").value.trim();
+
+    if (!validatePhone(phone)) {
+      showToast("Please enter a valid phone number with country code", "error");
+      return;
+    }
+
+    currentPhone = phone;
+
+    const formData = new FormData();
+    formData.append("userbot_phone_number", phone);
+    formData.append("userbot_password", password);
+
+    console.log("📱 Sending code request for phone:", phone);
+    const success = await performAction(
+      "/api/userbot/send-code",
+      "Sending code...",
+      null,
+      formData
+    );
+    if (success) {
+      showCodeForm(phone);
+      showToast("Verification code sent successfully", "success");
+    }
+  }
+
+  async function handleCodeSubmit(e) {
+    e.preventDefault();
+    if (isProcessing) return;
+
+    const code = document.getElementById("code_input").value.trim();
+
+    if (!validateCode(code)) {
+      showToast("Please enter a valid 5-digit code", "error");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("code", code);
+
+    console.log("🔐 Verifying code:", code);
+    const result = await performActionDetailed(
+      "/api/userbot/verify-code",
+      "Verifying...",
+      formData
+    );
+
+    if (result.success) {
+      showToast("Connected successfully!", "success");
+      hideAllForms();
+      setTimeout(updateStatus, 500);
+    } else {
+      // Handle specific authentication errors
+      const requiresPassword =
+        (result.data && result.data.requires_password) ||
+        result.requires_password;
+      const invalidPassword =
+        (result.data && result.data.invalid_password) ||
+        result.invalid_password;
+      if (requiresPassword) {
+        if (invalidPassword) {
+          showToast(
+            "Login failed: The 2FA password is incorrect. Please update it and try again.",
+            "error"
+          );
+        } else {
+          showToast(
+            "2FA password required. Please set password and try again.",
+            "warning"
+          );
+        }
+        backToPhone(); // Go back to phone form to set/update password
+      } else {
+        showToast(result.message || "Authentication failed", "error");
+        // Don't clear the form for invalid codes - allow retry
+      }
+    }
+  }
+
+  // Utilities
+  async function performAction(
+    url,
+    loadingText,
+    successMessage,
+    formData = null
+  ) {
+    const result = await performActionDetailed(url, loadingText, formData);
+
+    if (result.success) {
+      if (successMessage) {
+        showToast(successMessage, "success");
+      }
+      return true;
+    } else {
+      showToast(result.message || "Operation failed", "error");
+      return false;
+    }
+  }
+
+  async function performActionDetailed(url, loadingText, formData = null) {
+    if (isProcessing)
+      return { success: false, message: "Operation already in progress" };
+
+    isProcessing = true;
+    showLoading(true);
+
+    try {
+      console.log(`🚀 Making request to ${url}`);
+
+      const response = await fetch(url, {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      console.log(`📥 Response from ${url}:`, result);
+
+      if (result.success) {
+        return { success: true, data: result, message: result.message };
+      } else {
+        console.warn(`❌ Request failed:`, result);
+        return {
+          success: false,
+          data: result,
+          message: result.message || "Operation failed",
+        };
+      }
+    } catch (error) {
+      console.error(`💥 Network error for ${url}:`, error);
+      return { success: false, message: "Network error: " + error.message };
+    } finally {
+      isProcessing = false;
+      showLoading(false);
+    }
+  }
+
+  function showLoading(show) {
+    const overlay = document.getElementById("loading-overlay");
+    if (show) {
+      overlay.classList.remove("hidden");
+    } else {
+      overlay.classList.add("hidden");
+    }
+  }
+
+  function validatePhone(phone) {
+    return (
+      phone &&
+      phone.startsWith("+") &&
+      phone.length >= 10 &&
+      /^\+\d+$/.test(phone)
+    );
+  }
+
+  function validateCode(code) {
+    return code && code.length === 5 && /^\d{5}$/.test(code);
+  }
+
+  function formatPhoneInput(e) {
+    let value = e.target.value.replace(/\D/g, "");
+    if (value.length > 15) value = value.slice(0, 15);
+    if (value.length > 0) {
+      e.target.value = "+" + value;
+    }
+  }
+
+  function formatCodeInput(e) {
+    let value = e.target.value.replace(/\D/g, "");
+    if (value.length > 5) value = value.slice(0, 5);
+    e.target.value = value;
+  }
+
+  function togglePasswordVisibility() {
+    const input = document.getElementById("password_input");
+    const btn = document.getElementById("toggle_password_btn");
+    if (!input || !btn) return;
+    if (input.type === "password") {
+      input.type = "text";
+      btn.setAttribute("aria-label", "Hide password");
+      btn.innerHTML = '<i class="fas fa-eye-slash"></i>';
+    } else {
+      input.type = "password";
+      btn.setAttribute("aria-label", "Show password");
+      btn.innerHTML = '<i class="fas fa-eye"></i>';
+    }
+  }
+
+  function showToast(message, type = "info") {
+    const toast = document.createElement("div");
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+
+    document.body.appendChild(toast);
+
+    setTimeout(() => toast.classList.add("show"), 100);
+
+    setTimeout(() => {
+      toast.classList.remove("show");
+      setTimeout(() => document.body.removeChild(toast), 300);
+    }, 4000);
+  }
+
+  // Cleanup on page unload
+  window.addEventListener("beforeunload", () => {
+    stopStatusPolling();
+  });
+</script>
+{% endblock %}

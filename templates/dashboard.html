@@ -1,0 +1,339 @@
+{% extends "base.html" %} {% block title %}Boshqaruv Paneli - Buyurtmalar
+Boshqaruvi{% endblock %} {% block content %}
+
+<!-- Clean Page Header -->
+<div class="card mb-3">
+  <div class="card-body p-3">
+    <!-- Title and Clock Section -->
+    <div
+      class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3"
+    >
+      <div class="d-flex align-items-center gap-2">
+        <div class="p-2 bg-primary rounded">
+          <i class="fas fa-tachometer-alt text-white fs-5"></i>
+        </div>
+        <div>
+          <h4 class="mb-0 fw-semibold">Boshqaruv Paneli</h4>
+          <p class="text-muted mb-0 small d-none d-md-block">
+            Real vaqt monitoring va tahlil
+          </p>
+        </div>
+      </div>
+
+      <!-- Quick Search - No URL querying, opens Orders with code prefilled -->
+      <div class="d-flex align-items-center">
+        <div class="input-group input-group-sm me-3" style="width: 240px">
+          <span class="input-group-text border-end-0">
+            <i class="fas fa-search text-muted"></i>
+          </span>
+          <input
+            type="text"
+            id="quickCodeSearch"
+            class="form-control border-start-0 pl-2"
+            placeholder="Kod orqali izlash (masalan: 1-IVL4)"
+            style="box-shadow: none"
+          />
+          <button
+            type="button"
+            class="btn btn-primary btn-sm"
+            onclick="goToOrdersWithCode()"
+          >
+            <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Clock Display -->
+      <div
+        class="d-flex align-items-center gap-2 px-3 py-2 border rounded bg-light align-self-start align-self-md-center"
+      >
+        <div
+          class="spinner-grow text-success"
+          style="width: 0.5rem; height: 0.5rem"
+          role="status"
+        >
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <i class="fas fa-clock text-muted"></i>
+        <span id="currentTime" class="fw-semibold text-dark"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .icon-class {
+    top: 10px;
+    right: 10px;
+  }
+</style>
+
+<!-- Modern Key Metrics Section -->
+<div class="row g-4 mb-5">
+  <div class="col-4 col-md-6 col-lg-4 col-xl-2">
+    <div class="card h-100 position-relative">
+      <div class="position-absolute icon-class">
+        <i class="fas fa-users text-primary opacity-50 fs-2"></i>
+      </div>
+      <div class="card-body text-center position-relative">
+        <div class="display-4 fw-bold text-primary mb-2">
+          {{ stats.total_users }}
+        </div>
+        <p class="text-muted small mb-0 fw-semibold">Jami Foydalanuvchilar</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-4 col-md-6 col-lg-4 col-xl-2">
+    <div class="card h-100 position-relative bg-light">
+      <div class="position-absolute icon-class">
+        <i class="fas fa-clipboard-list opacity-50 fs-2 text-success"></i>
+      </div>
+      <div class="card-body text-center position-relative">
+        <div class="display-4 fw-bold mb-2 text-success">
+          {{ stats.total_orders }}
+        </div>
+        <p class="text-muted small mb-0 fw-semibold">Jami Buyurtmalar</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-4 col-md-6 col-lg-4 col-xl-2">
+    <div
+      class="card h-100 border-0 position-relative overflow-hidden"
+      style="
+        background: linear-gradient(135deg, var(--info-100), var(--info-200));
+      "
+    >
+      <div class="position-absolute icon-class">
+        <i
+          class="fas fa-folder-open opacity-50 fs-2"
+          style="color: var(--info-400)"
+        ></i>
+      </div>
+      <div class="card-body text-center position-relative">
+        <div class="display-4 fw-bold mb-2" style="color: var(--info-700)">
+          {{ stats.total_collections }}
+        </div>
+        <p class="text-muted small mb-0 fw-semibold">Jami Kolleksiyalar</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-4 col-md-6 col-lg-4 col-xl-2">
+    <div
+      class="card h-100 border-0 position-relative overflow-hidden"
+      style="background: var(--success); border: 1px solid var(--success-dark)"
+    >
+      <div class="position-absolute icon-class">
+        <i class="fas fa-check-circle text-white opacity-75 fs-2"></i>
+      </div>
+      <div class="card-body text-center text-white position-relative">
+        <div class="display-4 fw-bold mb-2">{{ stats.open_collections }}</div>
+        <p class="small mb-0 fw-semibold opacity-90">Ochiq Kolleksiyalar</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-4 col-md-6 col-lg-4 col-xl-2">
+    <div
+      class="card h-100 border-0 position-relative overflow-hidden"
+      style="background: var(--neutral-50)"
+    >
+      <div class="position-absolute icon-class">
+        <i class="fas fa-user-plus text-primary opacity-50 fs-2"></i>
+      </div>
+      <div class="card-body text-center position-relative">
+        <div class="display-4 fw-bold text-primary mb-2">
+          +{{ stats.new_users_today }}
+        </div>
+        <p class="text-muted small mb-0 fw-semibold">
+          Bugun Yangi Foydalanuvchilar
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-4 col-md-6 col-lg-4 col-xl-2">
+    <div
+      class="card h-100 border-0 position-relative overflow-hidden"
+      style="
+        background: linear-gradient(
+          135deg,
+          var(--success-100),
+          var(--success-200)
+        );
+      "
+    >
+      <div class="position-absolute icon-class">
+        <i
+          class="fas fa-plus-circle opacity-50 fs-2"
+          style="color: var(--success-400)"
+        ></i>
+      </div>
+      <div class="card-body text-center position-relative">
+        <div class="display-4 fw-bold mb-2" style="color: var(--success-700)">
+          +{{ stats.new_orders_today }}
+        </div>
+        <p class="text-muted small mb-0 fw-semibold">Bugun Yangi Buyurtmalar</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Activity Section -->
+<div class="row g-4">
+  <!-- Recent Orders -->
+  <div class="col-lg-6 mb-4">
+    <div
+      class="card border-0"
+      style="
+        background: var(--neutral-50);
+        border: 1px solid var(--neutral-200);
+        box-shadow: var(--shadow-flat);
+      "
+    >
+      <div
+        class="card-header border-0 pb-0"
+        style="background: var(--neutral-100)"
+      >
+        <div class="d-flex align-items-center gap-3">
+          <div class="p-2 rounded-3" style="background: var(--primary)">
+            <i class="fas fa-history text-white"></i>
+          </div>
+          <div>
+            <h5 class="mb-0 fw-bold">So'nggi Buyurtmalar</h5>
+            <small class="text-muted">Oxirgi faoliyat</small>
+          </div>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Foydalanuvchi</th>
+                <th>Seriya</th>
+                <th>Vaqt</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for order in recent_orders %}
+              <tr>
+                <td>
+                  <a href="/orders?search={{ order.id }}">#{{ order.id }}</a>
+                </td>
+                <td>{{ order.name }} {{ order.surname }}</td>
+                <td>{{ order.amount }}</td>
+                <td class="text-muted small">{{ order.created_at[:16] }}</td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="4" class="text-center text-muted py-3">
+                  So'nggi buyurtmalar yo'q.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card-footer text-center">
+        <a href="/orders" class="btn btn-outline-primary btn-sm">
+          Barcha Buyurtmalarni Ko'rish
+          <i class="fas fa-arrow-right ms-1"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Users -->
+  <div class="col-lg-6 mb-4">
+    <div
+      class="card border-0"
+      style="
+        background: var(--neutral-50);
+        border: 1px solid var(--neutral-200);
+        box-shadow: var(--shadow-flat);
+      "
+    >
+      <div
+        class="card-header border-0 pb-0"
+        style="background: var(--neutral-100)"
+      >
+        <div class="d-flex align-items-center gap-3">
+          <div class="p-2 rounded-3" style="background: var(--success)">
+            <i class="fas fa-user-plus text-white"></i>
+          </div>
+          <div>
+            <h5 class="mb-0 fw-bold">Yangi Foydalanuvchilar</h5>
+            <small class="text-muted">So'nggi ro'yxatga olishlar</small>
+          </div>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th>Ism</th>
+                <th>Telefon</th>
+                <th>Qo'shilgan Vaqti</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for user in recent_users %}
+              <tr>
+                <td>{{ user.name }} {{ user.surname }}</td>
+                <td>{{ user.phone }}</td>
+                <td class="text-muted small">{{ user.created_at[:16] }}</td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="3" class="text-center text-muted py-3">
+                  Yangi foydalanuvchilar yo'q.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card-footer text-center">
+        <a href="/users" class="btn btn-outline-primary btn-sm">
+          Barcha Foydalanuvchilarni Ko'rish
+          <i class="fas fa-arrow-right ms-1"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %} {% block scripts %}
+<script>
+  function updateTime() {
+    const now = new Date();
+    document.getElementById("currentTime").textContent =
+      now.toLocaleTimeString("uz-UZ");
+  }
+  setInterval(updateTime, 1000);
+  updateTime();
+
+  function goToOrdersWithCode() {
+    try {
+      const code = (
+        document.getElementById("quickCodeSearch").value || ""
+      ).trim();
+      if (!code) {
+        window.location.href = "/orders";
+        return;
+      }
+      localStorage.setItem("orders_code_prefill", code);
+      window.location.href = "/orders";
+    } catch (e) {
+      window.location.href = "/orders";
+    }
+  }
+</script>
+{% endblock %}

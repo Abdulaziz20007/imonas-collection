@@ -1,0 +1,1057 @@
+{% extends "base.html" %} {% block title %}Buyurtmalar - Buyurtmalar
+Boshqaruvi{% endblock %} {% block content %}
+
+<!-- Compact Quick Stats Section -->
+{% if orders %}
+<div class="row mb-3">
+  <div class="col-12">
+    <div
+      class="card"
+      style="
+        background: var(--bg-secondary);
+        border: 1px solid var(--separator);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+      "
+    >
+      <div
+        class="card-header py-2"
+        style="
+          border-bottom: 1px solid var(--separator);
+          background: var(--bg-tertiary);
+        "
+      >
+        <h6 class="mb-0" style="color: var(--text-primary)">
+          <i
+            class="fas fa-chart-simple me-2"
+            style="color: var(--primary-500)"
+          ></i>
+          Buyurtma Statistikasi
+        </h6>
+      </div>
+      <div class="card-body py-3" style="background: var(--bg-secondary)">
+        <div class="row text-center g-2">
+          <div class="col-3 col-md-3">
+            <div
+              class="p-2 rounded-2"
+              style="
+                background: var(--primary-100);
+                border: 1px solid var(--primary-200);
+              "
+            >
+              <div class="h5 fw-bold mb-1" style="color: var(--primary-600)">
+                {{ orders|length }}
+              </div>
+              <small
+                class="d-none d-md-block"
+                style="color: var(--text-secondary)"
+                >Jami Buyurtmalar</small
+              >
+              <small
+                class="d-md-none"
+                style="font-size: 0.65rem; color: var(--text-secondary)"
+                >Jami</small
+              >
+            </div>
+          </div>
+          <div class="col-3 col-md-3">
+            <div
+              class="p-2 rounded-2"
+              style="
+                background: var(--success-100);
+                border: 1px solid var(--success-200);
+              "
+            >
+              <div class="h5 fw-bold mb-1" style="color: var(--success-600)">
+                {{ orders|selectattr("collection_status", "equalto",
+                "open")|list|length }}
+              </div>
+              <small
+                class="d-none d-md-block"
+                style="color: var(--text-secondary)"
+                >Faol Buyurtmalar</small
+              >
+              <small
+                class="d-md-none"
+                style="font-size: 0.65rem; color: var(--text-secondary)"
+                >Faol</small
+              >
+            </div>
+          </div>
+          <div class="col-3 col-md-3">
+            <div
+              class="p-2 rounded-2"
+              style="
+                background: var(--warning-100);
+                border: 1px solid var(--warning-200);
+              "
+            >
+              <div class="h5 fw-bold mb-1" style="color: var(--warning-600)">
+                {{ orders|selectattr("collection_status", "equalto",
+                "close")|list|length }}
+              </div>
+              <small
+                class="d-none d-md-block"
+                style="color: var(--text-secondary)"
+                >Yopiq Buyurtmalar</small
+              >
+              <small
+                class="d-md-none"
+                style="font-size: 0.65rem; color: var(--text-secondary)"
+                >Yopiq</small
+              >
+            </div>
+          </div>
+          <div class="col-3 col-md-3">
+            <div
+              class="p-2 rounded-2"
+              style="
+                background: var(--info-100);
+                border: 1px solid var(--info-200);
+              "
+            >
+              <div class="h5 fw-bold mb-1" style="color: var(--info-600)">
+                {{ orders|selectattr("collection_status", "equalto",
+                "finish")|list|length }}
+              </div>
+              <small
+                class="d-none d-md-block"
+                style="color: var(--text-secondary)"
+                >Tugallangan Buyurtmalar</small
+              >
+              <small
+                class="d-md-none"
+                style="font-size: 0.65rem; color: var(--text-secondary)"
+                >Tugal.</small
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Orders Header -->
+<div
+  class="card mb-3"
+  style="
+    background: var(--bg-secondary);
+    border: 1px solid var(--separator);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+  "
+>
+  <div class="card-body p-3" style="background: var(--bg-secondary)">
+    <!-- Title Section -->
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <div class="p-2 rounded" style="background: var(--primary-500)">
+        <i class="fas fa-list text-white fs-5"></i>
+      </div>
+      <div>
+        <h4 class="mb-0 fw-semibold" style="color: var(--text-primary)">
+          Buyurtmalar
+        </h4>
+        <p
+          class="mb-0 small d-none d-md-block"
+          style="color: var(--text-secondary)"
+        >
+          Buyurtmalar boshqaruvi
+        </p>
+      </div>
+    </div>
+
+    <!-- Filters Section - Desktop -->
+    <div class="d-none d-md-flex align-items-center gap-3">
+      <!-- Search Filter -->
+      <div class="d-flex align-items-center gap-2">
+        <label
+          for="searchOrders"
+          class="form-label mb-0 small"
+          style="color: var(--text-secondary)"
+        >
+          <i class="fas fa-magnifying-glass me-1"></i>Qidirish:
+        </label>
+        <input
+          type="text"
+          id="searchOrders"
+          class="form-control form-control-sm"
+          style="
+            width: 200px;
+            background: var(--bg-primary);
+            border: 1px solid var(--separator);
+            color: var(--text-primary);
+          "
+          placeholder="Ism, telefon, kod..."
+          onkeyup="filterOrders()"
+        />
+      </div>
+
+      <!-- User Code Filter (standard input style) -->
+      <div class="d-flex align-items-center gap-2">
+        <label
+          for="codeSearch"
+          class="form-label mb-0 small"
+          style="color: var(--text-secondary)"
+        >
+          <i class="fas fa-user-tag me-1"></i>Kod:
+        </label>
+        <input
+          type="text"
+          id="codeSearch"
+          class="form-control form-control-sm"
+          style="
+            width: 200px;
+            background: var(--bg-primary);
+            border: 1px solid var(--separator);
+            color: var(--text-primary);
+          "
+          placeholder="1-IVL4"
+          onkeyup="filterOrders()"
+        />
+      </div>
+      <!-- Status Filter -->
+      <div class="d-flex align-items-center gap-2">
+        <label
+          for="orderStatusFilter"
+          class="form-label mb-0 small"
+          style="color: var(--text-secondary)"
+        >
+          <i class="fas fa-filter me-1"></i>Status:
+        </label>
+        <select
+          id="orderStatusFilter"
+          class="form-select form-select-sm"
+          style="
+            width: 140px;
+            background: var(--bg-primary);
+            border: 1px solid var(--separator);
+            color: var(--text-primary);
+          "
+          onchange="filterOrders()"
+        >
+          <option value="">Barcha Buyurtmalar</option>
+          <option value="open">Faol</option>
+          <option value="close">Yopiq</option>
+          <option value="finish">Tugallangan</option>
+        </select>
+      </div>
+      <!-- Collection Filter -->
+      <div class="d-flex align-items-center gap-2">
+        <label
+          for="collectionFilter"
+          class="form-label mb-0 small"
+          style="color: var(--text-secondary)"
+        >
+          <i class="fas fa-square me-1"></i>Kolleksiya:
+        </label>
+        <select
+          id="collectionFilter"
+          class="form-select form-select-sm"
+          style="
+            width: 120px;
+            background: var(--bg-primary);
+            border: 1px solid var(--separator);
+            color: var(--text-primary);
+          "
+          onchange="filterOrders()"
+        >
+          <option value="">Barchasi</option>
+          {% for cid in collection_ids %}
+          <option value="{{ cid }}">#{{ cid }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <!-- Clear Filters -->
+      <button
+        class="btn btn-sm"
+        onclick="clearOrderFilters()"
+        title="Barcha filtrlarni tozalash"
+        style="
+          background: var(--neutral-200);
+          border: 1px solid var(--separator);
+          color: var(--text-secondary);
+          transition: var(--transition-fast);
+        "
+        onmouseover="this.style.background='var(--neutral-300)'"
+        onmouseout="this.style.background='var(--neutral-200)'"
+      >
+        <i class="fas fa-xmark"></i>
+      </button>
+    </div>
+
+    <!-- Filters Section - Mobile -->
+    <div class="d-md-none">
+      <div class="row g-2 mb-2">
+        <div class="col-12">
+          <input
+            type="text"
+            id="searchOrdersMobile"
+            class="form-control form-control-sm"
+            placeholder="Ism, telefon, kod..."
+            onkeyup="filterOrdersMobile()"
+            style="
+              background: var(--bg-primary);
+              border: 1px solid var(--separator);
+              color: var(--text-primary);
+            "
+          />
+        </div>
+      </div>
+      <div class="row g-2 mb-2">
+        <div class="col-6">
+          <select
+            id="orderStatusFilterMobile"
+            class="form-select form-select-sm"
+            onchange="filterOrdersMobile()"
+            style="
+              background: var(--bg-primary);
+              border: 1px solid var(--separator);
+              color: var(--text-primary);
+            "
+          >
+            <option value="">Status</option>
+            <option value="open">Faol</option>
+            <option value="close">Yopiq</option>
+            <option value="finish">Tugallangan</option>
+          </select>
+        </div>
+        <div class="col-6">
+          <select
+            id="collectionFilterMobile"
+            class="form-select form-select-sm"
+            onchange="filterOrdersMobile()"
+            style="
+              background: var(--bg-primary);
+              border: 1px solid var(--separator);
+              color: var(--text-primary);
+            "
+          >
+            <option value="">Kolleksiya</option>
+            {% for cid in collection_ids %}
+            <option value="{{ cid }}">#{{ cid }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="row g-2 mb-2">
+        <div class="col-12">
+          <input
+            type="text"
+            id="codeSearchMobile"
+            class="form-control form-control-sm"
+            placeholder="Kod (masalan: 1-IVL4)"
+            onkeyup="filterOrdersMobile()"
+            style="
+              background: var(--bg-primary);
+              border: 1px solid var(--separator);
+              color: var(--text-primary);
+            "
+          />
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12">
+          <button
+            class="btn btn-sm w-100"
+            onclick="clearOrderFiltersMobile()"
+            style="
+              background: var(--neutral-200);
+              border: 1px solid var(--separator);
+              color: var(--text-secondary);
+              transition: var(--transition-fast);
+            "
+            onmouseover="this.style.background='var(--neutral-300)'"
+            onmouseout="this.style.background='var(--neutral-200)'"
+          >
+            <i class="fas fa-arrow-rotate-right me-1"></i>
+            Filtrlarni Tozalash
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Total Count Display -->
+<div class="mb-3">
+  <div class="badge fs-6" style="background: var(--primary-500); color: white">
+    {{ orders|length }} ta jami
+  </div>
+</div>
+
+{% if orders %}
+<div id="ordersContainer">
+  <div class="row g-4">
+    {% for order in orders %}
+    <div
+      class="col-xl-3 col-lg-4 col-md-6 col-12 order-col"
+      data-search="{{ order.user_full_name + ' ' + (order.phone or '') + ' ' + (order.username or '') + ' ' + (order.user_code or '') }}"
+      data-status="{{ order.collection_status }}"
+      data-collection="{{ order.collection_id }}"
+      data-order-id="{{ order.id }}"
+      data-user-code="{{ order.user_code or '' }}"
+    >
+      <div
+        class="card h-100 order-item"
+        style="
+          background: var(--bg-secondary);
+          border: 1px solid var(--separator);
+          border-radius: var(--radius-md);
+          box-shadow: var(--shadow-sm);
+          transition: var(--transition-fast);
+        "
+        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='var(--shadow-md)'"
+        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-sm)'"
+      >
+        <div
+          class="card-body d-flex flex-column"
+          style="padding: var(--spacing-lg)"
+        >
+          <!-- Order Header -->
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+              <h6
+                class="mb-1"
+                style="color: var(--primary-500); font-weight: 600"
+              >
+                <i class="fas fa-file-lines me-1"></i>
+                Buyurtma #{{ order.id }}
+              </h6>
+              <div class="small" style="color: var(--text-secondary)">
+                <i class="fas fa-square me-1"></i>
+                Kolleksiya #{{ order.collection_id }}
+              </div>
+            </div>
+            <span
+              class="badge bg-{{ order.status_class }}"
+              style="color: white; font-size: 0.75rem"
+            >
+              {{ order.status_icon }} {{ order.status_text }}
+            </span>
+          </div>
+
+          <!-- Order Thumbnail -->
+          {% if order.display_image_url %}
+          <div class="mb-3">
+            <div
+              class="position-relative"
+              style="
+                border-radius: var(--radius-md);
+                overflow: hidden;
+                background: var(--bg-tertiary);
+              "
+            >
+              <img
+                src="/{{ order.display_image_url }}"
+                alt="Order preview"
+                class="w-100"
+                style="height: 150px; object-fit: cover; cursor: pointer"
+                onclick="viewOrderDetails({{ order.id }})"
+                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+              />
+              <div
+                class="w-100 d-flex align-items-center justify-content-center"
+                style="
+                  height: 150px;
+                  display: none;
+                  color: var(--text-secondary);
+                "
+              >
+                <div class="text-center">
+                  <i class="fas fa-image fs-2 mb-2"></i>
+                  <div class="small">Rasm yuklanmadi</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% elif order.file_count > 0 %}
+          <div class="mb-3">
+            <div
+              class="w-100 d-flex align-items-center justify-content-center"
+              style="
+                height: 150px;
+                background: var(--bg-tertiary);
+                border-radius: var(--radius-md);
+                color: var(--text-secondary);
+                cursor: pointer;
+              "
+              onclick="viewOrderDetails({{ order.id }})"
+            >
+              <div class="text-center">
+                <i class="fas fa-file fs-2 mb-2"></i>
+                <div class="small">{{ order.file_count }} ta fayl</div>
+              </div>
+            </div>
+          </div>
+          {% else %}
+          <div class="mb-3">
+            <div
+              class="w-100 d-flex align-items-center justify-content-center"
+              style="
+                height: 150px;
+                background: var(--bg-tertiary);
+                border-radius: var(--radius-md);
+                color: var(--text-secondary);
+              "
+            >
+              <div class="text-center">
+                <i class="fas fa-ban fs-2 mb-2"></i>
+                <div class="small">Fayllar yo'q</div>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- User Info -->
+          <div class="d-flex align-items-center mb-3">
+            <div class="me-3">
+              <div
+                class="rounded-circle d-flex align-items-center justify-content-center"
+                style="
+                  width: 45px;
+                  height: 45px;
+                  background: var(--primary-100);
+                  color: var(--primary-500);
+                "
+              >
+                <i class="fas fa-user"></i>
+              </div>
+            </div>
+            <div class="flex-grow-1 min-w-0">
+              <h6
+                class="mb-1 text-truncate"
+                style="color: var(--text-primary); font-weight: 600"
+              >
+                {{ order.user_full_name }}
+              </h6>
+              <div
+                class="small text-truncate"
+                style="color: var(--text-secondary)"
+              >
+                <i class="fas fa-phone me-1"></i>
+                {{ order.phone or 'Telefon yo\'q' }}
+              </div>
+              {% if order.username %}
+              <div
+                class="small text-truncate"
+                style="color: var(--text-secondary)"
+              >
+                <i class="fas fa-at me-1"></i>
+                @{{ order.username }}
+              </div>
+              {% endif %} {% if order.user_code %}
+              <div
+                class="small text-truncate"
+                style="color: var(--text-secondary)"
+              >
+                <i class="fas fa-hashtag me-1"></i>
+                {{ order.user_code }}
+              </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Order Details -->
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="small" style="color: var(--text-secondary)">
+                <i class="fas fa-hash me-1"></i>
+                Seriya:
+              </span>
+              <span class="small fw-semibold" style="color: var(--text-primary)"
+                >{{ order.amount or 'N/A' }}</span
+              >
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="small" style="color: var(--text-secondary)">
+                <i class="fas fa-image me-1"></i>
+                Fayllar:
+              </span>
+              <span class="small fw-semibold" style="color: var(--text-primary)"
+                >{{ order.file_count or 0 }} ta</span
+              >
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="small" style="color: var(--text-secondary)">
+                <i class="fas fa-calendar me-1"></i>
+                Sana:
+              </span>
+              <span class="small fw-semibold" style="color: var(--text-primary)"
+                >{{ order.order_date_formatted }}</span
+              >
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="mt-auto">
+            <div class="d-flex gap-2">
+              <button
+                class="btn btn-sm flex-fill"
+                onclick="viewOrderDetails({{ order.id }})"
+                title="Buyurtma tafsilotlarini ko'rish"
+                style="
+                  background: var(--primary-500);
+                  color: white;
+                  border: none;
+                  border-radius: var(--radius-sm);
+                  transition: var(--transition-fast);
+                "
+                onmouseover="this.style.background='var(--primary-600)'"
+                onmouseout="this.style.background='var(--primary-500)'"
+              >
+                <i class="fas fa-eye me-1"></i>
+                Tafsilotlar
+              </button>
+              <a
+                href="/collection/{{ order.collection_id }}"
+                class="btn btn-sm"
+                title="Kolleksiyani ko'rish"
+                style="
+                  background: var(--info-500);
+                  color: white;
+                  border: none;
+                  border-radius: var(--radius-sm);
+                  transition: var(--transition-fast);
+                  text-decoration: none;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  min-width: 40px;
+                "
+                onmouseover="this.style.background='var(--info-600)'"
+                onmouseout="this.style.background='var(--info-500)'"
+              >
+                <i class="fas fa-square"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- No Results Message (hidden by default) -->
+<div id="noOrdersMessage" class="text-center py-5" style="display: none">
+  <div class="display-1 mb-3" style="color: var(--text-tertiary)">
+    <i class="fas fa-magnifying-glass"></i>
+  </div>
+  <h3 style="color: var(--text-secondary)">
+    Filtrlaringizga Mos Buyurtma Topilmadi
+  </h3>
+  <p style="color: var(--text-secondary)">
+    Qidiruv mezonlaringizni yoki filtrlaringizni o'zgartirib ko'ring.
+  </p>
+  <button
+    class="btn"
+    onclick="clearOrderFilters()"
+    style="
+      background: var(--primary-500);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+    "
+  >
+    <i class="fas fa-arrow-rotate-right me-2"></i>
+    Filtrlarni Tozalash
+  </button>
+</div>
+
+{% else %}
+<div class="text-center py-5">
+  <div class="display-1 mb-3" style="color: var(--text-tertiary)">
+    <i class="fas fa-list"></i>
+  </div>
+  <h3 style="color: var(--text-secondary)">Buyurtmalar Topilmadi</h3>
+  <p style="color: var(--text-secondary)">
+    Hali hech qanday buyurtma berilmagan.
+  </p>
+  <a
+    href="/collections"
+    class="btn"
+    style="
+      background: var(--primary-500);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+    "
+  >
+    <i class="fas fa-arrow-left me-2"></i>
+    Kolleksiyalarga Qaytish
+  </a>
+</div>
+{% endif %}
+
+<!-- Order Details Modal -->
+<div
+  class="modal fade"
+  id="orderDetailsModal"
+  tabindex="-1"
+  aria-labelledby="orderDetailsModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg">
+    <div
+      class="modal-content"
+      style="
+        background: var(--bg-primary);
+        border: 1px solid var(--separator);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+      "
+    >
+      <div
+        class="modal-header"
+        style="
+          border-bottom: 1px solid var(--separator);
+          background: var(--bg-secondary);
+        "
+      >
+        <h5
+          class="modal-title"
+          id="orderDetailsModalLabel"
+          style="color: var(--text-primary)"
+        >
+          <i
+            class="fas fa-file-lines me-2"
+            style="color: var(--primary-500)"
+          ></i>
+          Buyurtma Tafsilotlari
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Yopish"
+          style="filter: var(--icon-filter)"
+        ></button>
+      </div>
+      <div
+        class="modal-body"
+        id="orderDetailsContent"
+        style="background: var(--bg-primary)"
+      >
+        <div class="text-center">
+          <div
+            class="spinner-border"
+            role="status"
+            style="color: var(--primary-500)"
+          >
+            <span class="visually-hidden">Yuklanmoqda...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %} {% block scripts %}
+<script>
+  function filterOrdersMobile() {
+    const searchTerm = document
+      .getElementById("searchOrdersMobile")
+      .value.toLowerCase();
+    const statusFilter = document.getElementById(
+      "orderStatusFilterMobile"
+    ).value;
+    const collectionFilter = document.getElementById(
+      "collectionFilterMobile"
+    ).value;
+
+    // Call the main filter function which handles all filtering logic including code search
+    performOrderFilter(searchTerm, statusFilter, collectionFilter);
+  }
+
+  function clearOrderFiltersMobile() {
+    clearOrderFilters();
+  }
+
+  function performOrderFilter(searchTerm, statusFilter, collectionFilter) {
+    // Work with columns which contain searchable attributes
+    let cols = Array.from(document.querySelectorAll(".order-col"));
+    const codeTerm = (
+      document.getElementById("codeSearch")?.value ||
+      document.getElementById("codeSearchMobile")?.value ||
+      ""
+    ).trim();
+
+    // Filter by search term (searches in name, phone, username)
+    if (searchTerm) {
+      cols = cols.filter((col) => {
+        const searchData = (
+          col.getAttribute("data-search") || ""
+        ).toLowerCase();
+        return searchData.includes(searchTerm);
+      });
+    }
+
+    // Filter by user code (supports "COLLECTION-CODE" or just "CODE")
+    if (codeTerm) {
+      const code = codeTerm.toUpperCase();
+      const parts = code.split("-");
+      const hasCollection = parts.length >= 2 && /^\d+$/.test(parts[0]);
+      const targetCollection = hasCollection ? parts[0] : null;
+      const targetCode = hasCollection ? parts.slice(1).join("-") : code;
+
+      cols = cols.filter((col) => {
+        const userCode = (
+          col.getAttribute("data-user-code") || ""
+        ).toUpperCase();
+        const collection = col.getAttribute("data-collection") || "";
+
+        if (!userCode) return false;
+
+        // Check if the user code contains the target code
+        const codeMatches = userCode.includes(targetCode);
+        if (!codeMatches) return false;
+
+        // If collection was specified, also check collection match
+        if (hasCollection) {
+          return collection === targetCollection;
+        }
+        return true;
+      });
+    }
+
+    // Filter by status (collection_status)
+    if (statusFilter) {
+      cols = cols.filter((item) => {
+        const orderStatus = item.getAttribute("data-status");
+        return orderStatus === statusFilter;
+      });
+    }
+
+    // Filter by collection
+    if (collectionFilter) {
+      cols = cols.filter((item) => {
+        const orderCollection = item.getAttribute("data-collection");
+        return orderCollection === collectionFilter;
+      });
+    }
+
+    // Hide all columns first
+    document.querySelectorAll(".order-col").forEach((col) => {
+      col.style.display = "none";
+    });
+
+    // Show only matching columns
+    cols.forEach((col) => {
+      col.style.display = "block";
+    });
+
+    // Update count and show/hide no results message
+    updateOrderFilteredCount(cols.length);
+  }
+
+  function filterOrders() {
+    const searchTerm = document
+      .getElementById("searchOrders")
+      .value.toLowerCase();
+    const statusFilter = document.getElementById("orderStatusFilter").value;
+    const collectionFilter = document.getElementById("collectionFilter").value;
+    performOrderFilter(searchTerm, statusFilter, collectionFilter);
+  }
+
+  function clearOrderFilters() {
+    // Clear desktop controls
+    document.getElementById("searchOrders").value = "";
+    document.getElementById("orderStatusFilter").value = "";
+    document.getElementById("collectionFilter").value = "";
+    const codeSearch = document.getElementById("codeSearch");
+    if (codeSearch) codeSearch.value = "";
+
+    // Clear mobile controls
+    document.getElementById("searchOrdersMobile").value = "";
+    document.getElementById("orderStatusFilterMobile").value = "";
+    document.getElementById("collectionFilterMobile").value = "";
+    const codeSearchMobile = document.getElementById("codeSearchMobile");
+    if (codeSearchMobile) codeSearchMobile.value = "";
+
+    // Show all columns
+    document.querySelectorAll(".order-col").forEach((col) => {
+      col.style.display = "block";
+    });
+
+    // Update count if function exists
+    if (typeof updateOrderFilteredCount === "function") {
+      const totalItems = document.querySelectorAll(".order-item").length;
+      updateOrderFilteredCount(totalItems);
+    }
+  }
+
+  // Initialize filters (no URL parameter handling)
+  document.addEventListener("DOMContentLoaded", function () {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const collectionParam = params.get("collection");
+      if (collectionParam) {
+        const desktopSelect = document.getElementById("collectionFilter");
+        const mobileSelect = document.getElementById("collectionFilterMobile");
+        if (desktopSelect) desktopSelect.value = collectionParam;
+        if (mobileSelect) mobileSelect.value = collectionParam;
+        // Clear other filters for a clean focused view
+        const searchInput = document.getElementById("searchOrders");
+        if (searchInput) searchInput.value = "";
+        const statusSelect = document.getElementById("orderStatusFilter");
+        if (statusSelect) statusSelect.value = "";
+        const codeInput = document.getElementById("codeSearch");
+        if (codeInput) codeInput.value = "";
+        // Apply filtering immediately
+        filterOrders();
+        return;
+      }
+    } catch (e) {}
+    // Prefill code from localStorage if set by Users page
+    try {
+      const storedCode = localStorage.getItem("orders_code_prefill");
+      if (storedCode) {
+        const codeInput = document.getElementById("codeSearch");
+        if (codeInput) codeInput.value = storedCode;
+        const codeInputMobile = document.getElementById("codeSearchMobile");
+        if (codeInputMobile) codeInputMobile.value = storedCode;
+        // Clear it so it doesn't persist across sessions
+        localStorage.removeItem("orders_code_prefill");
+        // Apply filter immediately
+        filterOrders();
+        return;
+      }
+    } catch (e) {}
+
+    // Ensure initial count reflects current list
+    if (typeof updateOrderFilteredCount === "function") {
+      const totalItems = document.querySelectorAll(".order-col").length;
+      updateOrderFilteredCount(totalItems);
+    }
+  });
+
+  function updateOrderFilteredCount(count) {
+    const noResultsMessage = document.getElementById("noOrdersMessage");
+    const ordersContainer = document.getElementById("ordersContainer");
+
+    // Update the total count badge
+    const countBadge = document.querySelector(".badge.fs-6");
+    if (countBadge) {
+      countBadge.textContent = `${count} ta jami`;
+    }
+
+    // Show/hide no results message
+    if (count === 0) {
+      if (noResultsMessage) noResultsMessage.style.display = "block";
+      if (ordersContainer) ordersContainer.style.display = "none";
+    } else {
+      if (noResultsMessage) noResultsMessage.style.display = "none";
+      if (ordersContainer) ordersContainer.style.display = "block";
+    }
+  }
+
+  function viewOrderDetails(orderId) {
+    const modal = new bootstrap.Modal(
+      document.getElementById("orderDetailsModal")
+    );
+    const modalTitle = document.getElementById("orderDetailsModalLabel");
+    const modalContent = document.getElementById("orderDetailsContent");
+
+    modalTitle.innerHTML = `<i class="fas fa-file-lines me-2"></i>Buyurtma #${orderId} Tafsilotlari`;
+    modalContent.innerHTML = `
+      <div class="text-center">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Yuklanmoqda...</span>
+        </div>
+      </div>
+    `;
+
+    modal.show();
+
+    // Fetch order details
+    fetch(`/api/orders/${orderId}`)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.error) {
+          modalContent.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+          return;
+        }
+
+        let filesHtml = '<p class="text-muted">Fayllar yo\'q.</p>';
+        if (data.files && data.files.length > 0) {
+          filesHtml = '<div class="image-gallery">';
+          data.files.forEach((filePath) => {
+            const filename = filePath.split("/").pop().split("\\").pop();
+            const fileUrl = `/uploads/${filename}`;
+            if (filename.toLowerCase().match(/\.(jpg|jpeg|png|gif)$/)) {
+              filesHtml += `<img src="${fileUrl}" alt="Order Image" class="image-thumbnail" onclick="showImage('${fileUrl}')">`;
+            } else if (filename.toLowerCase().match(/\.(mp4|mov|avi)$/)) {
+              filesHtml += `
+                      <video class="image-thumbnail" style="cursor: default" controls preload="metadata">
+                        <source src="${fileUrl}" type="video/mp4">
+                        Videoni ko'rsatib bo'lmadi.
+                      </video>`;
+            }
+          });
+          filesHtml += "</div>";
+        }
+
+        modalContent.innerHTML = `
+          <div class="row g-3">
+            <div class="col-md-6">
+              <h5 style="color: var(--text-primary); margin-bottom: var(--spacing-md);"><i class="fas fa-user me-2"></i>Foydalanuvchi</h5>
+              <div style="background: var(--bg-secondary); border: 1px solid var(--separator); border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+                <div style="padding: var(--spacing-md);">
+                  <table style="width: 100%; border-collapse: collapse;">
+                    <tr style="border-bottom: 1px solid var(--separator);"><td style="padding: var(--spacing-xs) 0; font-weight: 600; color: var(--text-secondary); width: 35%;"><strong>Ism:</strong></td><td style="padding: var(--spacing-xs) 0; color: var(--text-primary);">${
+                      data.name || "N/A"
+                    } ${data.surname || ""}</td></tr>
+                    <tr style="border-bottom: 1px solid var(--separator);"><td style="padding: var(--spacing-xs) 0; font-weight: 600; color: var(--text-secondary);"><strong>Telefon:</strong></td><td style="padding: var(--spacing-xs) 0; color: var(--text-primary);">${
+                      data.phone || "N/A"
+                    }</td></tr>
+                    <tr style="border-bottom: 1px solid var(--separator);"><td style="padding: var(--spacing-xs) 0; font-weight: 600; color: var(--text-secondary);"><strong>Username:</strong></td><td style="padding: var(--spacing-xs) 0; color: var(--text-primary);">@${
+                      data.username || "N/A"
+                    }</td></tr>
+                    <tr><td style="padding: var(--spacing-xs) 0; font-weight: 600; color: var(--text-secondary);"><strong>Kod:</strong></td><td style="padding: var(--spacing-xs) 0; color: var(--text-primary);">${
+                      data.code || "N/A"
+                    }</td></tr>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <h5 style="color: var(--text-primary); margin-bottom: var(--spacing-md);"><i class="fas fa-box me-2"></i>Buyurtma</h5>
+              <div style="background: var(--bg-secondary); border: 1px solid var(--separator); border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+                <div style="padding: var(--spacing-md);">
+                  <table style="width: 100%; border-collapse: collapse;">
+                    <tr style="border-bottom: 1px solid var(--separator);"><td style="padding: var(--spacing-xs) 0; font-weight: 600; color: var(--text-secondary); width: 35%;"><strong>ID:</strong></td><td style="padding: var(--spacing-xs) 0; color: var(--text-primary);">#${
+                      data.id
+                    }</td></tr>
+                    <tr style="border-bottom: 1px solid var(--separator);"><td style="padding: var(--spacing-xs) 0; font-weight: 600; color: var(--text-secondary);"><strong>Kolleksiya:</strong></td><td style="padding: var(--spacing-xs) 0; color: var(--text-primary);">#${
+                      data.collection_id
+                    }</td></tr>
+                    <tr style="border-bottom: 1px solid var(--separator);"><td style="padding: var(--spacing-xs) 0; font-weight: 600; color: var(--text-secondary);"><strong>Seriya:</strong></td><td style="padding: var(--spacing-xs) 0; color: var(--text-primary);">${
+                      data.amount || "N/A"
+                    }</td></tr>
+                    <tr><td style="padding: var(--spacing-xs) 0; font-weight: 600; color: var(--text-secondary);"><strong>Yaratilgan:</strong></td><td style="padding: var(--spacing-xs) 0; color: var(--text-primary);">${new Date(
+                      data.created_at
+                    ).toLocaleString("uz-UZ")}</td></tr>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+          <hr style="border-color: var(--separator); margin: var(--spacing-lg) 0;">
+          <h5 style="color: var(--text-primary); margin-bottom: var(--spacing-md);"><i class="fas fa-images me-2"></i>Fayllar (${
+            data.files ? data.files.length : 0
+          } ta)</h5>
+          ${filesHtml}
+        `;
+      })
+      .catch((error) => {
+        console.error("Error fetching order details:", error);
+        modalContent.innerHTML = `<div class="alert alert-danger">Tafsilotlarni yuklashda xatolik yuz berdi.</div>`;
+      });
+  }
+
+  // Page is now static - no real-time updates
+</script>
+{% endblock %}

@@ -1,0 +1,5124 @@
+<!DOCTYPE html>
+<html lang="uz" data-bs-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mening Kabinetim - Buyurtmalar Boshqaruvi</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+    <style>
+      :root {
+        --bg-primary: #0d1117;
+        --bg-secondary: #161b22;
+        --bg-tertiary: #21262d;
+        --text-primary: #f0f6fc;
+        --text-secondary: #8b949e;
+        --text-muted: #6e7681;
+        --border-color: #30363d;
+        --accent-primary: #238636;
+        --accent-secondary: #1f6feb;
+        --accent-warning: #d29922;
+        --accent-danger: #da3633;
+        --accent-info: #2ea043;
+        --hover-bg: #262c36;
+        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+        --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+        --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
+        --radius-sm: 6px;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: linear-gradient(135deg, var(--bg-primary) 0%, #0a0e14 100%);
+        color: var(--text-primary);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans",
+          Helvetica, Arial, sans-serif;
+        line-height: 1.6;
+        overflow-x: hidden;
+      }
+
+      /* Navigation Styles */
+      .main-navbar {
+        background: rgba(13, 17, 23, 0.98);
+        backdrop-filter: blur(15px);
+        border-bottom: 1px solid var(--border-color);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        transition: var(--transition);
+        box-shadow: var(--shadow-sm);
+      }
+
+      .navbar-brand {
+        font-weight: 700;
+        font-size: 1.25rem;
+        color: var(--text-primary) !important;
+      }
+
+      .nav-link {
+        color: var(--text-secondary) !important;
+        font-weight: 500;
+        padding: 0.75rem 1rem !important;
+        border-radius: var(--radius-sm);
+        transition: var(--transition);
+        position: relative;
+      }
+
+      .nav-link:hover {
+        color: var(--text-primary) !important;
+        background: var(--hover-bg);
+      }
+
+      .nav-link.active {
+        color: var(--accent-secondary) !important;
+        background: rgba(31, 111, 235, 0.1);
+      }
+
+      .nav-link.active::after {
+        content: "";
+        position: absolute;
+        bottom: -1px;
+        left: 1rem;
+        right: 1rem;
+        height: 2px;
+        background: var(--accent-secondary);
+        border-radius: 1px;
+      }
+
+      /* Enhanced Profile Card Styles */
+      .profile-card {
+        background: linear-gradient(
+          135deg,
+          var(--bg-secondary) 0%,
+          var(--bg-tertiary) 100%
+        );
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .profile-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(
+          90deg,
+          var(--accent-secondary) 0%,
+          var(--accent-primary) 100%
+        );
+      }
+
+      .profile-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+      }
+
+      /* Content Sections */
+      .content-section {
+        display: none;
+        min-height: calc(100vh - 80px);
+        padding: 2rem 0;
+      }
+
+      .content-section.active {
+        display: block;
+      }
+
+      .section-header {
+        margin-bottom: 2rem;
+      }
+
+      .section-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+      }
+
+      .section-subtitle {
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+      }
+
+      /* Card Styles */
+      .custom-card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        transition: var(--transition);
+        overflow: hidden;
+      }
+
+      .custom-card:hover {
+        border-color: var(--accent-secondary);
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+      }
+
+      .profile-avatar {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(
+          135deg,
+          var(--accent-secondary) 0%,
+          var(--accent-primary) 100%
+        );
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 2rem;
+        color: white;
+      }
+
+      .profile-name {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+
+      .profile-detail {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .profile-detail:last-child {
+        border-bottom: none;
+      }
+
+      .profile-label {
+        color: var(--text-secondary);
+        font-weight: 500;
+      }
+
+      .profile-value {
+        color: var(--text-primary);
+        font-family: "Monaco", "Menlo", monospace;
+      }
+
+      /* Order Cards - Minimalist Design */
+      .order-card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        transition: var(--transition);
+        cursor: pointer;
+        position: relative;
+        height: auto;
+      }
+
+      .order-card:hover {
+        border-color: var(--accent-secondary);
+        box-shadow: var(--shadow-sm);
+        transform: translateY(-2px);
+      }
+
+      .order-card-header {
+        position: relative;
+        height: 120px;
+        overflow: hidden;
+        background: linear-gradient(45deg, var(--bg-tertiary), var(--hover-bg));
+      }
+
+      .order-thumbnail {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: var(--transition);
+      }
+
+      .order-card:hover .order-thumbnail {
+        transform: scale(1.02);
+      }
+
+      /* Video thumbnail styles */
+      .video-thumbnail-container {
+        position: relative;
+      }
+
+      .video-label {
+        position: absolute;
+        bottom: 8px;
+        right: 8px;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        backdrop-filter: blur(4px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .video-preview {
+        background: linear-gradient(45deg, #1a1a1a, #333) !important;
+      }
+
+      .video-thumbnail-mini {
+        border-radius: 4px;
+      }
+
+      /* Enhanced Alt Image Styles */
+      .alt-image-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          135deg,
+          var(--bg-tertiary) 0%,
+          var(--hover-bg) 100%
+        );
+        border: 2px dashed var(--border-color);
+        border-radius: var(--radius-md);
+        position: relative;
+        overflow: hidden;
+        transition: var(--transition);
+      }
+
+      .alt-image-container::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+          45deg,
+          transparent 25%,
+          rgba(255, 255, 255, 0.02) 25%,
+          rgba(255, 255, 255, 0.02) 50%,
+          transparent 50%,
+          transparent 75%,
+          rgba(255, 255, 255, 0.02) 75%
+        );
+        background-size: 20px 20px;
+        opacity: 0.5;
+        animation: alt-pattern-move 10s linear infinite;
+      }
+
+      @keyframes alt-pattern-move {
+        0% {
+          transform: translateX(-20px) translateY(-20px);
+        }
+        100% {
+          transform: translateX(0) translateY(0);
+        }
+      }
+
+      /* Collection Timeline Styles */
+      .collection-timeline {
+        position: relative;
+        padding-left: 1rem;
+      }
+
+      .timeline-item {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+        position: relative;
+      }
+
+      .timeline-item:last-child {
+        margin-bottom: 0;
+      }
+
+      .timeline-item::before {
+        content: "";
+        position: absolute;
+        left: 14px;
+        top: 28px;
+        bottom: -12px;
+        width: 2px;
+        background: var(--border-color);
+      }
+
+      .timeline-item:last-child::before {
+        display: none;
+      }
+
+      .timeline-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 0.75rem;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 2;
+        font-size: 0.75rem;
+        border: 2px solid var(--bg-primary);
+      }
+
+      .timeline-icon.opened {
+        background: var(--accent-primary);
+        color: white;
+      }
+
+      .timeline-icon.closed {
+        background: var(--accent-warning);
+        color: white;
+      }
+
+      .timeline-icon.finished {
+        background: var(--accent-secondary);
+        color: white;
+      }
+
+      .timeline-content {
+        flex-grow: 1;
+        min-width: 0;
+      }
+
+      .timeline-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.25rem;
+      }
+
+      .timeline-date {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        font-family: "Monaco", "Menlo", monospace;
+      }
+
+      .alt-image-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+        text-align: center;
+        padding: 1rem;
+      }
+
+      .alt-image-icon {
+        font-size: 2.5rem;
+        color: var(--text-muted);
+        margin-bottom: 0.5rem;
+        opacity: 0.7;
+        transition: var(--transition);
+      }
+
+      .alt-image-text {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        font-weight: 500;
+        opacity: 0.8;
+        letter-spacing: 0.5px;
+      }
+
+      .alt-image-container:hover {
+        border-color: var(--accent-secondary);
+        background: linear-gradient(
+          135deg,
+          var(--hover-bg) 0%,
+          var(--bg-tertiary) 100%
+        );
+      }
+
+      .alt-image-container:hover .alt-image-icon {
+        color: var(--accent-secondary);
+        opacity: 1;
+        transform: scale(1.1);
+      }
+
+      .alt-image-container:hover .alt-image-text {
+        color: var(--text-secondary);
+        opacity: 1;
+      }
+
+      /* Small alt images for collections */
+      .alt-image-small {
+        border-radius: var(--radius-sm);
+        border-width: 1px;
+      }
+
+      .alt-image-small::before {
+        background-size: 10px 10px;
+      }
+
+      .alt-image-small .alt-image-icon {
+        font-size: 1.5rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .alt-image-small .alt-image-text {
+        font-size: 0.65rem;
+      }
+
+      /* Modal alt images */
+      .alt-image-modal {
+        border-radius: var(--radius-sm);
+        min-height: 75px;
+      }
+
+      .alt-image-modal .alt-image-icon {
+        font-size: 2rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .alt-image-modal .alt-image-text {
+        font-size: 0.7rem;
+      }
+
+      /* Loading skeleton styles */
+      .image-loading {
+        background: linear-gradient(
+          90deg,
+          var(--bg-tertiary) 25%,
+          var(--hover-bg) 50%,
+          var(--bg-tertiary) 75%
+        );
+        background-size: 200% 100%;
+        animation: loading-shimmer 1.5s infinite;
+      }
+
+      @keyframes loading-shimmer {
+        0% {
+          background-position: -200% 0;
+        }
+        100% {
+          background-position: 200% 0;
+        }
+      }
+
+      .image-loading::before {
+        display: none;
+      }
+
+      /* Image container with loading states */
+      .image-wrapper {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        border-radius: inherit;
+      }
+
+      .image-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: opacity 0.3s ease;
+      }
+
+      .image-wrapper.loading img {
+        opacity: 0;
+      }
+
+      .image-wrapper .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg-tertiary);
+        z-index: 2;
+      }
+
+      .image-wrapper:not(.loading) .loading-overlay {
+        display: none;
+      }
+
+      /* Retry button for failed images */
+      .alt-image-retry {
+        margin-top: 0.5rem;
+        padding: 0.25rem 0.75rem;
+        background: var(--accent-secondary);
+        color: white;
+        border: none;
+        border-radius: var(--radius-sm);
+        font-size: 0.7rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+        opacity: 0;
+        transform: translateY(10px);
+        animation: fade-in-up 0.3s ease 0.5s forwards;
+      }
+
+      @keyframes fade-in-up {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .alt-image-retry:hover {
+        background: #1760d8;
+        transform: translateY(-1px);
+      }
+
+      /* Video specific alt styling */
+      .alt-image-video {
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        border-color: #404040;
+      }
+
+      .alt-image-video .alt-image-icon {
+        color: #ff6b6b;
+      }
+
+      .alt-image-video:hover {
+        border-color: #ff6b6b;
+      }
+
+      .alt-image-video:hover .alt-image-icon {
+        color: #ff8a8a;
+      }
+
+      /* Media overview styles */
+      .media-overview {
+        background: var(--bg-secondary);
+        border-radius: 12px;
+        padding: 1rem;
+        border: 1px solid var(--border-color);
+      }
+
+      /* User Activity Styles */
+      .user-activity {
+        background: var(--bg-primary);
+        border-radius: var(--radius-sm);
+        padding: 0.75rem;
+        border: 1px solid var(--border-color);
+      }
+
+      .activity-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .activity-row:last-child {
+        border-bottom: none;
+      }
+
+      .activity-label {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        font-weight: 500;
+      }
+
+      .activity-value {
+        font-size: 0.8rem;
+        color: var(--text-primary);
+        font-family: "Monaco", "Menlo", monospace;
+        font-weight: 600;
+      }
+
+      .media-stats {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+      }
+
+      .media-stat {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: var(--bg-primary);
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+      }
+
+      .media-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+        gap: 0.5rem;
+        max-height: 200px;
+        overflow-y: auto;
+      }
+
+      .media-grid-item {
+        aspect-ratio: 1;
+        border-radius: 6px;
+        overflow: hidden;
+        cursor: pointer;
+        position: relative;
+        transition: var(--transition);
+        border: 2px solid transparent;
+      }
+
+      .media-grid-item:hover {
+        transform: scale(1.05);
+        border-color: var(--primary-color);
+      }
+
+      .media-grid-item.active {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.2);
+      }
+
+      .media-grid-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .media-grid-item .media-type-icon {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+      }
+
+      /* Modal Media Thumbnails */
+      .media-thumbnails-column {
+        background: var(--bg-primary);
+        border-radius: var(--radius-md);
+        padding: 1rem;
+        max-height: 500px;
+        overflow-y: auto;
+      }
+
+      .media-thumbnails-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+      }
+
+      .media-thumbnail-item {
+        width: 100%;
+        height: 75px;
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+        cursor: pointer;
+        position: relative;
+        transition: var(--transition);
+        border: 2px solid transparent;
+        background: var(--bg-tertiary);
+      }
+
+      .media-thumbnail-item:hover {
+        transform: scale(1.05);
+        border-color: var(--accent-secondary);
+      }
+
+      .media-thumbnail-item.active {
+        border-color: var(--accent-secondary);
+        box-shadow: 0 0 0 2px rgba(31, 111, 235, 0.3);
+      }
+
+      .media-thumbnail-item img,
+      .media-thumbnail-item video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .media-thumbnail-item .media-type-badge {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        border-radius: 50%;
+        width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 8px;
+      }
+
+      .media-thumbnail-item .file-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        color: var(--text-secondary);
+        font-size: 1.5rem;
+      }
+
+      /* Main Media Display */
+      .main-media-display {
+        background: var(--bg-primary);
+        border-radius: var(--radius-md);
+        padding: 1rem;
+        min-height: 400px;
+      }
+
+      .media-container {
+        width: 100%;
+        height: 400px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+      }
+
+      .media-placeholder {
+        text-align: center;
+        color: var(--text-muted);
+      }
+
+      .media-container img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
+
+      .media-container video {
+        max-width: 100%;
+        max-height: 100%;
+      }
+
+      .order-status-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        backdrop-filter: blur(10px);
+      }
+
+      .status-open {
+        background: rgba(35, 134, 54, 0.9);
+        color: white;
+      }
+
+      .status-close {
+        background: rgba(210, 153, 34, 0.9);
+        color: white;
+      }
+
+      .status-finish {
+        background: rgba(31, 111, 235, 0.9);
+        color: white;
+      }
+
+      .order-card-body {
+        padding: 1rem;
+      }
+
+      .order-title {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--text-primary);
+      }
+
+      .order-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+      }
+
+      .order-date {
+        color: var(--text-secondary);
+        font-size: 0.75rem;
+      }
+
+      .order-collection {
+        color: var(--accent-secondary);
+        font-size: 0.75rem;
+        font-weight: 500;
+      }
+
+      .order-series {
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-sm);
+        padding: 0.375rem 0.75rem;
+        font-family: "Monaco", "Menlo", monospace;
+        font-size: 0.75rem;
+        margin-bottom: 0.5rem;
+        text-align: center;
+      }
+
+      /* Remove order images preview styles since we only show first media */
+
+      /* Empty States */
+      .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: var(--text-secondary);
+      }
+
+      .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+      }
+
+      /* Modal Styles */
+      .modal-content {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+      }
+
+      .modal-header {
+        border-bottom: 1px solid var(--border-color);
+        background: var(--bg-tertiary);
+      }
+
+      .modal-title {
+        color: var(--text-primary);
+        font-weight: 600;
+      }
+
+      .btn-close {
+        filter: invert(1);
+      }
+
+      /* Image Carousel */
+      .carousel-container {
+        background: var(--bg-primary);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+      }
+
+      .carousel-image {
+        width: 100%;
+        max-height: 400px;
+        object-fit: contain;
+        background: var(--bg-primary);
+      }
+
+      .carousel-control-prev,
+      .carousel-control-next {
+        background: rgba(0, 0, 0, 0.5);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+
+      .carousel-control-prev {
+        left: 1rem;
+      }
+
+      .carousel-control-next {
+        right: 1rem;
+      }
+
+      .carousel-indicators {
+        bottom: -50px;
+      }
+
+      .carousel-indicators button {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin: 0 4px;
+      }
+
+      /* Order Details */
+      .order-detail-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .order-detail-row:last-child {
+        border-bottom: none;
+      }
+
+      .detail-label {
+        color: var(--text-secondary);
+        font-weight: 500;
+      }
+
+      .detail-value {
+        color: var(--text-primary);
+        font-weight: 600;
+      }
+
+      .detail-code {
+        font-family: "Monaco", "Menlo", monospace;
+        background: var(--bg-tertiary);
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-sm);
+        font-size: 0.875rem;
+      }
+
+      /* Buttons */
+      .btn {
+        border-radius: var(--radius-sm);
+        font-weight: 500;
+        padding: 0.75rem 1.5rem;
+        transition: var(--transition);
+        border: none;
+      }
+
+      .btn-primary {
+        background: var(--accent-secondary);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #1760d8;
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
+      }
+
+      .btn-warning {
+        background: var(--accent-warning);
+        color: white;
+      }
+
+      .btn-warning:hover {
+        background: #b8860b;
+        transform: translateY(-1px);
+      }
+
+      .btn-danger {
+        background: var(--accent-danger);
+        color: white;
+      }
+
+      .btn-danger:hover {
+        background: #c1211e;
+        transform: translateY(-1px);
+      }
+
+      .btn-outline-secondary {
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
+        background: transparent;
+      }
+
+      .btn-outline-secondary:hover {
+        background: var(--hover-bg);
+        color: var(--text-primary);
+        border-color: var(--accent-secondary);
+      }
+
+      /* Login Screen */
+      .login-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, var(--bg-primary) 0%, #0a0e14 100%);
+      }
+
+      .login-card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+        width: 100%;
+        max-width: 450px;
+      }
+
+      /* Country Dropdown Styles */
+      .country-dropdown-item {
+        display: flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        transition: var(--transition);
+        color: var(--text-primary);
+        text-decoration: none;
+      }
+
+      .country-dropdown-item:hover {
+        background: var(--hover-bg);
+        color: var(--text-primary);
+      }
+
+      .country-dropdown-item:active,
+      .country-dropdown-item.active {
+        background: var(--accent-secondary);
+        color: white;
+      }
+
+      .country-flag {
+        font-size: 1.2rem;
+        margin-right: 0.5rem;
+        width: 24px;
+        text-align: center;
+      }
+
+      .country-name {
+        flex-grow: 1;
+        font-size: 0.875rem;
+      }
+
+      .country-code {
+        font-family: "Monaco", "Menlo", monospace;
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin-left: 0.5rem;
+      }
+
+      .dropdown-menu {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-sm);
+        box-shadow: var(--shadow-md);
+      }
+
+      .dropdown-search {
+        padding: 0.5rem;
+        border-bottom: 1px solid var(--border-color);
+        position: sticky;
+        top: 0;
+        background: var(--bg-secondary);
+        z-index: 10;
+      }
+
+      .dropdown-search input {
+        width: 100%;
+        padding: 0.375rem 0.75rem;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-sm);
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        font-size: 0.875rem;
+      }
+
+      .dropdown-search input:focus {
+        outline: none;
+        border-color: var(--accent-secondary);
+        box-shadow: 0 0 0 2px rgba(31, 111, 235, 0.25);
+      }
+
+      .dropdown-search input::placeholder {
+        color: var(--text-muted);
+      }
+
+      /* Phone Input Enhancements */
+      #phone {
+        font-family: "Monaco", "Menlo", "Consolas", monospace;
+        letter-spacing: 0.5px;
+        font-size: 1rem;
+        font-weight: 500;
+      }
+
+      #phone::placeholder {
+        font-family: "Monaco", "Menlo", "Consolas", monospace;
+        color: var(--text-muted);
+        font-weight: 400;
+      }
+
+      .phone-format-hint {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        font-family: "Monaco", "Menlo", "Consolas", monospace;
+      }
+
+      /* Loading States */
+      .loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 200px;
+      }
+
+      .spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid var(--border-color);
+        border-top: 3px solid var(--accent-secondary);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Toast Notifications */
+      .toast {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+      }
+
+      .toast.bg-success {
+        background: var(--accent-info) !important;
+      }
+
+      .toast.bg-danger {
+        background: var(--accent-danger) !important;
+      }
+
+      .toast.bg-warning {
+        background: var(--accent-warning) !important;
+      }
+
+      /* Mobile Bottom Navigation */
+      .mobile-bottom-nav {
+        display: none;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: var(--bg-secondary);
+        border-top: 1px solid var(--border-color);
+        z-index: 1000;
+        backdrop-filter: blur(10px);
+        box-shadow: var(--shadow-lg);
+      }
+
+      .mobile-nav-container {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        padding: 0.5rem 0;
+        max-width: 100vw;
+      }
+
+      .mobile-nav-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 0.5rem;
+        text-decoration: none;
+        color: var(--text-secondary);
+        transition: var(--transition);
+        border-radius: var(--radius-sm);
+        margin: 0 0.25rem;
+      }
+
+      .mobile-nav-item:hover,
+      .mobile-nav-item:focus {
+        color: var(--text-primary);
+        background: var(--hover-bg);
+      }
+
+      .mobile-nav-item.active {
+        color: var(--accent-secondary);
+        background: rgba(31, 111, 235, 0.1);
+      }
+
+      .mobile-nav-item i {
+        font-size: 1.2rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .mobile-nav-item span {
+        font-size: 0.75rem;
+        font-weight: 500;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .section-title {
+          font-size: 1.5rem;
+        }
+
+        .order-card-header {
+          height: 150px;
+        }
+
+        .profile-card {
+          padding: 1.5rem;
+        }
+
+        .profile-avatar {
+          width: 60px;
+          height: 60px;
+          font-size: 1.5rem;
+        }
+
+        .btn {
+          padding: 0.5rem 1rem;
+          font-size: 0.875rem;
+        }
+
+        .login-card {
+          max-width: 95%;
+          margin: 1rem;
+        }
+
+        .country-dropdown-item {
+          padding: 0.75rem 1rem;
+        }
+
+        .country-name {
+          font-size: 0.8rem;
+        }
+
+        .country-code {
+          font-size: 0.8rem;
+        }
+
+        #countryDropdown {
+          min-width: 100px;
+        }
+
+        .dropdown-menu {
+          width: 100%;
+          max-width: none;
+        }
+
+        /* Hide desktop navigation on mobile */
+        .main-navbar .navbar-collapse {
+          display: none !important;
+        }
+
+        .navbar-toggler {
+          display: none !important;
+        }
+
+        /* Show mobile bottom navigation */
+        .mobile-bottom-nav {
+          display: block;
+        }
+
+        /* Add bottom padding to container for bottom nav */
+        /* .container {
+          padding-bottom: 80px;
+        } */
+
+        /* Adjust content sections for mobile nav */
+        .content-section {
+          min-height: calc(100vh - 160px);
+        }
+
+        /* Mobile alt image adjustments */
+        .alt-image-container {
+          border-width: 1px;
+        }
+
+        .alt-image-icon {
+          font-size: 2rem;
+        }
+
+        .alt-image-text {
+          font-size: 0.7rem;
+        }
+
+        .alt-image-small .alt-image-icon {
+          font-size: 1.2rem;
+        }
+
+        .alt-image-small .alt-image-text {
+          font-size: 0.6rem;
+        }
+
+        .alt-image-modal .alt-image-icon {
+          font-size: 1.5rem;
+        }
+
+        .alt-image-modal .alt-image-text {
+          font-size: 0.65rem;
+        }
+
+        .alt-image-retry {
+          font-size: 0.6rem;
+          padding: 0.2rem 0.5rem;
+        }
+
+        .video-label {
+          font-size: 8px;
+          padding: 2px 4px;
+        }
+
+        /* Mobile timeline adjustments */
+        .timeline-icon {
+          width: 24px;
+          height: 24px;
+          font-size: 0.65rem;
+        }
+
+        .timeline-content {
+          margin-left: 0.5rem;
+        }
+
+        .timeline-label {
+          font-size: 0.8rem;
+        }
+
+        .timeline-date {
+          font-size: 0.7rem;
+        }
+
+        .activity-row {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.25rem;
+        }
+
+        .activity-label,
+        .activity-value {
+          font-size: 0.75rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .alt-image-container {
+          border-radius: var(--radius-sm);
+        }
+
+        .alt-image-content {
+          padding: 0.5rem;
+        }
+
+        .alt-image-icon {
+          font-size: 1.5rem;
+          margin-bottom: 0.25rem;
+        }
+
+        .alt-image-text {
+          font-size: 0.65rem;
+        }
+
+        .alt-image-small .alt-image-icon {
+          font-size: 1rem;
+        }
+
+        .alt-image-small .alt-image-text {
+          font-size: 0.55rem;
+        }
+      }
+
+      /* Animation Classes */
+      .fade-in {
+        animation: fadeIn 0.6s ease-out;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .slide-up {
+        animation: slideUp 0.5s ease-out;
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Loading Screen -->
+    <div id="loader" class="login-container">
+      <div class="loading">
+        <div class="spinner"></div>
+      </div>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="login-screen" class="login-container" style="display: none">
+      <div class="login-card p-4" data-aos="fade-up">
+        <div class="text-center mb-4">
+          <div class="profile-avatar mb-3">
+            <i class="fas fa-user"></i>
+          </div>
+          <h3 class="mb-2">Kabinetga Kirish</h3>
+          <p class="text-secondary">
+            Davom etish uchun telefon raqamingizni kiriting
+          </p>
+        </div>
+        <form id="login-form">
+          <div class="mb-3">
+            <div class="input-group">
+              <button
+                class="btn btn-outline-secondary dropdown-toggle"
+                type="button"
+                id="countryDropdown"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+                style="min-width: 120px"
+              >
+                <span id="selectedCountry" data-code="+998">🇺🇿 +998</span>
+              </button>
+              <ul
+                class="dropdown-menu"
+                id="countryList"
+                style="max-height: 300px; overflow-y: auto"
+              >
+                <li class="dropdown-search">
+                  <input
+                    type="text"
+                    placeholder="Mamlakat qidirish..."
+                    id="countrySearch"
+                    autocomplete="off"
+                  />
+                </li>
+                <div id="countryItems">
+                  <!-- Countries will be populated by JavaScript -->
+                </div>
+              </ul>
+              <input
+                type="tel"
+                class="form-control"
+                id="phone"
+                name="phone"
+                placeholder="901234567"
+                required
+              />
+            </div>
+            <div class="form-text phone-format-hint" id="phone-format-hint">
+              Mamlakat kodini tanlang va telefon raqamingizni kiriting
+            </div>
+          </div>
+          <div class="d-grid">
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-sign-in-alt me-2"></i>Kirish
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="dashboard-screen" style="display: none">
+      <!-- Navigation -->
+      <nav class="navbar navbar-expand-lg main-navbar">
+        <div class="container">
+          <a class="navbar-brand" href="#">
+            <i class="fas fa-box-open me-2"></i>
+            Buyurtmalar Tizimi
+          </a>
+
+          <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNav"
+          >
+            <span class="navbar-toggler-icon"></span>
+          </button>
+
+          <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+              <li class="nav-item">
+                <a class="nav-link active" href="#" data-section="orders">
+                  <i class="fas fa-shopping-cart me-1"></i>
+                  Buyurtmalar
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#" data-section="collections">
+                  <i class="fas fa-folder-open me-1"></i>
+                  Kolleksiyalar
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#" data-section="profile">
+                  <i class="fas fa-user-circle me-1"></i>
+                  Profil
+                </a>
+              </li>
+            </ul>
+
+            <div class="navbar-nav">
+              <span class="navbar-text me-3" id="user-greeting">
+                <i class="fas fa-user me-1"></i>
+                <span id="navbar-username"></span>
+              </span>
+              <button
+                class="btn btn-outline-secondary btn-sm"
+                onclick="logout()"
+              >
+                <i class="fas fa-sign-out-alt me-1"></i>
+                Chiqish
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div class="container">
+        <!-- Orders Section -->
+        <section id="orders-section" class="content-section active">
+          <div class="section-header" data-aos="fade-down">
+            <h1 class="section-title">
+              <i class="fas fa-shopping-cart me-2"></i>
+              Mening Buyurtmalarim
+            </h1>
+            <p class="section-subtitle">
+              Barcha buyurtmalarni ko'ring va boshqaring
+            </p>
+          </div>
+
+          <!-- Desktop Filter and Sort Controls -->
+          <div
+            class="orders-controls mb-4 d-none d-lg-block"
+            data-aos="fade-up"
+          >
+            <div class="card">
+              <div class="card-body">
+                <div class="row align-items-center">
+                  <!-- Collection Filter -->
+                  <div class="col-lg-4 col-md-6 mb-3 mb-lg-0">
+                    <label class="form-label fw-semibold">
+                      <i class="fas fa-folder me-2"></i>
+                      Kolleksiya bo'yicha filter
+                    </label>
+                    <div class="collection-dropdown-wrapper">
+                      <select
+                        class="form-select collection-dropdown"
+                        id="collectionFilter"
+                      >
+                        <option value="">Barcha kolleksiyalar</option>
+                        <!-- Collections will be populated dynamically -->
+                      </select>
+                      <div class="dropdown-icon">
+                        <i class="fas fa-chevron-down"></i>
+                      </div>
+                    </div>
+                    <small class="text-muted collection-help-text">
+                      Faqat buyurtma qilgan kolleksiyalar ko'rsatiladi
+                    </small>
+                  </div>
+
+                  <!-- Status Filter -->
+                  <div class="col-lg-4 col-md-6 mb-3 mb-lg-0">
+                    <label class="form-label fw-semibold">
+                      <i class="fas fa-signal me-2"></i>
+                      Status bo'yicha filter
+                    </label>
+                    <div class="status-filter-group">
+                      <div
+                        class="status status-filter active"
+                        data-value="open"
+                        id="status-open"
+                      >
+                        🟢 Ochiq
+                      </div>
+                      <div
+                        class="status status-filter active"
+                        data-value="close"
+                        id="status-close"
+                      >
+                        🔴 Yopiq
+                      </div>
+                      <div
+                        class="status status-filter active"
+                        data-value="finish"
+                        id="status-finish"
+                      >
+                        ✅ Tugallangan
+                      </div>
+                      <div
+                        class="status status-filter active"
+                        data-value="unknown"
+                        id="status-unknown"
+                      >
+                        ⚪ Noma'lum
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Sort Controls -->
+                  <div class="col-lg-4 col-md-12">
+                    <label class="form-label fw-semibold">
+                      <i class="fas fa-sort me-2"></i>
+                      Saralash
+                    </label>
+                    <div class="row g-2">
+                      <div class="col-12">
+                        <select class="form-select" id="sortBy">
+                          <option value="newest">Yangilari birinchi</option>
+                          <option value="oldest">Eskilari birinchi</option>
+                          <option value="high-serial">
+                            Ko'p seriyali birinchi
+                          </option>
+                          <option value="low-serial">
+                            Kam seriyali birinchi
+                          </option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Control Actions -->
+                <div class="row mt-3">
+                  <div class="col-12">
+                    <div
+                      class="d-flex justify-content-between align-items-center"
+                    >
+                      <div class="order-stats">
+                        <small class="text-muted">
+                          <span id="filteredCount">0</span> dan
+                          <span id="totalCount">0</span> buyurtma ko'rsatilmoqda
+                        </small>
+                      </div>
+                      <div class="filter-actions">
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-outline-secondary"
+                          id="clearFilters"
+                        >
+                          <i class="fas fa-times me-1"></i>
+                          Filtrlarni tozalash
+                        </button>
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-outline-primary"
+                          id="applyFilters"
+                        >
+                          <i class="fas fa-filter me-1"></i>
+                          Qo'llash
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mobile Filter Button and Summary -->
+          <div class="mobile-filter-controls d-lg-none mb-4" data-aos="fade-up">
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="order-summary">
+                <h6 class="mb-1">
+                  <span id="mobile-filteredCount">0</span> dan
+                  <span id="mobile-totalCount">0</span> buyurtma
+                </h6>
+                <small class="text-muted" id="mobile-filter-status">
+                  Barcha buyurtmalar ko'rsatilmoqda
+                </small>
+              </div>
+              <button
+                type="button"
+                class="btn btn-primary mobile-filter-btn"
+                id="mobileFilterBtn"
+              >
+                <i class="fas fa-filter me-2"></i>
+                Filter
+              </button>
+            </div>
+          </div>
+
+          <!-- Mobile Filter Dropdown -->
+          <div class="mobile-filter-dropdown" id="mobileFilterDropdown">
+            <div class="mobile-filter-backdrop" id="mobileFilterBackdrop"></div>
+            <div class="mobile-filter-panel">
+              <!-- Header -->
+              <div class="mobile-filter-header">
+                <h5 class="mb-0">
+                  <i class="fas fa-filter me-2"></i>
+                  Filter va saralash
+                </h5>
+                <button
+                  type="button"
+                  class="btn-close mobile-filter-close"
+                  id="mobileFilterClose"
+                >
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+
+              <!-- Filter Content -->
+              <div class="mobile-filter-content">
+                <!-- Collection Filter -->
+                <div class="mobile-filter-section">
+                  <label class="mobile-filter-label">
+                    <i class="fas fa-folder me-2"></i>
+                    Kolleksiya bo'yicha filter
+                  </label>
+                  <div class="collection-dropdown-wrapper">
+                    <select
+                      class="form-select collection-dropdown"
+                      id="mobileCollectionFilter"
+                    >
+                      <option value="">Barcha kolleksiyalar</option>
+                      <!-- Collections will be populated dynamically -->
+                    </select>
+                    <div class="dropdown-icon">
+                      <i class="fas fa-chevron-down"></i>
+                    </div>
+                  </div>
+                  <small class="text-muted">
+                    Faqat buyurtma qilgan kolleksiyalar ko'rsatiladi
+                  </small>
+                </div>
+
+                <!-- Status Filter -->
+                <div class="mobile-filter-section">
+                  <label class="mobile-filter-label">
+                    <i class="fas fa-signal me-2"></i>
+                    Status bo'yicha filter
+                  </label>
+                  <div class="mobile-status-grid">
+                    <div
+                      class="status mobile-status-filter active"
+                      data-value="open"
+                      id="mobile-status-open"
+                    >
+                      🟢 Ochiq
+                    </div>
+                    <div
+                      class="status mobile-status-filter active"
+                      data-value="close"
+                      id="mobile-status-close"
+                    >
+                      🔴 Yopiq
+                    </div>
+                    <div
+                      class="status mobile-status-filter active"
+                      data-value="finish"
+                      id="mobile-status-finish"
+                    >
+                      ✅ Tugallangan
+                    </div>
+                    <div
+                      class="status mobile-status-filter active"
+                      data-value="unknown"
+                      id="mobile-status-unknown"
+                    >
+                      ⚪ Noma'lum
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Sort Controls -->
+                <div class="mobile-filter-section">
+                  <label class="mobile-filter-label">
+                    <i class="fas fa-sort me-2"></i>
+                    Saralash
+                  </label>
+                  <div class="row g-3">
+                    <div class="col-12">
+                      <select class="form-select" id="mobileSortBy">
+                        <option value="newest">Yangilari birinchi</option>
+                        <option value="oldest">Eskilari birinchi</option>
+                        <option value="high-serial">
+                          Ko'p seriyali birinchi
+                        </option>
+                        <option value="low-serial">
+                          Kam seriyali birinchi
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Filter Actions -->
+              <div class="mobile-filter-actions">
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  id="mobileClearFilters"
+                >
+                  <i class="fas fa-times me-2"></i>
+                  Tozalash
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  id="mobileApplyFilters"
+                >
+                  <i class="fas fa-check me-2"></i>
+                  Qo'llash
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="row" id="orders-container">
+            <!-- Orders will be rendered here -->
+          </div>
+        </section>
+
+        <!-- Collections Section -->
+        <section id="collections-section" class="content-section">
+          <div class="section-header" data-aos="fade-down">
+            <h1 class="section-title">
+              <i class="fas fa-folder-open me-2"></i>
+              Kolleksiyalar
+            </h1>
+            <p class="section-subtitle">
+              Buyurtmalar kolleksiyalari bo'yicha ko'ring
+            </p>
+          </div>
+
+          <div class="row" id="collections-container">
+            <!-- Collections will be rendered here -->
+          </div>
+        </section>
+
+        <!-- Profile Section -->
+        <section id="profile-section" class="content-section">
+          <div class="section-header" data-aos="fade-down">
+            <h1 class="section-title">
+              <i class="fas fa-user-circle me-2"></i>
+              Mening Profilim
+            </h1>
+            <p class="section-subtitle">Shaxsiy ma'lumotlarim</p>
+          </div>
+
+          <div class="row justify-content-center">
+            <div class="col-lg-6">
+              <div class="profile-card" data-aos="fade-up">
+                <div class="profile-avatar">
+                  <i class="fas fa-user"></i>
+                </div>
+                <div class="profile-name" id="profile-display-name"></div>
+
+                <div class="mt-4">
+                  <div class="profile-detail">
+                    <span class="profile-label">
+                      <i class="fas fa-user me-2"></i>Ism
+                    </span>
+                    <span class="profile-value" id="profile-name"></span>
+                  </div>
+                  <div class="profile-detail">
+                    <span class="profile-label">
+                      <i class="fas fa-user-tag me-2"></i>Familiya
+                    </span>
+                    <span class="profile-value" id="profile-surname"></span>
+                  </div>
+                  <div class="profile-detail">
+                    <span class="profile-label">
+                      <i class="fas fa-phone me-2"></i>Telefon
+                    </span>
+                    <span class="profile-value" id="profile-phone"></span>
+                  </div>
+                  <div class="profile-detail">
+                    <span class="profile-label">
+                      <i class="fas fa-code me-2"></i>Kod
+                    </span>
+                    <span
+                      class="profile-value detail-code"
+                      id="profile-code"
+                    ></span>
+                  </div>
+                </div>
+
+                <div class="mt-4 d-grid">
+                  <button
+                    type="button"
+                    class="btn btn-primary"
+                    onclick="showEditProfileModal()"
+                  >
+                    <i class="fas fa-edit me-2"></i>Profilni Tahrirlash
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Mobile Bottom Navigation -->
+      <div class="mobile-bottom-nav">
+        <div class="mobile-nav-container">
+          <a href="#" class="mobile-nav-item active" data-section="orders">
+            <i class="fas fa-shopping-cart"></i>
+            <span>Buyurtmalar</span>
+          </a>
+          <a href="#" class="mobile-nav-item" data-section="collections">
+            <i class="fas fa-folder-open"></i>
+            <span>Kolleksiyalar</span>
+          </a>
+          <a href="#" class="mobile-nav-item" data-section="profile">
+            <i class="fas fa-user-circle"></i>
+            <span>Profil</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Order Details Modal -->
+    <div class="modal fade" id="orderModal" tabindex="-1">
+      <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="fas fa-box-open me-2"></i>
+              <span id="modal-order-title">Buyurtma Tafsilotlari</span>
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <!-- Media Thumbnails Column -->
+              <div class="col-lg-3">
+                <div class="media-thumbnails-column" id="media-thumbnails">
+                  <h6 class="mb-3">
+                    <i class="fas fa-images me-2"></i>
+                    Media (<span id="modal-images-count">0</span>)
+                  </h6>
+                  <div class="media-thumbnails-grid" id="media-thumbnails-grid">
+                    <!-- Thumbnails will be populated here -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- Main Media Display -->
+              <div class="col-lg-6">
+                <div class="main-media-display">
+                  <div class="media-container" id="main-media-container">
+                    <div class="media-placeholder">
+                      <i class="fas fa-image fa-3x text-muted"></i>
+                      <p class="mt-2 text-muted">Media tanlang</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Order Details -->
+              <div class="col-lg-3">
+                <div class="order-details">
+                  <h6 class="mb-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Buyurtma ma'lumotlari
+                  </h6>
+                  <div class="order-detail-row">
+                    <span class="detail-label">ID</span>
+                    <span
+                      class="detail-value detail-code"
+                      id="modal-order-id"
+                    ></span>
+                  </div>
+                  <div class="order-detail-row">
+                    <span class="detail-label">Seriya</span>
+                    <span
+                      class="detail-value detail-code"
+                      id="modal-order-series"
+                    ></span>
+                  </div>
+                  <div class="order-detail-row">
+                    <span class="detail-label">Kolleksiya</span>
+                    <span
+                      class="detail-value detail-code"
+                      id="modal-collection-id"
+                    ></span>
+                  </div>
+                  <div class="order-detail-row">
+                    <span class="detail-label">Sana</span>
+                    <span class="detail-value" id="modal-order-date"></span>
+                  </div>
+                  <div class="order-detail-row">
+                    <span class="detail-label">Holat</span>
+                    <span class="detail-value">
+                      <span class="badge" id="modal-order-status"></span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              data-bs-dismiss="modal"
+            >
+              <i class="fas fa-times me-1"></i>Yopish
+            </button>
+            <div id="modal-actions">
+              <!-- Action buttons will be populated here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Order Modal -->
+    <div class="modal fade" id="editOrderModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="fas fa-edit me-2"></i>
+              Buyurtmani Tahrirlash
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="edit-order-form">
+              <div class="mb-3">
+                <label for="edit-series" class="form-label">
+                  <i class="fas fa-hashtag me-2"></i>Seriya Raqami
+                </label>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="edit-series"
+                  name="series"
+                  placeholder="Yangi seriya raqamini kiriting"
+                  required
+                />
+                <div class="form-text">
+                  Faqat raqamlar kiriting. Masalan: 123
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              data-bs-dismiss="modal"
+            >
+              <i class="fas fa-times me-1"></i>Bekor qilish
+            </button>
+            <button type="button" class="btn btn-primary" id="save-edit-btn">
+              <i class="fas fa-save me-1"></i>Saqlash
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div class="modal fade" id="editProfileModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="fas fa-user-edit me-2"></i>
+              Profilni Tahrirlash
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="edit-profile-form">
+              <div class="mb-3">
+                <label for="edit-profile-name" class="form-label">
+                  <i class="fas fa-user me-2"></i>Ism
+                </label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="edit-profile-name"
+                  name="name"
+                  placeholder="Ismingizni kiriting"
+                  required
+                  maxlength="50"
+                />
+                <div class="form-text">
+                  Kamida 2 ta belgi, faqat harflar va boshliq.
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="edit-profile-surname" class="form-label">
+                  <i class="fas fa-user-tag me-2"></i>Familiya
+                </label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="edit-profile-surname"
+                  name="surname"
+                  placeholder="Familiyangizni kiriting"
+                  required
+                  maxlength="50"
+                />
+                <div class="form-text">
+                  Kamida 2 ta belgi, faqat harflar va boshliq.
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              data-bs-dismiss="modal"
+            >
+              <i class="fas fa-times me-1"></i>Bekor qilish
+            </button>
+            <button type="button" class="btn btn-primary" id="save-profile-btn">
+              <i class="fas fa-save me-1"></i>Saqlash
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed top-0 end-0 p-3"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+      // Initialize AOS
+      AOS.init({
+        duration: 800,
+        easing: "ease-out-cubic",
+        once: true,
+      });
+
+      // Global variables
+      const userCode = "{{ user.code }}";
+      const API_BASE = "/api";
+      let currentUserData = null;
+      let currentOrderData = null;
+
+      // Filter and Sort variables
+      let allOrders = []; // Store original orders data
+      let filteredOrders = []; // Store filtered orders
+      let availableCollections = []; // Store available collections for filter
+      let mobileFilterOpen = false; // Track mobile filter state
+
+      // Status Toggle System - Initialize on page load
+      document.addEventListener("DOMContentLoaded", function () {
+        initializeStatusToggles();
+      });
+
+      function initializeStatusToggles() {
+        // Remove existing listeners to prevent duplicates
+        document.querySelectorAll(".status").forEach((statusElement) => {
+          // Clone element to remove all event listeners
+          const newElement = statusElement.cloneNode(true);
+          statusElement.parentNode.replaceChild(newElement, statusElement);
+        });
+
+        // Add click event listeners to all elements with class "status"
+        document.querySelectorAll(".status").forEach((statusElement) => {
+          statusElement.addEventListener("click", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleStatus(this);
+          });
+        });
+      }
+
+      function toggleStatus(element) {
+        // Toggle the active class
+        element.classList.toggle("active");
+
+        // Add a subtle click animation
+        element.style.transform = "scale(0.95)";
+        setTimeout(() => {
+          element.style.transform = "";
+        }, 100);
+
+        // If this is a filter element, trigger filter update
+        if (
+          element.classList.contains("status-filter") ||
+          element.classList.contains("mobile-status-filter")
+        ) {
+          applyFiltersAndSort();
+        }
+      }
+
+      function isStatusActive(element) {
+        return element.classList.contains("active");
+      }
+
+      function setStatusActive(element, active) {
+        if (active) {
+          element.classList.add("active");
+        } else {
+          element.classList.remove("active");
+        }
+      }
+
+      // Countries data with flags, codes, and formatting patterns
+      const countries = [
+        { name: "Afghanistan", code: "+93", flag: "🇦🇫", format: "xx xxx xxxx" },
+        { name: "Albania", code: "+355", flag: "🇦🇱", format: "xx xxx xxxx" },
+        { name: "Algeria", code: "+213", flag: "🇩🇿", format: "xxx xx xx xx" },
+        {
+          name: "American Samoa",
+          code: "+1684",
+          flag: "🇦🇸",
+          format: "(xxx) xxx-xxxx",
+        },
+        { name: "Andorra", code: "+376", flag: "🇦🇩", format: "xxx xxx" },
+        { name: "Angola", code: "+244", flag: "🇦🇴", format: "xxx xxx xxx" },
+        { name: "Argentina", code: "+54", flag: "🇦🇷", format: "xx xxxx-xxxx" },
+        { name: "Armenia", code: "+374", flag: "🇦🇲", format: "xx xxx xxx" },
+        { name: "Australia", code: "+61", flag: "🇦🇺", format: "xxx xxx xxx" },
+        { name: "Austria", code: "+43", flag: "🇦🇹", format: "xxx xxxxxxx" },
+        {
+          name: "Azerbaijan",
+          code: "+994",
+          flag: "🇦🇿",
+          format: "xx xxx xx xx",
+        },
+        {
+          name: "Bahamas",
+          code: "+1242",
+          flag: "🇧🇸",
+          format: "(xxx) xxx-xxxx",
+        },
+        { name: "Bahrain", code: "+973", flag: "🇧🇭", format: "xxxx xxxx" },
+        { name: "Bangladesh", code: "+880", flag: "🇧🇩", format: "xxxx-xxxxxx" },
+        { name: "Belarus", code: "+375", flag: "🇧🇾", format: "xx xxx-xx-xx" },
+        { name: "Belgium", code: "+32", flag: "🇧🇪", format: "xxx xx xx xx" },
+        { name: "Belize", code: "+501", flag: "🇧🇿", format: "xxx-xxxx" },
+        { name: "Benin", code: "+229", flag: "🇧🇯", format: "xx xx xx xx" },
+        { name: "Bolivia", code: "+591", flag: "🇧🇴", format: "x xxx xxxx" },
+        {
+          name: "Bosnia and Herzegovina",
+          code: "+387",
+          flag: "🇧🇦",
+          format: "xx xxx xxx",
+        },
+        { name: "Brazil", code: "+55", flag: "🇧🇷", format: "(xx) xxxxx-xxxx" },
+        { name: "Bulgaria", code: "+359", flag: "🇧🇬", format: "xx xxx xxxx" },
+        { name: "Cambodia", code: "+855", flag: "🇰🇭", format: "xx xxx xxx" },
+        { name: "Cameroon", code: "+237", flag: "🇨🇲", format: "xxxx xxxx" },
+        { name: "Canada", code: "+1", flag: "🇨🇦", format: "(xxx) xxx-xxxx" },
+        { name: "Chile", code: "+56", flag: "🇨🇱", format: "x xxxx xxxx" },
+        { name: "China", code: "+86", flag: "🇨🇳", format: "xxx xxxx xxxx" },
+        { name: "Colombia", code: "+57", flag: "🇨🇴", format: "xxx xxx xxxx" },
+        { name: "Croatia", code: "+385", flag: "🇭🇷", format: "xx xxx xxxx" },
+        { name: "Cuba", code: "+53", flag: "🇨🇺", format: "x xxx xxxx" },
+        {
+          name: "Czech Republic",
+          code: "+420",
+          flag: "🇨🇿",
+          format: "xxx xxx xxx",
+        },
+        { name: "Denmark", code: "+45", flag: "🇩🇰", format: "xx xx xx xx" },
+        { name: "Ecuador", code: "+593", flag: "🇪🇨", format: "xx xxx xxxx" },
+        { name: "Egypt", code: "+20", flag: "🇪🇬", format: "xxx xxx xxxx" },
+        { name: "Estonia", code: "+372", flag: "🇪🇪", format: "xxx xxxx" },
+        { name: "Ethiopia", code: "+251", flag: "🇪🇹", format: "xx xxx xxxx" },
+        { name: "Finland", code: "+358", flag: "🇫🇮", format: "xx xxx xxxx" },
+        { name: "France", code: "+33", flag: "🇫🇷", format: "x xx xx xx xx" },
+        { name: "Gabon", code: "+241", flag: "🇬🇦", format: "x xx xx xx" },
+        { name: "Georgia", code: "+995", flag: "🇬🇪", format: "xxx xxx xxx" },
+        { name: "Germany", code: "+49", flag: "🇩🇪", format: "xxx xxxxxxxx" },
+        { name: "Ghana", code: "+233", flag: "🇬🇭", format: "xx xxx xxxx" },
+        { name: "Greece", code: "+30", flag: "🇬🇷", format: "xxx xxx xxxx" },
+        { name: "Hungary", code: "+36", flag: "🇭🇺", format: "xx xxx xxxx" },
+        { name: "Iceland", code: "+354", flag: "🇮🇸", format: "xxx xxxx" },
+        { name: "India", code: "+91", flag: "🇮🇳", format: "xxxxx xxxxx" },
+        { name: "Indonesia", code: "+62", flag: "🇮🇩", format: "xxx-xxx-xxxx" },
+        { name: "Iran", code: "+98", flag: "🇮🇷", format: "xxx xxx xxxx" },
+        { name: "Iraq", code: "+964", flag: "🇮🇶", format: "xxx xxx xxxx" },
+        { name: "Ireland", code: "+353", flag: "🇮🇪", format: "xx xxx xxxx" },
+        { name: "Israel", code: "+972", flag: "🇮🇱", format: "x-xxxx-xxxx" },
+        { name: "Italy", code: "+39", flag: "🇮🇹", format: "xxx xxx xxxx" },
+        { name: "Japan", code: "+81", flag: "🇯🇵", format: "xx-xxxx-xxxx" },
+        { name: "Jordan", code: "+962", flag: "🇯🇴", format: "x xxxx xxxx" },
+        { name: "Kazakhstan", code: "+7", flag: "🇰🇿", format: "xxx xxx-xx-xx" },
+        { name: "Kenya", code: "+254", flag: "🇰🇪", format: "xxx xxxxxx" },
+        { name: "Kuwait", code: "+965", flag: "🇰🇼", format: "xxxx xxxx" },
+        { name: "Kyrgyzstan", code: "+996", flag: "🇰🇬", format: "xxx xxx xxx" },
+        { name: "Latvia", code: "+371", flag: "🇱🇻", format: "xx xxx xxx" },
+        { name: "Lebanon", code: "+961", flag: "🇱🇧", format: "xx xxx xxx" },
+        { name: "Lithuania", code: "+370", flag: "🇱🇹", format: "xxx xxxxx" },
+        { name: "Luxembourg", code: "+352", flag: "🇱🇺", format: "xxx xxx xxx" },
+        { name: "Malaysia", code: "+60", flag: "🇲🇾", format: "xx-xxx xxxx" },
+        { name: "Mexico", code: "+52", flag: "🇲🇽", format: "xxx xxx xxxx" },
+        { name: "Moldova", code: "+373", flag: "🇲🇩", format: "xx xxx xxx" },
+        { name: "Mongolia", code: "+976", flag: "🇲🇳", format: "xxxx xxxx" },
+        { name: "Morocco", code: "+212", flag: "🇲🇦", format: "xxx-xxxxxx" },
+        { name: "Netherlands", code: "+31", flag: "🇳🇱", format: "x xxxx xxxx" },
+        { name: "New Zealand", code: "+64", flag: "🇳🇿", format: "xx xxx xxxx" },
+        { name: "Nigeria", code: "+234", flag: "🇳🇬", format: "xxx xxx xxxx" },
+        {
+          name: "North Macedonia",
+          code: "+389",
+          flag: "🇲🇰",
+          format: "xx xxx xxx",
+        },
+        { name: "Norway", code: "+47", flag: "🇳🇴", format: "xxx xx xxx" },
+        { name: "Pakistan", code: "+92", flag: "🇵🇰", format: "xxx xxx xxxx" },
+        { name: "Peru", code: "+51", flag: "🇵🇪", format: "xxx xxx xxx" },
+        {
+          name: "Philippines",
+          code: "+63",
+          flag: "🇵🇭",
+          format: "xxx xxx xxxx",
+        },
+        { name: "Poland", code: "+48", flag: "🇵🇱", format: "xxx xxx xxx" },
+        { name: "Portugal", code: "+351", flag: "🇵🇹", format: "xxx xxx xxx" },
+        { name: "Qatar", code: "+974", flag: "🇶🇦", format: "xxxx xxxx" },
+        { name: "Romania", code: "+40", flag: "🇷🇴", format: "xxx xxx xxxx" },
+        { name: "Russia", code: "+7", flag: "🇷🇺", format: "xxx xxx-xx-xx" },
+        {
+          name: "Saudi Arabia",
+          code: "+966",
+          flag: "🇸🇦",
+          format: "xx xxx xxxx",
+        },
+        { name: "Serbia", code: "+381", flag: "🇷🇸", format: "xx xxx xxxx" },
+        { name: "Singapore", code: "+65", flag: "🇸🇬", format: "xxxx xxxx" },
+        { name: "Slovakia", code: "+421", flag: "🇸🇰", format: "xxx xxx xxx" },
+        { name: "Slovenia", code: "+386", flag: "🇸🇮", format: "xx xxx xxx" },
+        {
+          name: "South Africa",
+          code: "+27",
+          flag: "🇿🇦",
+          format: "xx xxx xxxx",
+        },
+        {
+          name: "South Korea",
+          code: "+82",
+          flag: "🇰🇷",
+          format: "xx-xxxx-xxxx",
+        },
+        { name: "Spain", code: "+34", flag: "🇪🇸", format: "xxx xxx xxx" },
+        { name: "Sweden", code: "+46", flag: "🇸🇪", format: "xx-xxx xx xx" },
+        {
+          name: "Switzerland",
+          code: "+41",
+          flag: "🇨🇭",
+          format: "xx xxx xx xx",
+        },
+        { name: "Tajikistan", code: "+992", flag: "🇹🇯", format: "xx xxx xxxx" },
+        { name: "Thailand", code: "+66", flag: "🇹🇭", format: "xx xxx xxxx" },
+        { name: "Tunisia", code: "+216", flag: "🇹🇳", format: "xx xxx xxx" },
+        { name: "Turkey", code: "+90", flag: "🇹🇷", format: "xxx xxx xxxx" },
+        { name: "Turkmenistan", code: "+993", flag: "🇹🇲", format: "xx xxxxxx" },
+        { name: "Ukraine", code: "+380", flag: "🇺🇦", format: "xx xxx xx xx" },
+        {
+          name: "United Arab Emirates",
+          code: "+971",
+          flag: "🇦🇪",
+          format: "xx xxx xxxx",
+        },
+        {
+          name: "United Kingdom",
+          code: "+44",
+          flag: "🇬🇧",
+          format: "xxxx xxx xxx",
+        },
+        {
+          name: "United States",
+          code: "+1",
+          flag: "🇺🇸",
+          format: "(xxx) xxx-xxxx",
+        },
+        { name: "Uruguay", code: "+598", flag: "🇺🇾", format: "x xxx xxxx" },
+        {
+          name: "Uzbekistan",
+          code: "+998",
+          flag: "🇺🇿",
+          format: "xx xxx xx xx",
+        },
+        { name: "Vietnam", code: "+84", flag: "🇻🇳", format: "xxx xxx xxxx" },
+      ];
+
+      // Phone formatting utilities
+      function getCurrentCountryFormat() {
+        const countryCode = document
+          .getElementById("selectedCountry")
+          .getAttribute("data-code");
+        const country = countries.find((c) => c.code === countryCode);
+        return country?.format || "xxx xxx xxxx";
+      }
+
+      function formatPhoneNumber(value, format) {
+        // Remove all non-digit characters
+        const digits = value.replace(/\D/g, "");
+
+        // Apply the format pattern
+        let formatted = format;
+        let digitIndex = 0;
+
+        for (
+          let i = 0;
+          i < formatted.length && digitIndex < digits.length;
+          i++
+        ) {
+          if (formatted[i] === "x") {
+            formatted =
+              formatted.substring(0, i) +
+              digits[digitIndex] +
+              formatted.substring(i + 1);
+            digitIndex++;
+          }
+        }
+
+        // Remove any remaining 'x' characters if we don't have enough digits
+        formatted = formatted.replace(/x/g, "");
+
+        // If we have extra digits, append them
+        if (digitIndex < digits.length) {
+          formatted += digits.substring(digitIndex);
+        }
+
+        return formatted;
+      }
+
+      function getCleanPhoneNumber(formattedValue) {
+        // Remove all non-digit characters to get clean number
+        return formattedValue.replace(/\D/g, "");
+      }
+
+      function getFormattedPlaceholder(countryCode) {
+        const examples = {
+          "+998": "90 123 45 67",
+          "+1": "(202) 555-1234",
+          "+44": "7700 900 123",
+          "+49": "151 23456789",
+          "+7": "912 345-67-89",
+          "+33": "6 12 34 56 78",
+          "+91": "98765 43210",
+          "+86": "138 0013 8000",
+        };
+        return examples[countryCode] || "123 456 789";
+      }
+
+      // DOM elements
+      const loader = document.getElementById("loader");
+      const loginScreen = document.getElementById("login-screen");
+      const dashboardScreen = document.getElementById("dashboard-screen");
+      const loginForm = document.getElementById("login-form");
+
+      // Navigation functionality
+      document.addEventListener("DOMContentLoaded", function () {
+        // Handle navigation clicks
+        const navLinks = document.querySelectorAll("[data-section]");
+        const sections = document.querySelectorAll(".content-section");
+
+        function handleNavigation(section) {
+          // Remove active class from all nav links (desktop and mobile)
+          navLinks.forEach((l) => l.classList.remove("active"));
+
+          // Add active class to all matching nav items
+          const matchingLinks = document.querySelectorAll(
+            `[data-section="${section}"]`
+          );
+          matchingLinks.forEach((link) => link.classList.add("active"));
+
+          // Hide all sections
+          sections.forEach((section) => section.classList.remove("active"));
+
+          // Show target section
+          const targetSection = section + "-section";
+          document.getElementById(targetSection).classList.add("active");
+        }
+
+        navLinks.forEach((link) => {
+          link.addEventListener("click", function (e) {
+            e.preventDefault();
+            handleNavigation(this.getAttribute("data-section"));
+          });
+        });
+
+        // Initialize form handlers
+        loginForm.addEventListener("submit", handleLogin);
+        document
+          .getElementById("save-edit-btn")
+          .addEventListener("click", handleEditSave);
+        document
+          .getElementById("save-profile-btn")
+          .addEventListener("click", handleProfileSave);
+
+        // Initialize country dropdown
+        initializeCountryDropdown();
+
+        // Add phone number input validation and formatting
+        const phoneInput = document.getElementById("phone");
+
+        let lastValidValue = "";
+
+        phoneInput.addEventListener("input", function (e) {
+          // Get cursor position before formatting
+          const cursorPosition = this.selectionStart;
+          const oldValue = lastValidValue;
+          const newValue = this.value;
+
+          // Apply formatting based on current country
+          const format = getCurrentCountryFormat();
+          const formattedValue = formatPhoneNumber(newValue, format);
+
+          // Update the value
+          this.value = formattedValue;
+          lastValidValue = formattedValue;
+
+          // Calculate new cursor position
+          let newCursorPosition = cursorPosition;
+
+          // If we're adding characters (typing)
+          if (formattedValue.length > oldValue.length) {
+            // Count digits typed before the cursor position
+            const digitsBeforeCursor = newValue
+              .substring(0, cursorPosition)
+              .replace(/\D/g, "").length;
+
+            // Find the position in formatted string where we have that many digits
+            let digitCount = 0;
+            for (let i = 0; i < formattedValue.length; i++) {
+              if (/\d/.test(formattedValue[i])) {
+                digitCount++;
+                if (digitCount === digitsBeforeCursor) {
+                  newCursorPosition = i + 1;
+                  break;
+                }
+              }
+            }
+
+            // If we're at the end, position cursor at the end
+            if (digitCount < digitsBeforeCursor) {
+              newCursorPosition = formattedValue.length;
+            }
+          } else {
+            // For deletions, maintain relative position
+            newCursorPosition = Math.min(cursorPosition, formattedValue.length);
+          }
+
+          // Ensure cursor is within bounds
+          newCursorPosition = Math.max(
+            0,
+            Math.min(newCursorPosition, formattedValue.length)
+          );
+
+          setTimeout(() => {
+            this.setSelectionRange(newCursorPosition, newCursorPosition);
+          }, 0);
+        });
+
+        // Handle special keys for better UX
+        phoneInput.addEventListener("keydown", function (e) {
+          // Handle backspace to skip over formatting characters
+          if (e.key === "Backspace") {
+            const cursorPos = this.selectionStart;
+            if (cursorPos > 0) {
+              const charBeforeCursor = this.value[cursorPos - 1];
+              // If the character before cursor is a formatting character, find the nearest digit to delete
+              if (charBeforeCursor && !/\d/.test(charBeforeCursor)) {
+                // Find the previous digit to delete
+                let newCursorPos = cursorPos - 1;
+                while (
+                  newCursorPos > 0 &&
+                  !/\d/.test(this.value[newCursorPos - 1])
+                ) {
+                  newCursorPos--;
+                }
+                if (newCursorPos > 0) {
+                  // Remove the digit and reformat
+                  const newValue =
+                    this.value.substring(0, newCursorPos - 1) +
+                    this.value.substring(newCursorPos);
+                  const format = getCurrentCountryFormat();
+                  const formattedValue = formatPhoneNumber(newValue, format);
+                  this.value = formattedValue;
+                  lastValidValue = formattedValue;
+
+                  // Position cursor after the deleted digit's new position
+                  const digitsBeforeDeleted = newValue
+                    .substring(0, newCursorPos - 1)
+                    .replace(/\D/g, "").length;
+                  let digitCount = 0;
+                  let finalCursorPos = 0;
+                  for (let i = 0; i < formattedValue.length; i++) {
+                    if (/\d/.test(formattedValue[i])) {
+                      digitCount++;
+                      if (digitCount === digitsBeforeDeleted) {
+                        finalCursorPos = i + 1;
+                        break;
+                      }
+                    }
+                  }
+                  this.setSelectionRange(finalCursorPos, finalCursorPos);
+                  e.preventDefault();
+                }
+              }
+            }
+          }
+        });
+
+        phoneInput.addEventListener("keypress", function (e) {
+          // Allow only numbers and some special keys, plus formatting characters
+          const allowedKeys = [
+            "Backspace",
+            "Delete",
+            "Tab",
+            "Escape",
+            "Enter",
+            "ArrowLeft",
+            "ArrowRight",
+          ];
+
+          // Allow numbers and some formatting characters
+          if (
+            allowedKeys.includes(e.key) ||
+            /\d/.test(e.key) ||
+            e.key === " " ||
+            e.key === "-" ||
+            e.key === "(" ||
+            e.key === ")"
+          ) {
+            return;
+          }
+          e.preventDefault();
+        });
+
+        // Handle paste events
+        phoneInput.addEventListener("paste", function (e) {
+          e.preventDefault();
+          const paste = (e.clipboardData || window.clipboardData).getData(
+            "text"
+          );
+          const format = getCurrentCountryFormat();
+          const formattedPaste = formatPhoneNumber(paste, format);
+          this.value = formattedPaste;
+
+          // Trigger input event to handle any additional formatting
+          this.dispatchEvent(new Event("input", { bubbles: true }));
+        });
+
+        // Set initial placeholder and format hint
+        phoneInput.placeholder = getFormattedPlaceholder("+998");
+        const formatHint = document.getElementById("phone-format-hint");
+        if (formatHint) {
+          const exampleFormat = getFormattedPlaceholder("+998");
+          formatHint.textContent = `Mamlakat kodini tanlang va telefon raqamingizni kiriting. Format: ${exampleFormat}`;
+        }
+
+        // Start the app
+        init();
+      });
+
+      // Country dropdown functionality
+      function initializeCountryDropdown() {
+        const countryItemsContainer = document.getElementById("countryItems");
+        const countrySearchInput = document.getElementById("countrySearch");
+        const selectedCountryElement =
+          document.getElementById("selectedCountry");
+
+        // Populate countries list
+        function populateCountries(filteredCountries = countries) {
+          countryItemsContainer.innerHTML = "";
+
+          filteredCountries.forEach((country) => {
+            const countryItem = document.createElement("li");
+            countryItem.className = "country-dropdown-item";
+            countryItem.innerHTML = `
+              <span class="country-flag">${country.flag}</span>
+              <span class="country-name">${country.name}</span>
+              <span class="country-code">${country.code}</span>
+            `;
+
+            countryItem.addEventListener("click", function () {
+              selectCountry(country);
+            });
+
+            countryItemsContainer.appendChild(countryItem);
+          });
+        }
+
+        // Handle country selection
+        function selectCountry(country) {
+          selectedCountryElement.innerHTML = `${country.flag} ${country.code}`;
+          selectedCountryElement.setAttribute("data-code", country.code);
+
+          // Close dropdown
+          const dropdown = document.getElementById("countryDropdown");
+          const bsDropdown = bootstrap.Dropdown.getInstance(dropdown);
+          if (bsDropdown) {
+            bsDropdown.hide();
+          }
+
+          // Clear search
+          countrySearchInput.value = "";
+          populateCountries();
+
+          // Update phone input placeholder with formatted example
+          const phoneInput = document.getElementById("phone");
+          phoneInput.placeholder = getFormattedPlaceholder(country.code);
+
+          // Update format hint
+          const formatHint = document.getElementById("phone-format-hint");
+          if (formatHint) {
+            const exampleFormat = getFormattedPlaceholder(country.code);
+            formatHint.textContent = `Mamlakat kodini tanlang va telefon raqamingizni kiriting. Format: ${exampleFormat}`;
+          }
+
+          // Clear and reformat current value if any
+          if (phoneInput.value) {
+            const format = country.format || "xxx xxx xxxx";
+            phoneInput.value = formatPhoneNumber(phoneInput.value, format);
+          }
+
+          // Focus on phone input
+          phoneInput.focus();
+        }
+
+        // Search functionality
+        countrySearchInput.addEventListener("input", function () {
+          const searchTerm = this.value.toLowerCase().trim();
+
+          if (searchTerm === "") {
+            populateCountries();
+            return;
+          }
+
+          const filteredCountries = countries.filter(
+            (country) =>
+              country.name.toLowerCase().includes(searchTerm) ||
+              country.code.includes(searchTerm)
+          );
+
+          populateCountries(filteredCountries);
+        });
+
+        // Keyboard navigation for search input
+        countrySearchInput.addEventListener("keydown", function (e) {
+          const items = countryItemsContainer.querySelectorAll(
+            ".country-dropdown-item"
+          );
+          let currentIndex = Array.from(items).findIndex((item) =>
+            item.classList.contains("active")
+          );
+
+          if (e.key === "ArrowDown") {
+            e.preventDefault();
+            if (currentIndex < items.length - 1) {
+              if (currentIndex >= 0)
+                items[currentIndex].classList.remove("active");
+              items[currentIndex + 1].classList.add("active");
+              items[currentIndex + 1].scrollIntoView({ block: "nearest" });
+            }
+          } else if (e.key === "ArrowUp") {
+            e.preventDefault();
+            if (currentIndex > 0) {
+              items[currentIndex].classList.remove("active");
+              items[currentIndex - 1].classList.add("active");
+              items[currentIndex - 1].scrollIntoView({ block: "nearest" });
+            }
+          } else if (e.key === "Enter" && currentIndex >= 0) {
+            e.preventDefault();
+            items[currentIndex].click();
+          }
+        });
+
+        // Prevent dropdown from closing when clicking on search input
+        countrySearchInput.addEventListener("click", function (e) {
+          e.stopPropagation();
+        });
+
+        // Clear search when dropdown opens
+        document
+          .getElementById("countryDropdown")
+          .addEventListener("shown.bs.dropdown", function () {
+            countrySearchInput.value = "";
+            populateCountries();
+            // Focus on search input after dropdown opens
+            setTimeout(() => countrySearchInput.focus(), 100);
+          });
+
+        // Initial population
+        populateCountries();
+      }
+
+      // File type detection functions
+      function isVideoFile(filePath) {
+        if (!filePath) return false;
+        const fileName = filePath.split("/").pop().toLowerCase();
+        return (
+          fileName.endsWith(".mp4") ||
+          fileName.endsWith(".mov") ||
+          fileName.endsWith(".avi") ||
+          fileName.endsWith(".webm") ||
+          fileName.endsWith(".mkv")
+        );
+      }
+
+      function isImageFile(filePath) {
+        if (!filePath) return false;
+        const fileName = filePath.split("/").pop().toLowerCase();
+        return (
+          fileName.endsWith(".jpg") ||
+          fileName.endsWith(".jpeg") ||
+          fileName.endsWith(".png") ||
+          fileName.endsWith(".gif") ||
+          fileName.endsWith(".webp") ||
+          fileName.endsWith(".bmp")
+        );
+      }
+
+      // Get thumbnail path for video files
+      function getVideoThumbnailPath(videoPath) {
+        if (!videoPath || !isVideoFile(videoPath)) return null;
+
+        // Extract base filename without extension and remove any path components
+        // Handle both "uploads/file.mp4" and just "file.mp4" formats
+        const fileName = videoPath.split("/").pop().split("\\").pop();
+        const baseName = fileName.split(".").slice(0, -1).join(".");
+
+        // Always construct thumbnail path without uploads prefix
+        // The leading slash in the HTML will make it /uploads/thumbnail/file.webp
+        const thumbnailPath = `thumbnail/${baseName}.webp`;
+
+        return thumbnailPath;
+      }
+
+      // Enhanced image handling functions
+      function createAltImageContainer(
+        type = "image",
+        size = "normal",
+        text = "Rasm topilmadi"
+      ) {
+        const sizeClass =
+          size === "small"
+            ? "alt-image-small"
+            : size === "modal"
+            ? "alt-image-modal"
+            : "";
+        const typeClass = type === "video" ? "alt-image-video" : "";
+
+        const icons = {
+          image: "fas fa-image",
+          video: "fas fa-video",
+          file: "fas fa-file-alt",
+          loading: "fas fa-circle-notch fa-spin",
+        };
+
+        const texts = {
+          image: "Rasm topilmadi",
+          video: "Rasm topilmadi",
+          file: "Rasm topilmadi",
+          loading: "Yuklanmoqda...",
+        };
+
+        return `
+          <div class="alt-image-container ${sizeClass} ${typeClass}">
+            <div class="alt-image-content">
+              <i class="alt-image-icon ${icons[type] || icons.image}"></i>
+              <div class="alt-image-text">${texts[type] || text}</div>
+            </div>
+          </div>
+        `;
+      }
+
+      function createLoadingContainer(size = "normal") {
+        const sizeClass =
+          size === "small"
+            ? "alt-image-small"
+            : size === "modal"
+            ? "alt-image-modal"
+            : "";
+        return `
+          <div class="alt-image-container image-loading ${sizeClass}">
+            <div class="alt-image-content">
+              <i class="alt-image-icon fas fa-circle-notch fa-spin"></i>
+              <div class="alt-image-text">Yuklanmoqda...</div>
+            </div>
+          </div>
+        `;
+      }
+
+      function createImageWrapper(
+        src,
+        alt,
+        type = "image",
+        size = "normal",
+        onRetry = null
+      ) {
+        const altContainer = createAltImageContainer(type, size);
+        const loadingContainer = createLoadingContainer(size);
+        const retryButton = onRetry
+          ? `<button class="alt-image-retry" onclick="${onRetry}">Qayta urinish</button>`
+          : "";
+
+        return `
+          <div class="image-wrapper loading" data-src="${src}" data-type="${type}">
+            <img src="${src}" alt="${alt}" 
+                 onload="handleImageLoad(this)" 
+                 onerror="handleImageError(this, '${type}', '${size}')">
+            <div class="loading-overlay">
+              ${loadingContainer}
+            </div>
+            <div class="error-overlay" style="display: none;">
+              ${altContainer}
+              ${retryButton}
+            </div>
+          </div>
+        `;
+      }
+
+      function handleImageLoad(img) {
+        const wrapper = img.closest(".image-wrapper");
+        if (wrapper) {
+          wrapper.classList.remove("loading");
+          img.style.opacity = "1";
+        }
+      }
+
+      function handleImageError(img, type = "image", size = "normal") {
+        const wrapper = img.closest(".image-wrapper");
+        if (wrapper) {
+          wrapper.classList.remove("loading");
+          wrapper.classList.add("error");
+
+          const loadingOverlay = wrapper.querySelector(".loading-overlay");
+          const errorOverlay = wrapper.querySelector(".error-overlay");
+
+          if (loadingOverlay) loadingOverlay.style.display = "none";
+          if (errorOverlay) {
+            errorOverlay.style.display = "flex";
+            errorOverlay.style.alignItems = "center";
+            errorOverlay.style.justifyContent = "center";
+            errorOverlay.style.position = "absolute";
+            errorOverlay.style.top = "0";
+            errorOverlay.style.left = "0";
+            errorOverlay.style.right = "0";
+            errorOverlay.style.bottom = "0";
+            errorOverlay.style.zIndex = "3";
+
+            // Create new alt container if not exists
+            if (!errorOverlay.querySelector(".alt-image-container")) {
+              errorOverlay.innerHTML = createAltImageContainer(type, size);
+            }
+          }
+        }
+      }
+
+      function retryImageLoad(element) {
+        const wrapper = element.closest(".image-wrapper");
+        if (wrapper) {
+          const img = wrapper.querySelector("img");
+          const originalSrc = wrapper.getAttribute("data-src");
+
+          if (img && originalSrc) {
+            wrapper.classList.remove("error");
+            wrapper.classList.add("loading");
+
+            const loadingOverlay = wrapper.querySelector(".loading-overlay");
+            const errorOverlay = wrapper.querySelector(".error-overlay");
+
+            if (loadingOverlay) loadingOverlay.style.display = "flex";
+            if (errorOverlay) errorOverlay.style.display = "none";
+
+            // Add cache busting parameter
+            const cacheBuster = Date.now();
+            const newSrc =
+              originalSrc +
+              (originalSrc.includes("?") ? "&" : "?") +
+              "_cb=" +
+              cacheBuster;
+            img.src = newSrc;
+          }
+        }
+      }
+
+      // Legacy functions for backward compatibility
+      function getNotFoundThumbnailSVG() {
+        return createAltImageContainer("image", "normal");
+      }
+
+      function getNotFoundThumbnailSVGSmall() {
+        return createAltImageContainer("image", "small");
+      }
+
+      function getNotFoundThumbnailSVGModal() {
+        return createAltImageContainer("image", "modal");
+      }
+
+      // Toast notification system
+      function showToast(message, type = "info") {
+        const toastContainer = document.querySelector(".toast-container");
+        const toastId = "toast-" + Date.now();
+        const toastColors = {
+          success: "bg-success",
+          danger: "bg-danger",
+          warning: "bg-warning",
+          info: "bg-primary",
+        };
+
+        const toastHTML = `
+          <div id="${toastId}" class="toast align-items-center text-white ${toastColors[type]} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+              <div class="toast-body">${message}</div>
+              <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+          </div>
+        `;
+
+        toastContainer.insertAdjacentHTML("beforeend", toastHTML);
+        const toastEl = document.getElementById(toastId);
+        const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+        toast.show();
+        toastEl.addEventListener("hidden.bs.toast", () => toastEl.remove());
+      }
+
+      // API functions
+      async function fetchUserData(phone) {
+        try {
+          const response = await fetch(`${API_BASE}/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ code: userCode, phone: phone }),
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || "Login failed");
+          }
+          return await response.json();
+        } catch (error) {
+          console.error("Fetch user data error:", error);
+          return null;
+        }
+      }
+
+      // Render functions
+      function renderDashboard(data) {
+        currentUserData = data;
+
+        // Update profile display
+        updateProfileDisplay();
+
+        // Update additional profile fields
+        document.getElementById("profile-phone").textContent =
+          data.user.phone || "N/A";
+        document.getElementById("profile-code").textContent =
+          data.user.code || "N/A";
+
+        // Store orders data for filtering/sorting
+        allOrders = data.orders || [];
+        filteredOrders = [...allOrders];
+
+        // Extract available collections from orders
+        availableCollections = [
+          ...new Set(allOrders.map((order) => order.collection_id)),
+        ].sort((a, b) => a - b);
+
+        // Initialize filter controls
+        initializeFilterControls();
+
+        // Initialize mobile filter controls
+        initializeMobileFilterControls();
+
+        // Render orders with initial filters
+        applyFiltersAndSort();
+
+        // Render collections using the new collections data
+        renderCollections(data.collections || []);
+
+        // Show dashboard with animation
+        loader.style.display = "none";
+        loginScreen.style.display = "none";
+        dashboardScreen.style.display = "block";
+        dashboardScreen.classList.add("fade-in");
+      }
+
+      // Filter and Sort Functions
+      function initializeFilterControls() {
+        // Populate collection filter
+        const collectionFilter = document.getElementById("collectionFilter");
+        const helpText = document.querySelector(".collection-help-text");
+
+        // Clear existing options
+        collectionFilter.innerHTML = "";
+
+        if (availableCollections.length === 0) {
+          // No collections available - show disabled state
+          collectionFilter.innerHTML =
+            '<option value="" disabled selected>Kolleksiyalar mavjud emas</option>';
+          collectionFilter.disabled = true;
+          collectionFilter.classList.add("disabled-state");
+          helpText.textContent =
+            "Hozircha hech qanday kolleksiyada buyurtma qilmadingiz";
+        } else {
+          // Collections available - populate dropdown
+          collectionFilter.innerHTML =
+            '<option value="">Barcha kolleksiyalar</option>';
+
+          availableCollections.forEach((collectionId) => {
+            const option = document.createElement("option");
+            option.value = collectionId;
+            option.textContent = `Kolleksiya #${collectionId}`;
+            collectionFilter.appendChild(option);
+          });
+
+          collectionFilter.disabled = false;
+          collectionFilter.classList.remove("disabled-state");
+          helpText.textContent =
+            "Faqat buyurtma qilgan kolleksiyalar ko'rsatiladi";
+        }
+
+        // Add event listeners
+        addFilterEventListeners();
+
+        // Update counts
+        updateOrderCounts();
+      }
+
+      function addFilterEventListeners() {
+        // Collection filter
+        document
+          .getElementById("collectionFilter")
+          .addEventListener("change", applyFiltersAndSort);
+
+        // Status filters - already handled by initializeStatusToggles()
+        // No need to add additional listeners here
+
+        // Sort controls
+        document
+          .getElementById("sortBy")
+          .addEventListener("change", applyFiltersAndSort);
+
+        // Action buttons
+        document
+          .getElementById("applyFilters")
+          .addEventListener("click", applyFiltersAndSort);
+        document
+          .getElementById("clearFilters")
+          .addEventListener("click", clearAllFilters);
+      }
+
+      function getActiveFilters() {
+        // Get selected collection (single selection)
+        const collectionSelect = document.getElementById("collectionFilter");
+        const selectedCollection = collectionSelect.value;
+        const selectedCollections = selectedCollection
+          ? [selectedCollection]
+          : [];
+
+        // Get selected statuses from status toggle elements
+        const selectedStatuses = Array.from(
+          document.querySelectorAll(".status-filter.active")
+        ).map((statusElement) => statusElement.getAttribute("data-value"));
+
+        // Get sort settings
+        const sortBy = document.getElementById("sortBy").value;
+
+        return {
+          collections: selectedCollections,
+          statuses: selectedStatuses,
+          sortBy,
+        };
+      }
+
+      function applyFiltersAndSort() {
+        const ordersContainer = document.getElementById("orders-container");
+
+        // Add filtering animation
+        ordersContainer.classList.add("filtering");
+
+        setTimeout(() => {
+          const filters = getActiveFilters();
+
+          // Start with all orders
+          let filtered = [...allOrders];
+
+          // Apply collection filter
+          if (filters.collections.length > 0) {
+            filtered = filtered.filter((order) =>
+              filters.collections.includes(order.collection_id.toString())
+            );
+          }
+
+          // Apply status filter
+          if (filters.statuses.length > 0) {
+            filtered = filtered.filter((order) =>
+              filters.statuses.includes(order.collection_status || "unknown")
+            );
+          }
+
+          // Apply sorting
+          filtered.sort((a, b) => {
+            switch (filters.sortBy) {
+              case "newest":
+                const dateA = new Date(a.created_at);
+                const dateB = new Date(b.created_at);
+                return dateB - dateA; // Newest first (descending)
+              case "oldest":
+                const dateA2 = new Date(a.created_at);
+                const dateB2 = new Date(b.created_at);
+                return dateA2 - dateB2; // Oldest first (ascending)
+              case "high-serial":
+                const serialA = parseInt(a.amount) || 0;
+                const serialB = parseInt(b.amount) || 0;
+                return serialB - serialA; // High serial first (descending)
+              case "low-serial":
+                const serialA2 = parseInt(a.amount) || 0;
+                const serialB2 = parseInt(b.amount) || 0;
+                return serialA2 - serialB2; // Low serial first (ascending)
+              default:
+                return 0; // No sorting
+            }
+          });
+
+          // Store filtered results
+          filteredOrders = filtered;
+
+          // Render filtered orders
+          renderOrders(filteredOrders);
+
+          // Update counts
+          updateOrderCounts();
+
+          // Remove filtering animation
+          ordersContainer.classList.remove("filtering");
+        }, 100);
+      }
+
+      function clearAllFilters() {
+        // Clear collection filter (only if not disabled)
+        const collectionFilter = document.getElementById("collectionFilter");
+        if (!collectionFilter.disabled) {
+          collectionFilter.value = "";
+        }
+
+        // Activate all status filters
+        document.querySelectorAll(".status-filter").forEach((statusElement) => {
+          setStatusActive(statusElement, true);
+        });
+
+        // Reset sort to default
+        document.getElementById("sortBy").value = "newest";
+
+        // Apply cleared filters
+        applyFiltersAndSort();
+      }
+
+      function updateOrderCounts() {
+        document.getElementById("totalCount").textContent = allOrders.length;
+        document.getElementById("filteredCount").textContent =
+          filteredOrders.length;
+
+        // Update mobile counts too
+        document.getElementById("mobile-totalCount").textContent =
+          allOrders.length;
+        document.getElementById("mobile-filteredCount").textContent =
+          filteredOrders.length;
+
+        // Update mobile filter status
+        updateMobileFilterStatus();
+      }
+
+      // Mobile Filter Functions
+      function initializeMobileFilterControls() {
+        // Populate mobile collection filter
+        const mobileCollectionFilter = document.getElementById(
+          "mobileCollectionFilter"
+        );
+        const helpText = document.querySelector(".collection-help-text");
+
+        if (mobileCollectionFilter) {
+          // Clear existing options
+          mobileCollectionFilter.innerHTML = "";
+
+          if (availableCollections.length === 0) {
+            // No collections available - show disabled state
+            mobileCollectionFilter.innerHTML =
+              '<option value="" disabled selected>Kolleksiyalar mavjud emas</option>';
+            mobileCollectionFilter.disabled = true;
+            mobileCollectionFilter.classList.add("disabled-state");
+          } else {
+            // Collections available - populate dropdown
+            mobileCollectionFilter.innerHTML =
+              '<option value="">Barcha kolleksiyalar</option>';
+
+            availableCollections.forEach((collectionId) => {
+              const option = document.createElement("option");
+              option.value = collectionId;
+              option.textContent = `Kolleksiya #${collectionId}`;
+              mobileCollectionFilter.appendChild(option);
+            });
+
+            mobileCollectionFilter.disabled = false;
+            mobileCollectionFilter.classList.remove("disabled-state");
+          }
+        }
+
+        // Add mobile filter event listeners
+        addMobileFilterEventListeners();
+
+        // Reinitialize status toggles for new mobile elements
+        initializeStatusToggles();
+      }
+
+      function addMobileFilterEventListeners() {
+        // Mobile filter button
+        const mobileFilterBtn = document.getElementById("mobileFilterBtn");
+        if (mobileFilterBtn) {
+          mobileFilterBtn.addEventListener("click", showMobileFilter);
+        }
+
+        // Mobile filter close buttons
+        const mobileFilterClose = document.getElementById("mobileFilterClose");
+        const mobileFilterBackdrop = document.getElementById(
+          "mobileFilterBackdrop"
+        );
+
+        if (mobileFilterClose) {
+          mobileFilterClose.addEventListener("click", hideMobileFilter);
+        }
+
+        if (mobileFilterBackdrop) {
+          mobileFilterBackdrop.addEventListener("click", hideMobileFilter);
+        }
+
+        // Mobile filter apply/clear buttons
+        const mobileApplyFilters =
+          document.getElementById("mobileApplyFilters");
+        const mobileClearFilters =
+          document.getElementById("mobileClearFilters");
+
+        if (mobileApplyFilters) {
+          mobileApplyFilters.addEventListener("click", applyMobileFilters);
+        }
+
+        if (mobileClearFilters) {
+          mobileClearFilters.addEventListener("click", clearMobileFilters);
+        }
+
+        // Back button handling
+        window.addEventListener("popstate", handleBackButton);
+      }
+
+      function showMobileFilter() {
+        const dropdown = document.getElementById("mobileFilterDropdown");
+        if (dropdown) {
+          // Sync current filter values to mobile
+          syncFiltersToMobile();
+
+          // Show dropdown
+          dropdown.classList.add("show");
+          mobileFilterOpen = true;
+
+          // Prevent body scroll
+          document.body.style.overflow = "hidden";
+
+          // Push state for back button handling
+          history.pushState({ mobileFilterOpen: true }, "");
+        }
+      }
+
+      function hideMobileFilter() {
+        const dropdown = document.getElementById("mobileFilterDropdown");
+        if (dropdown) {
+          dropdown.classList.remove("show");
+          mobileFilterOpen = false;
+
+          // Restore body scroll
+          document.body.style.overflow = "";
+
+          // Remove from history if needed
+          if (history.state && history.state.mobileFilterOpen) {
+            history.back();
+          }
+        }
+      }
+
+      function handleBackButton(event) {
+        if (mobileFilterOpen) {
+          event.preventDefault();
+          hideMobileFilter();
+        }
+      }
+
+      function syncFiltersToMobile() {
+        // Sync collection filter
+        const desktopCollection = document.getElementById("collectionFilter");
+        const mobileCollection = document.getElementById(
+          "mobileCollectionFilter"
+        );
+        if (desktopCollection && mobileCollection) {
+          mobileCollection.value = desktopCollection.value;
+        }
+
+        // Sync status filters
+        const desktopStatuses = document.querySelectorAll(".status-filter");
+        desktopStatuses.forEach((statusElement) => {
+          const mobileStatusElement = document.getElementById(
+            "mobile-" + statusElement.id
+          );
+          if (mobileStatusElement) {
+            setStatusActive(mobileStatusElement, isStatusActive(statusElement));
+          }
+        });
+
+        // Sync sort controls
+        const desktopSortBy = document.getElementById("sortBy");
+        const mobileSortBy = document.getElementById("mobileSortBy");
+        if (desktopSortBy && mobileSortBy) {
+          mobileSortBy.value = desktopSortBy.value;
+        }
+      }
+
+      function syncFiltersFromMobile() {
+        // Sync collection filter
+        const desktopCollection = document.getElementById("collectionFilter");
+        const mobileCollection = document.getElementById(
+          "mobileCollectionFilter"
+        );
+        if (desktopCollection && mobileCollection) {
+          desktopCollection.value = mobileCollection.value;
+        }
+
+        // Sync status filters
+        const mobileStatuses = document.querySelectorAll(
+          ".mobile-status-filter"
+        );
+        mobileStatuses.forEach((statusElement) => {
+          const desktopStatusElement = document.getElementById(
+            statusElement.id.replace("mobile-", "")
+          );
+          if (desktopStatusElement) {
+            setStatusActive(
+              desktopStatusElement,
+              isStatusActive(statusElement)
+            );
+          }
+        });
+
+        // Sync sort controls
+        const desktopSortBy = document.getElementById("sortBy");
+        const mobileSortBy = document.getElementById("mobileSortBy");
+        if (desktopSortBy && mobileSortBy) {
+          desktopSortBy.value = mobileSortBy.value;
+        }
+      }
+
+      function applyMobileFilters() {
+        // Sync mobile filters to desktop
+        syncFiltersFromMobile();
+
+        // Apply filters
+        applyFiltersAndSort();
+
+        // Hide mobile filter
+        hideMobileFilter();
+      }
+
+      function clearMobileFilters() {
+        // Clear mobile collection filter
+        const mobileCollectionFilter = document.getElementById(
+          "mobileCollectionFilter"
+        );
+        if (mobileCollectionFilter && !mobileCollectionFilter.disabled) {
+          mobileCollectionFilter.value = "";
+        }
+
+        // Activate all mobile status filters
+        document
+          .querySelectorAll(".mobile-status-filter")
+          .forEach((statusElement) => {
+            setStatusActive(statusElement, true);
+          });
+
+        // Reset mobile sort to default
+        const mobileSortBy = document.getElementById("mobileSortBy");
+        if (mobileSortBy) mobileSortBy.value = "newest";
+      }
+
+      function updateMobileFilterStatus() {
+        const statusElement = document.getElementById("mobile-filter-status");
+        if (statusElement) {
+          const filters = getActiveFilters();
+          const hasActiveFilters =
+            filters.collections.length > 0 ||
+            filters.statuses.length < 4 ||
+            filters.sortBy !== "newest";
+
+          if (hasActiveFilters) {
+            let statusText = "Filtrlar qo'llanmoqda: ";
+            const statusParts = [];
+
+            if (filters.collections.length > 0) {
+              statusParts.push(`Kolleksiya #${filters.collections[0]}`);
+            }
+
+            if (filters.statuses.length < 4) {
+              statusParts.push(`${filters.statuses.length} status`);
+            }
+
+            if (filters.sortBy !== "newest") {
+              const sortTexts = {
+                oldest: "eskilari birinchi",
+                "high-serial": "ko'p seriyali birinchi",
+                "low-serial": "kam seriyali birinchi",
+              };
+              statusParts.push(sortTexts[filters.sortBy] || filters.sortBy);
+            }
+
+            statusText += statusParts.join(", ");
+            statusElement.textContent = statusText;
+          } else {
+            statusElement.textContent = "Barcha buyurtmalar ko'rsatilmoqda";
+          }
+        }
+      }
+
+      function renderOrders(orders) {
+        const ordersContainer = document.getElementById("orders-container");
+        ordersContainer.innerHTML = "";
+
+        if (orders && orders.length > 0) {
+          orders.forEach((order, index) => {
+            const statusInfo = {
+              open: { text: "Ochiq", class: "status-open", icon: "🟢" },
+              close: { text: "Yopiq", class: "status-close", icon: "🔴" },
+              finish: {
+                text: "Tugallangan",
+                class: "status-finish",
+                icon: "✅",
+              },
+              unknown: {
+                text: "Noma'lum",
+                class: "status-unknown",
+                icon: "⚪",
+              },
+            };
+            const status =
+              statusInfo[order.collection_status] || statusInfo.unknown;
+
+            // Get thumbnail based on file type with enhanced loading
+            let thumbnailContent = "";
+            if (order.files && order.files.length > 0) {
+              const firstFile = order.files[0];
+              if (isVideoFile(firstFile)) {
+                // Try to use generated thumbnail first
+                const thumbnailPath = getVideoThumbnailPath(firstFile);
+                if (thumbnailPath) {
+                  const fullThumbnailUrl = `/uploads/${thumbnailPath}`;
+                  thumbnailContent = `<div class="order-thumbnail video-thumbnail-container">
+                    <div class="image-wrapper loading" data-src="${fullThumbnailUrl}" data-type="video">
+                      <img src="${fullThumbnailUrl}" alt="Video Thumbnail" class="order-thumbnail" loading="lazy" 
+                           onload="handleImageLoad(this)" 
+                           onerror="handleImageError(this, 'video', 'normal')">
+                      <div class="loading-overlay">
+                        ${createLoadingContainer("normal")}
+                      </div>
+                      <div class="error-overlay" style="display: none;">
+                        ${createAltImageContainer("video", "normal")}
+                      </div>
+                    </div>
+                    <div class="video-label">VIDEO</div>
+                  </div>`;
+                } else {
+                  // Fallback to not-found icon if thumbnail doesn't exist
+                  thumbnailContent = `<div class="order-thumbnail">${createAltImageContainer(
+                    "video",
+                    "normal"
+                  )}</div>`;
+                }
+              } else if (isImageFile(firstFile)) {
+                thumbnailContent = `<div class="order-thumbnail">
+                  <div class="image-wrapper loading" data-src="/${firstFile}" data-type="image">
+                    <img src="/${firstFile}" alt="Order Image" class="order-thumbnail" loading="lazy" 
+                         onload="handleImageLoad(this)" 
+                         onerror="handleImageError(this, 'image', 'normal')">
+                    <div class="loading-overlay">
+                      ${createLoadingContainer("normal")}
+                    </div>
+                    <div class="error-overlay" style="display: none;">
+                      ${createAltImageContainer("image", "normal")}
+                    </div>
+                  </div>
+                </div>`;
+              } else {
+                thumbnailContent = `<div class="order-thumbnail">${createAltImageContainer(
+                  "file",
+                  "normal"
+                )}</div>`;
+              }
+            } else {
+              thumbnailContent = `<div class="order-thumbnail">${createAltImageContainer(
+                "image",
+                "normal",
+                "Fayl yo'q"
+              )}</div>`;
+            }
+
+            const orderCard = `
+              <div class="col-xl-3 col-lg-4 col-md-6 mb-3" data-aos="fade-up" data-aos-delay="${
+                index * 50
+              }">
+                <div class="order-card" onclick="showOrderDetails(${order.id})">
+                  <div class="order-card-header">
+                    ${thumbnailContent}
+                    <div class="order-status-badge ${status.class}">
+                      ${status.icon} ${status.text}
+                    </div>
+                  </div>
+                  <div class="order-card-body">
+                    <h5 class="order-title">Buyurtma #${order.id}</h5>
+                    <div class="order-meta">
+                      <div class="order-date">
+                        <i class="fas fa-calendar me-1"></i>
+                        ${new Date(order.created_at).toLocaleDateString(
+                          "uz-UZ"
+                        )}
+                      </div>
+                      <div class="order-collection">
+                        <i class="fas fa-folder me-1"></i>
+                        #${order.collection_id}
+                      </div>
+                    </div>
+                    <div class="order-series">
+                      <i class="fas fa-hashtag me-1"></i>
+                      Seriya: ${order.amount || "N/A"}
+                    </div>
+                    <div class="text-center mt-2">
+                      <small class="text-muted">
+                        <i class="fas fa-images me-1"></i>
+                        ${order.files ? order.files.length : 0} fayl
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+            ordersContainer.insertAdjacentHTML("beforeend", orderCard);
+          });
+        } else {
+          ordersContainer.innerHTML = `
+            <div class="col-12">
+              <div class="empty-state" data-aos="fade-up">
+                <i class="fas fa-shopping-cart"></i>
+                <h4>Buyurtmalar topilmadi</h4>
+                <p>Sizda hali buyurtmalar yo'q.</p>
+              </div>
+            </div>
+          `;
+        }
+      }
+
+      function renderCollections(collections) {
+        const collectionsContainer = document.getElementById(
+          "collections-container"
+        );
+        collectionsContainer.innerHTML = "";
+
+        if (collections && collections.length > 0) {
+          collections.forEach((collection, index) => {
+            const statusInfo = {
+              open: { text: "Ochiq", class: "status-open", icon: "🟢" },
+              close: { text: "Yopiq", class: "status-close", icon: "🔴" },
+              finish: {
+                text: "Tugallangan",
+                class: "status-finish",
+                icon: "✅",
+              },
+              unknown: {
+                text: "Noma'lum",
+                class: "status-unknown",
+                icon: "⚪",
+              },
+            };
+            const status = statusInfo[collection.status] || statusInfo.unknown;
+
+            const formatDate = (dateString) => {
+              if (!dateString) return "N/A";
+              return new Date(dateString).toLocaleDateString("uz-UZ", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+              });
+            };
+
+            const collectionCard = `
+              <div class="col-xl-4 col-lg-6 mb-4" data-aos="fade-up" data-aos-delay="${
+                index * 100
+              }">
+                <div class="custom-card">
+                  <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                      <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Kolleksiya #${collection.id}
+                      </h5>
+                      <span class="badge ${status.class}">
+                        ${status.icon} ${status.text}
+                      </span>
+                    </div>
+                    
+                    <!-- Collection Timeline -->
+                    <div class="collection-timeline mb-4">
+                      <div class="timeline-item">
+                        <div class="timeline-icon opened">
+                          <i class="fas fa-play-circle"></i>
+                        </div>
+                        <div class="timeline-content">
+                          <div class="timeline-label">Ochildi</div>
+                          <div class="timeline-date">${formatDate(
+                            collection.opened_at
+                          )}</div>
+                        </div>
+                      </div>
+                      
+                      ${
+                        collection.closed_at
+                          ? `
+                        <div class="timeline-item">
+                          <div class="timeline-icon closed">
+                            <i class="fas fa-pause-circle"></i>
+                          </div>
+                          <div class="timeline-content">
+                            <div class="timeline-label">Yopildi</div>
+                            <div class="timeline-date">${formatDate(
+                              collection.closed_at
+                            )}</div>
+                          </div>
+                        </div>
+                      `
+                          : ""
+                      }
+                      
+                      ${
+                        collection.finished_at
+                          ? `
+                        <div class="timeline-item">
+                          <div class="timeline-icon finished">
+                            <i class="fas fa-check-circle"></i>
+                          </div>
+                          <div class="timeline-content">
+                            <div class="timeline-label">Yakunlandi</div>
+                            <div class="timeline-date">${formatDate(
+                              collection.finished_at
+                            )}</div>
+                          </div>
+                        </div>
+                      `
+                          : ""
+                      }
+                    </div>
+
+                    <!-- User Statistics -->
+                    <div class="user-activity">
+                      <div class="activity-row">
+                        <span class="activity-label">
+                          <i class="fas fa-shopping-cart me-1"></i>
+                          Sizning buyurtmalaringiz:
+                        </span>
+                        <span class="activity-value">${
+                          collection.user_total_orders
+                        }</span>
+                      </div>
+                    </div>
+
+
+                  </div>
+                </div>
+              </div>
+            `;
+            collectionsContainer.insertAdjacentHTML(
+              "beforeend",
+              collectionCard
+            );
+          });
+        } else {
+          collectionsContainer.innerHTML = `
+            <div class="col-12">
+              <div class="empty-state" data-aos="fade-up">
+                <i class="fas fa-chart-bar"></i>
+                <h4>Kolleksiyalar topilmadi</h4>
+                <p>Siz hali hech qanday kolleksiyaga buyurtma yubormagansiz.</p>
+              </div>
+            </div>
+          `;
+        }
+      }
+
+      // Collection navigation function
+      async function viewCollectionOrders(collectionId) {
+        try {
+          // Switch to orders section using the correct navigation system
+          handleNavigation("orders");
+
+          // Get stored phone number for authentication
+          const phone = localStorage.getItem(`user_phone_${userCode}`);
+          if (!phone) {
+            logout();
+            return;
+          }
+
+          // Show loading state
+          const ordersContainer = document.getElementById("orders-container");
+          ordersContainer.innerHTML =
+            '<div class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Yuklanmoqda...</span></div></div>';
+
+          // Fetch orders for the specific collection
+          const response = await fetch(
+            `${API_BASE}/user/${userCode}/orders?collection_id=${collectionId}`
+          );
+
+          if (!response.ok) {
+            throw new Error("Failed to fetch collection orders");
+          }
+
+          const data = await response.json();
+
+          // Update the orders display with collection-specific orders
+          renderOrders(data.orders || []);
+
+          // Update collection filter dropdowns to show the selected collection
+          const collectionFilter = document.getElementById("collectionFilter");
+          if (collectionFilter) {
+            collectionFilter.value = collectionId.toString();
+          }
+          const mobileCollectionFilter = document.getElementById(
+            "mobileCollectionFilter"
+          );
+          if (mobileCollectionFilter) {
+            mobileCollectionFilter.value = collectionId.toString();
+          }
+
+          // Update order counts
+          updateOrderCounts();
+
+          // Smooth scroll to top of orders section
+          const ordersSection = document.getElementById("orders-section");
+          if (ordersSection) {
+            ordersSection.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            });
+          }
+        } catch (error) {
+          console.error("Error fetching collection orders:", error);
+          showToast(
+            "Kolleksiya buyurtmalarini yuklashda xatolik yuz berdi.",
+            "danger"
+          );
+
+          // Fallback: just switch to orders section
+          handleNavigation("orders");
+        }
+      }
+
+      // Order details modal
+      function showOrderDetails(orderId) {
+        const order = currentUserData.orders.find((o) => o.id === orderId);
+        if (!order) return;
+
+        currentOrderData = order;
+
+        // Analyze files for title
+        let imageCount = 0;
+        let videoCount = 0;
+        if (order.files) {
+          order.files.forEach((file) => {
+            if (isImageFile(file)) imageCount++;
+            else if (isVideoFile(file)) videoCount++;
+          });
+        }
+
+        // Set basic order info
+        let titleText = `Buyurtma #${order.id}`;
+        if (order.files && order.files.length > 0) {
+          let mediaInfo = [];
+          if (imageCount > 0) mediaInfo.push(`${imageCount} rasm`);
+          if (videoCount > 0) mediaInfo.push(`${videoCount} video`);
+          if (mediaInfo.length > 0) titleText += ` - ${mediaInfo.join(", ")}`;
+        }
+
+        document.getElementById("modal-order-title").textContent = titleText;
+        document.getElementById("modal-order-id").textContent = order.id;
+        document.getElementById("modal-order-series").textContent =
+          order.amount || "N/A";
+        document.getElementById("modal-collection-id").textContent =
+          order.collection_id;
+        document.getElementById("modal-order-date").textContent = new Date(
+          order.created_at
+        ).toLocaleString("uz-UZ");
+        document.getElementById("modal-images-count").textContent = order.files
+          ? order.files.length
+          : 0;
+
+        // Set status
+        const statusInfo = {
+          open: { text: "Ochiq", class: "status-open badge" },
+          close: { text: "Yopiq", class: "status-close badge" },
+          finish: { text: "Tugallangan", class: "status-finish badge" },
+          unknown: { text: "Noma'lum", class: "status-unknown badge" },
+        };
+        const status =
+          statusInfo[order.collection_status] || statusInfo.unknown;
+        const statusEl = document.getElementById("modal-order-status");
+        statusEl.textContent = status.text;
+        statusEl.className = status.class;
+
+        // Setup media thumbnails and main display
+        setupMediaThumbnails(order.files || []);
+
+        // Setup action buttons
+        setupModalActions(order);
+
+        // Show modal
+        const modal = new bootstrap.Modal(
+          document.getElementById("orderModal")
+        );
+        modal.show();
+      }
+
+      function setupMediaThumbnails(files) {
+        const thumbnailsGrid = document.getElementById("media-thumbnails-grid");
+        const mainMediaContainer = document.getElementById(
+          "main-media-container"
+        );
+
+        if (!files || files.length === 0) {
+          thumbnailsGrid.innerHTML = `
+            <div class="text-center py-3">
+              <i class="fas fa-images fa-2x text-muted mb-2"></i>
+              <p class="text-muted mb-0 small">Media yo'q</p>
+            </div>
+          `;
+          mainMediaContainer.innerHTML = `
+            <div class="media-placeholder">
+              <i class="fas fa-image fa-3x text-muted"></i>
+              <p class="mt-2 text-muted">Media fayllar yo'q</p>
+            </div>
+          `;
+          return;
+        }
+
+        // Create thumbnails
+        let thumbnailsHtml = "";
+        files.forEach((file, index) => {
+          let thumbnailContent = "";
+          let typeBadge = "";
+
+          if (isImageFile(file)) {
+            thumbnailContent = `
+              <div class="image-wrapper loading" data-src="/${file}" data-type="image">
+                <img src="/${file}" alt="Image ${index + 1}" loading="lazy" 
+                     onload="handleImageLoad(this)" 
+                     onerror="handleImageError(this, 'image', 'modal')">
+                <div class="loading-overlay">
+                  ${createLoadingContainer("modal")}
+                </div>
+                <div class="error-overlay" style="display: none;">
+                  ${createAltImageContainer("image", "modal")}
+                </div>
+              </div>
+            `;
+            typeBadge =
+              '<div class="media-type-badge"><i class="fas fa-image"></i></div>';
+          } else if (isVideoFile(file)) {
+            // Try to use generated thumbnail first
+            const thumbnailPath = getVideoThumbnailPath(file);
+            if (thumbnailPath) {
+              thumbnailContent = `
+                <div class="image-wrapper loading" data-src="/uploads/${thumbnailPath}" data-type="video">
+                  <img src="/uploads/${thumbnailPath}" alt="Video Thumbnail ${
+                index + 1
+              }" loading="lazy" 
+                       onload="handleImageLoad(this)" 
+                       onerror="handleImageError(this, 'video', 'modal')">
+                  <div class="loading-overlay">
+                    ${createLoadingContainer("modal")}
+                  </div>
+                  <div class="error-overlay" style="display: none;">
+                    ${createAltImageContainer("video", "modal")}
+                  </div>
+                </div>
+              `;
+            } else {
+              // Fallback to not-found icon if thumbnail doesn't exist
+              thumbnailContent = createAltImageContainer("video", "modal");
+            }
+            typeBadge =
+              '<div class="media-type-badge"><i class="fas fa-play"></i></div>';
+          } else {
+            thumbnailContent = createAltImageContainer("file", "modal");
+            typeBadge =
+              '<div class="media-type-badge"><i class="fas fa-file"></i></div>';
+          }
+
+          thumbnailsHtml += `
+            <div class="media-thumbnail-item ${index === 0 ? "active" : ""}" 
+                 onclick="showMediaInMain(${index})" 
+                 data-index="${index}">
+              ${thumbnailContent}
+              ${typeBadge}
+            </div>
+          `;
+        });
+
+        thumbnailsGrid.innerHTML = thumbnailsHtml;
+
+        // Show first media by default
+        if (files.length > 0) {
+          showMediaInMain(0);
+        }
+      }
+
+      function showMediaInMain(index) {
+        const mainMediaContainer = document.getElementById(
+          "main-media-container"
+        );
+        const thumbnails = document.querySelectorAll(".media-thumbnail-item");
+
+        // Update active thumbnail
+        thumbnails.forEach((thumb, i) => {
+          thumb.classList.toggle("active", i === index);
+        });
+
+        // Get current order files
+        if (
+          !currentOrderData ||
+          !currentOrderData.files ||
+          currentOrderData.files.length === 0
+        ) {
+          return;
+        }
+
+        const file = currentOrderData.files[index];
+        const fileSrc = `/${file}`;
+        const fileName = file.split("/").pop();
+
+        let mainContent = "";
+
+        if (isImageFile(file)) {
+          mainContent = `
+            <img src="${fileSrc}" alt="Image ${index + 1}" 
+                 style="max-width: 100%; max-height: 100%; object-fit: contain;" loading="lazy">
+          `;
+        } else if (isVideoFile(file)) {
+          mainContent = `
+            <video controls style="max-width: 100%; max-height: 100%;" preload="metadata">
+              <source src="${fileSrc}" type="video/mp4">
+              <source src="${fileSrc}" type="video/webm">
+              <source src="${fileSrc}" type="video/mov">
+              Video yuklanmadi. <a href="${fileSrc}" target="_blank">Havolani bosing</a>
+            </video>
+          `;
+        } else {
+          mainContent = `
+            <div class="text-center">
+              <i class="fas fa-file fa-4x text-secondary mb-3"></i>
+              <p class="text-secondary mb-3">${fileName}</p>
+              <a href="${fileSrc}" target="_blank" class="btn btn-primary btn-sm">
+                <i class="fas fa-download me-1"></i>Yuklab olish
+              </a>
+            </div>
+          `;
+        }
+
+        mainMediaContainer.innerHTML = mainContent;
+      }
+
+      function setupModalActions(order) {
+        const actionsContainer = document.getElementById("modal-actions");
+        const canEdit = order.collection_status === "open";
+
+        if (canEdit) {
+          actionsContainer.innerHTML = `
+            <button type="button" class="btn btn-warning me-2" onclick="showEditOrderModal(${order.id})">
+              <i class="fas fa-edit me-1"></i>Tahrirlash
+            </button>
+            <button type="button" class="btn btn-danger" onclick="cancelOrder(${order.id})">
+              <i class="fas fa-times me-1"></i>Bekor qilish
+            </button>
+          `;
+        } else {
+          actionsContainer.innerHTML = `
+            <span class="text-secondary">
+              <i class="fas fa-lock me-1"></i>
+              Tahrirlash mumkin emas
+            </span>
+          `;
+        }
+      }
+
+      // Edit order functionality
+      function showEditOrderModal(orderId) {
+        const order = currentUserData.orders.find((o) => o.id === orderId);
+        if (!order) return;
+
+        document.getElementById("edit-series").value = order.amount || "";
+
+        const editModal = new bootstrap.Modal(
+          document.getElementById("editOrderModal")
+        );
+        editModal.show();
+      }
+
+      async function handleEditSave() {
+        const orderId = currentOrderData.id;
+        const newSeries = document.getElementById("edit-series").value.trim();
+
+        if (!newSeries || !/^\d+$/.test(newSeries)) {
+          showToast("Iltimos, faqat raqam kiriting.", "warning");
+          return;
+        }
+
+        const phone = localStorage.getItem(`user_phone_${userCode}`);
+        if (!phone) {
+          logout();
+          return;
+        }
+
+        try {
+          const response = await fetch(`${API_BASE}/orders/${orderId}/update`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              code: userCode,
+              phone: phone,
+              amount: parseInt(newSeries, 10),
+            }),
+          });
+
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.detail || "Update failed");
+
+          showToast("Buyurtma muvaffaqiyatli yangilandi!", "success");
+
+          // Close modals
+          bootstrap.Modal.getInstance(
+            document.getElementById("editOrderModal")
+          ).hide();
+          bootstrap.Modal.getInstance(
+            document.getElementById("orderModal")
+          ).hide();
+
+          // Refresh data
+          const data = await fetchUserData(phone);
+          if (data) renderDashboard(data);
+        } catch (error) {
+          showToast(`Xatolik: ${error.message}`, "danger");
+        }
+      }
+
+      // Cancel order functionality
+      async function cancelOrder(orderId) {
+        if (
+          !confirm(
+            `#${orderId} raqamli buyurtmani bekor qilishga ishonchingiz komilmi? Bu amalni qaytarib bo'lmaydi.`
+          )
+        ) {
+          return;
+        }
+
+        const phone = localStorage.getItem(`user_phone_${userCode}`);
+        if (!phone) {
+          logout();
+          return;
+        }
+
+        try {
+          const response = await fetch(`${API_BASE}/orders/${orderId}/cancel`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ code: userCode, phone: phone }),
+          });
+
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.detail || "Cancel failed");
+
+          showToast("Buyurtma muvaffaqiyatli bekor qilindi!", "success");
+
+          // Close modal
+          bootstrap.Modal.getInstance(
+            document.getElementById("orderModal")
+          ).hide();
+
+          // Refresh data
+          const data = await fetchUserData(phone);
+          if (data) renderDashboard(data);
+        } catch (error) {
+          showToast(`Xatolik: ${error.message}`, "danger");
+        }
+      }
+
+      // Profile editing functionality
+      function showEditProfileModal() {
+        if (!currentUserData || !currentUserData.user) {
+          showToast(
+            "Profil ma'lumotlari yuklanmadi. Qayta kirish qiling.",
+            "warning"
+          );
+          return;
+        }
+
+        // Pre-populate form with current values
+        document.getElementById("edit-profile-name").value =
+          currentUserData.user.name || "";
+        document.getElementById("edit-profile-surname").value =
+          currentUserData.user.surname || "";
+
+        // Show modal
+        const modal = new bootstrap.Modal(
+          document.getElementById("editProfileModal")
+        );
+        modal.show();
+      }
+
+      function validateProfileInput(name, surname) {
+        // Trim whitespace
+        name = name.trim();
+        surname = surname.trim();
+
+        // Check length
+        if (!name || name.length < 2) {
+          return {
+            valid: false,
+            message: "Ism kamida 2 ta belgidan iborat bo'lishi kerak.",
+          };
+        }
+        if (!surname || surname.length < 2) {
+          return {
+            valid: false,
+            message: "Familiya kamida 2 ta belgidan iborat bo'lishi kerak.",
+          };
+        }
+
+        // Check for valid characters (letters, spaces, hyphens, apostrophes, dots)
+        const nameRegex = /^[a-zA-ZÀ-ÿ\u00C0-\u024F\u1E00-\u1EFF\s\-'\.]+$/;
+        if (!nameRegex.test(name)) {
+          return {
+            valid: false,
+            message:
+              "Ism faqat harflar, bo'shliq va odatiy belgilardan iborat bo'lishi kerak.",
+          };
+        }
+        if (!nameRegex.test(surname)) {
+          return {
+            valid: false,
+            message:
+              "Familiya faqat harflar, bo'shliq va odatiy belgilardan iborat bo'lishi kerak.",
+          };
+        }
+
+        return { valid: true, name: name, surname: surname };
+      }
+
+      async function handleProfileSave() {
+        const nameInput = document.getElementById("edit-profile-name").value;
+        const surnameInput = document.getElementById(
+          "edit-profile-surname"
+        ).value;
+
+        // Validate input
+        const validation = validateProfileInput(nameInput, surnameInput);
+        if (!validation.valid) {
+          showToast(validation.message, "warning");
+          return;
+        }
+
+        const phone = localStorage.getItem(`user_phone_${userCode}`);
+        if (!phone) {
+          logout();
+          return;
+        }
+
+        // Show loading state
+        const saveBtn = document.getElementById("save-profile-btn");
+        const originalText = saveBtn.innerHTML;
+        saveBtn.disabled = true;
+        saveBtn.innerHTML =
+          '<div class="spinner-border spinner-border-sm me-2" role="status"></div>Saqlanmoqda...';
+
+        try {
+          const response = await fetch(`${API_BASE}/profile/update`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              code: userCode,
+              phone: phone,
+              name: validation.name,
+              surname: validation.surname,
+            }),
+          });
+
+          const result = await response.json();
+          if (!response.ok)
+            throw new Error(result.detail || "Profile update failed");
+
+          // Update current user data
+          if (currentUserData && currentUserData.user) {
+            currentUserData.user.name = validation.name;
+            currentUserData.user.surname = validation.surname;
+          }
+
+          // Update UI
+          updateProfileDisplay();
+
+          showToast("Profil muvaffaqiyatli yangilandi!", "success");
+
+          // Close modal
+          bootstrap.Modal.getInstance(
+            document.getElementById("editProfileModal")
+          ).hide();
+        } catch (error) {
+          showToast(`Xatolik: ${error.message}`, "danger");
+        } finally {
+          // Reset button state
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = originalText;
+        }
+      }
+
+      function updateProfileDisplay() {
+        if (!currentUserData || !currentUserData.user) return;
+
+        const user = currentUserData.user;
+        const displayName =
+          [user.name, user.surname].filter(Boolean).join(" ") ||
+          "Foydalanuvchi";
+
+        // Update all profile display elements
+        document.getElementById("navbar-username").textContent = displayName;
+        document.getElementById("profile-display-name").textContent =
+          displayName;
+        document.getElementById("profile-name").textContent =
+          user.name || "N/A";
+        document.getElementById("profile-surname").textContent =
+          user.surname || "N/A";
+      }
+
+      // Authentication functions
+      async function handleLogin(event) {
+        event.preventDefault();
+        const phoneInput = document.getElementById("phone").value.trim();
+        const countryCode = document
+          .getElementById("selectedCountry")
+          .getAttribute("data-code");
+
+        if (!phoneInput) {
+          showToast("Iltimos, telefon raqamingizni kiriting.", "warning");
+          return;
+        }
+
+        // Get clean phone number (remove formatting) and combine with country code
+        const cleanPhoneNumber = getCleanPhoneNumber(phoneInput);
+        const fullPhoneNumber = countryCode + cleanPhoneNumber;
+
+        const button = event.target.querySelector('button[type="submit"]');
+        button.disabled = true;
+        button.innerHTML =
+          '<div class="spinner-border spinner-border-sm me-2" role="status"></div>Tekshirilmoqda...';
+
+        const data = await fetchUserData(fullPhoneNumber);
+
+        button.disabled = false;
+        button.innerHTML = '<i class="fas fa-sign-in-alt me-2"></i>Kirish';
+
+        if (data && data.success) {
+          localStorage.setItem(`user_phone_${userCode}`, fullPhoneNumber);
+          renderDashboard(data);
+        } else {
+          showToast(
+            "Telefon raqami xato yoki foydalanuvchi topilmadi.",
+            "danger"
+          );
+          localStorage.removeItem(`user_phone_${userCode}`);
+        }
+      }
+
+      function logout() {
+        localStorage.removeItem(`user_phone_${userCode}`);
+        dashboardScreen.style.display = "none";
+        loginScreen.style.display = "flex";
+        showToast("Siz tizimdan muvaffaqiyatli chiqdingiz.", "info");
+      }
+
+      // Initialization
+      async function init() {
+        const storedPhone = localStorage.getItem(`user_phone_${userCode}`);
+        if (storedPhone) {
+          const data = await fetchUserData(storedPhone);
+          if (data && data.success) {
+            renderDashboard(data);
+          } else {
+            localStorage.removeItem(`user_phone_${userCode}`);
+            loader.style.display = "none";
+            loginScreen.style.display = "flex";
+          }
+        } else {
+          loader.style.display = "none";
+          loginScreen.style.display = "flex";
+        }
+      }
+    </script>
+
+    <style>
+      /* Filter Controls Styling */
+      .orders-controls {
+        animation: fadeInUp 0.6s ease-out;
+      }
+
+      .orders-controls .card {
+        border: 1px solid var(--separator);
+        box-shadow: 0 2px 12px rgba(var(--shadow-color), 0.08);
+        backdrop-filter: blur(20px);
+        background: rgba(var(--bg-secondary-rgb), 0.95);
+      }
+
+      .orders-controls .form-label {
+        color: var(--text-primary);
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .orders-controls .form-select {
+        background-color: var(--bg-tertiary);
+        border: 1px solid var(--separator);
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        padding: 0.6rem 0.75rem;
+        transition: var(--transition-fast);
+      }
+
+      .orders-controls .form-select:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 0.2rem rgba(var(--accent-rgb), 0.25);
+        background-color: var(--bg-secondary);
+      }
+
+      .orders-controls .form-select option {
+        background-color: var(--bg-secondary);
+        color: var(--text-primary);
+      }
+
+      /* Modern Collection Dropdown Styling */
+      .collection-dropdown-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
+
+      .collection-dropdown {
+        appearance: none;
+        background-color: var(--bg-secondary);
+        border: 2px solid var(--separator);
+        border-radius: 12px;
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        font-weight: 500;
+        padding: 0.75rem 2.5rem 0.75rem 1rem;
+        width: 100%;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        background-image: none;
+        box-shadow: 0 2px 8px rgba(var(--shadow-color), 0.08);
+      }
+
+      .collection-dropdown:hover {
+        border-color: var(--accent);
+        box-shadow: 0 4px 16px rgba(var(--accent-rgb), 0.15);
+        transform: translateY(-1px);
+      }
+
+      .collection-dropdown:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.2);
+        background-color: var(--bg-primary);
+      }
+
+      .collection-dropdown.disabled-state {
+        background-color: var(--bg-quaternary);
+        color: var(--text-tertiary);
+        cursor: not-allowed;
+        border-color: var(--separator);
+        opacity: 0.6;
+      }
+
+      .collection-dropdown.disabled-state:hover {
+        transform: none;
+        box-shadow: 0 2px 8px rgba(var(--shadow-color), 0.08);
+        border-color: var(--separator);
+      }
+
+      .dropdown-icon {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+        transition: var(--transition-fast);
+      }
+
+      .collection-dropdown:focus + .dropdown-icon {
+        color: var(--accent);
+        transform: translateY(-50%) rotate(180deg);
+      }
+
+      .collection-dropdown.disabled-state + .dropdown-icon {
+        color: var(--text-tertiary);
+        opacity: 0.5;
+      }
+
+      .collection-help-text {
+        margin-top: 0.25rem;
+        font-size: 0.8rem;
+        transition: var(--transition-fast);
+      }
+
+      .collection-dropdown option {
+        background-color: var(--bg-secondary);
+        color: var(--text-primary);
+        padding: 0.5rem;
+        font-weight: 500;
+      }
+
+      .collection-dropdown option:hover {
+        background-color: var(--accent);
+        color: white;
+      }
+
+      .collection-dropdown option:disabled {
+        color: var(--text-tertiary);
+        font-style: italic;
+        background-color: var(--bg-quaternary);
+      }
+
+      /* Status Toggle System - Reusable */
+      .status {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        user-select: none;
+        transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+        border: 2px solid var(--separator);
+        background-color: #000000;
+        color: var(--text-primary);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .status:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        border-color: var(--accent);
+      }
+
+      .status.active {
+        background-color: #007bff;
+        border-color: #007bff;
+        color: white;
+        box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+      }
+
+      .status.active:hover {
+        background-color: #0056b3;
+        border-color: #0056b3;
+        box-shadow: 0 4px 16px rgba(0, 123, 255, 0.4);
+      }
+
+      /* Reusable status variants */
+      .status.success.active {
+        background-color: #28a745;
+        border-color: #28a745;
+        box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+      }
+
+      .status.warning.active {
+        background-color: #ffc107;
+        border-color: #ffc107;
+        color: #000;
+        box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+      }
+
+      .status.danger.active {
+        background-color: #dc3545;
+        border-color: #dc3545;
+        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+      }
+
+      .status-filter-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+      }
+
+      .order-stats {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+      }
+
+      .filter-actions .btn {
+        font-size: 0.85rem;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+        transition: var(--transition-fast);
+      }
+
+      .filter-actions .btn-outline-secondary:hover {
+        background-color: var(--bg-quaternary);
+        color: var(--text-primary);
+      }
+
+      .filter-actions .btn-outline-primary:hover {
+        background-color: var(--accent);
+        border-color: var(--accent);
+      }
+
+      /* Mobile responsive adjustments */
+      @media (max-width: 768px) {
+        .orders-controls .row.align-items-center {
+          text-align: center;
+        }
+
+        .orders-controls .col-lg-4,
+        .orders-controls .col-md-6 {
+          margin-bottom: 1.5rem;
+        }
+
+        .collection-dropdown {
+          padding: 0.8rem 2.5rem 0.8rem 1.2rem;
+          font-size: 0.95rem;
+        }
+
+        .collection-help-text {
+          text-align: center;
+          margin-top: 0.5rem;
+        }
+
+        .status-filter-group {
+          justify-content: center;
+        }
+
+        .filter-actions {
+          text-align: center;
+        }
+
+        .filter-actions .btn {
+          margin: 0.25rem;
+        }
+      }
+
+      /* Animation for filter updates */
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Smooth transition for orders grid */
+      #orders-container {
+        transition: all 0.3s ease-out;
+      }
+
+      #orders-container.filtering {
+        opacity: 0.7;
+        transform: scale(0.98);
+      }
+
+      /* Mobile Filter Controls */
+      .mobile-filter-controls {
+        padding: 1rem;
+        background: var(--bg-secondary);
+        border: 1px solid var(--separator);
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(var(--shadow-color), 0.08);
+      }
+
+      .mobile-filter-btn {
+        font-size: 0.9rem;
+        font-weight: 600;
+        padding: 0.75rem 1.25rem;
+        border-radius: 25px;
+        box-shadow: 0 4px 16px rgba(var(--accent-rgb), 0.25);
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      }
+
+      .mobile-filter-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(var(--accent-rgb), 0.35);
+      }
+
+      .mobile-filter-btn:active {
+        transform: translateY(0);
+      }
+
+      /* Mobile Filter Dropdown */
+      .mobile-filter-dropdown {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 9999;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      }
+
+      .mobile-filter-dropdown.show {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .mobile-filter-backdrop {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        transition: all 0.3s ease;
+      }
+
+      .mobile-filter-panel {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: var(--bg-secondary);
+        border-radius: 20px 20px 0 0;
+        max-height: 85vh;
+        display: flex;
+        flex-direction: column;
+        transform: translateY(100%);
+        transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        box-shadow: 0 -8px 32px rgba(var(--shadow-color), 0.25);
+      }
+
+      .mobile-filter-dropdown.show .mobile-filter-panel {
+        transform: translateY(0);
+      }
+
+      .mobile-filter-header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        padding: 1.5rem 1.25rem 1rem;
+        border-bottom: 1px solid var(--separator);
+        position: sticky;
+        top: 0;
+        background: var(--bg-secondary);
+        border-radius: 20px 20px 0 0;
+        z-index: 1;
+      }
+
+      .mobile-filter-header h5 {
+        color: var(--text-primary);
+        font-weight: 700;
+        flex: 1;
+      }
+
+      .mobile-filter-close {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        font-size: 1.2rem;
+        padding: 0.5rem;
+        border-radius: 50%;
+        transition: var(--transition-fast);
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .mobile-filter-close:hover {
+        background: var(--bg-quaternary);
+        color: var(--text-primary);
+      }
+
+      .mobile-filter-content {
+        flex: 1;
+        padding: 1.25rem;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: var(--separator) transparent;
+      }
+
+      .mobile-filter-content::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .mobile-filter-content::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .mobile-filter-content::-webkit-scrollbar-thumb {
+        background: var(--separator);
+        border-radius: 3px;
+      }
+
+      .mobile-filter-section {
+        margin-bottom: 2rem;
+      }
+
+      .mobile-filter-section:last-child {
+        margin-bottom: 0;
+      }
+
+      .mobile-filter-label {
+        display: block;
+        font-weight: 700;
+        font-size: 1rem;
+        color: var(--text-primary);
+        margin-bottom: 0.75rem;
+      }
+
+      .mobile-status-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+      }
+
+      .mobile-status-grid .status {
+        padding: 1rem;
+        border-radius: 12px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        justify-content: flex-start;
+        min-height: 60px;
+        text-align: left;
+      }
+
+      .mobile-filter-actions {
+        padding: 1.25rem;
+        border-top: 1px solid var(--separator);
+        background: var(--bg-secondary);
+        display: flex;
+        gap: 0.75rem;
+        position: sticky;
+        bottom: 0;
+      }
+
+      .mobile-filter-actions .btn {
+        flex: 1;
+        font-weight: 600;
+        padding: 0.875rem 1rem;
+        border-radius: 12px;
+        font-size: 0.95rem;
+      }
+
+      /* Mobile responsive improvements for existing components */
+      @media (max-width: 992px) {
+        .order-card {
+          margin-bottom: 1rem;
+        }
+
+        .order-card-body {
+          padding: 1rem;
+        }
+
+        .order-title {
+          font-size: 1rem;
+        }
+
+        .order-meta {
+          font-size: 0.85rem;
+        }
+
+        /* Mobile navigation improvements */
+        .nav-tabs {
+          border-bottom: 2px solid var(--separator);
+          margin-bottom: 1.5rem;
+        }
+
+        .nav-tabs .nav-link {
+          padding: 1rem 0.75rem;
+          font-size: 0.9rem;
+          font-weight: 600;
+          border: none;
+          border-bottom: 3px solid transparent;
+          background: none;
+          color: var(--text-secondary);
+          transition: all 0.3s ease;
+          min-height: 48px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .nav-tabs .nav-link.active {
+          color: var(--accent);
+          border-bottom-color: var(--accent);
+          background: none;
+        }
+
+        .nav-tabs .nav-link i {
+          font-size: 1.1rem;
+          margin-right: 0.5rem;
+        }
+
+        /* Mobile section headers */
+        .section-header {
+          text-align: center;
+          margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+          font-size: 1.5rem;
+          margin-bottom: 0.5rem;
+        }
+
+        .section-subtitle {
+          font-size: 0.9rem;
+          color: var(--text-secondary);
+        }
+
+        /* Mobile profile section improvements */
+        .profile-avatar {
+          width: 80px;
+          height: 80px;
+          margin-bottom: 1rem;
+        }
+
+        .profile-info h3 {
+          font-size: 1.25rem;
+        }
+
+        .profile-info p {
+          font-size: 0.9rem;
+        }
+
+        /* Mobile order grid improvements */
+        .col-xl-3,
+        .col-lg-4,
+        .col-md-6 {
+          padding-left: 0.5rem;
+          padding-right: 0.5rem;
+        }
+
+        /* Mobile empty state */
+        .empty-state {
+          padding: 2rem 1rem;
+          text-align: center;
+        }
+
+        .empty-state i {
+          font-size: 3rem;
+          color: var(--text-tertiary);
+          margin-bottom: 1rem;
+        }
+
+        .empty-state h4 {
+          font-size: 1.1rem;
+          margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+          font-size: 0.9rem;
+          color: var(--text-secondary);
+        }
+      }
+
+      /* Touch-friendly improvements */
+      @media (hover: none) and (pointer: coarse) {
+        .mobile-filter-btn,
+        .mobile-filter-actions .btn,
+        .mobile-status-grid .status {
+          min-height: 48px;
+        }
+
+        .mobile-filter-close {
+          min-width: 48px;
+          min-height: 48px;
+        }
+
+        .status {
+          min-height: 48px;
+          padding: 0.75rem 1rem;
+        }
+      }
+
+      /* Collection Actions Styling */
+      .collection-actions {
+        border-top: 1px solid var(--separator);
+        padding-top: 1rem;
+        margin-top: 1rem;
+      }
+
+      .collection-actions .btn {
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border-radius: 8px;
+      }
+
+      .collection-actions .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(var(--accent-rgb), 0.25);
+      }
+
+      .collection-actions .btn:active {
+        transform: translateY(0);
+      }
+
+      /* Hide mobile components on desktop */
+      @media (min-width: 992px) {
+        .mobile-filter-controls,
+        .mobile-filter-dropdown {
+          display: none !important;
+        }
+      }
+    </style>
+  </body>
+</html>

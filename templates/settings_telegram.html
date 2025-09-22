@@ -1,0 +1,819 @@
+{% extends "settings_base.html" %}
+
+{% block settings_icon %}
+<i class="fab fa-telegram-plane text-white"></i>
+{% endblock %}
+
+{% block settings_title %}Telegram Sozlamalari{% endblock %}
+
+{% block settings_description %}Telegram bot va kanal konfiguratsiyalari{% endblock %}
+
+{% block settings_content %}
+
+<style>
+
+  /* Admin Cards Container - Row Layout */
+  .admin-cards-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    align-items: center;
+  }
+
+  /* Base Admin Card Styles - Compact Row Design */
+  .admin-card {
+    width: 240px;
+    height: 80px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--separator);
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    color: var(--text-primary);
+  }
+
+
+  /* Individual Admin Card */
+  .admin-card.individual-admin {
+    cursor: default;
+  }
+
+  .admin-card .admin-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .admin-card .admin-name {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--text-primary);
+    line-height: 1.2;
+  }
+
+  .admin-card .admin-id {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-family: monospace;
+    margin: 0;
+    line-height: 1.2;
+  }
+
+  .admin-card .admin-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-left: 12px;
+  }
+
+  .admin-card .admin-btn {
+    padding: 4px 8px;
+    border-radius: 5px;
+    border: none;
+    font-weight: 500;
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-width: 60px;
+    height: 26px;
+  }
+
+  .admin-card .admin-btn-edit {
+    background: var(--primary-600);
+    color: white;
+  }
+
+  .admin-card .admin-btn-edit:hover {
+    background: var(--primary-700);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(var(--primary-600-rgb, 37, 99, 235), 0.3);
+  }
+
+  .admin-card .admin-btn-delete {
+    background: var(--danger-600);
+    color: white;
+  }
+
+  .admin-card .admin-btn-delete:hover {
+    background: var(--danger-700);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(var(--danger-600-rgb, 220, 38, 38), 0.3);
+  }
+
+  /* Add Admin Card - Compact Row Design */
+  .add-admin-card {
+    background: var(--bg-tertiary);
+    border: 2px dashed var(--separator);
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    width: 180px;
+    height: 80px;
+  }
+
+  .add-admin-card:hover {
+    background: var(--bg-quaternary);
+    border-color: var(--primary-600);
+  }
+
+  .add-admin-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .add-admin-icon {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    transition: color 0.2s ease;
+  }
+
+  .add-admin-card:hover .add-admin-icon {
+    color: var(--primary-600);
+  }
+
+  .add-admin-text h5 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin: 0 0 2px 0;
+    color: var(--text-primary);
+    line-height: 1.2;
+  }
+
+  .add-admin-text p {
+    color: var(--text-secondary);
+    margin: 0;
+    font-size: 0.75rem;
+    line-height: 1.2;
+  }
+
+  /* Modal Styles */
+  .admin-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1050;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .admin-modal.show {
+    display: flex;
+  }
+
+  .admin-modal-content {
+    background: var(--bg-secondary);
+    border-radius: 1rem;
+    padding: 2rem;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    color: var(--text-primary);
+    border: 1px solid var(--separator);
+  }
+
+  .admin-modal-header {
+    margin-bottom: 24px;
+  }
+
+  .admin-modal-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .admin-modal-body {
+    margin-bottom: 24px;
+  }
+
+  .admin-modal-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--separator);
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    transition: border-color 0.2s ease;
+  }
+
+  .admin-modal-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 0.125rem rgba(var(--accent-rgb), 0.25);
+  }
+
+  .admin-modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+  }
+
+  .admin-modal-btn {
+    padding: 12px 24px;
+    border-radius: 10px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .admin-modal-btn-primary {
+    background: var(--primary-600);
+    color: white;
+  }
+
+  .admin-modal-btn-primary:hover {
+    background: var(--primary-700);
+  }
+
+  .admin-modal-btn-secondary {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--separator);
+  }
+
+  .admin-modal-btn-secondary:hover {
+    background: var(--bg-tertiary);
+  }
+
+  /* Responsive Design */
+  @media (max-width: 1200px) {
+    .admin-cards-container {
+      gap: 8px;
+    }
+    
+    .admin-card {
+      width: 220px;
+      height: 75px;
+      padding: 10px;
+    }
+    
+    .add-admin-card {
+      width: 160px;
+      height: 75px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .admin-cards-container {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+    }
+
+    .admin-card, .add-admin-card {
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    .admin-modal-content {
+      margin: 20px;
+      width: calc(100% - 40px);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .admin-card {
+      height: auto;
+      min-height: 70px;
+      padding: 12px;
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .admin-card .admin-info {
+      margin-bottom: 8px;
+    }
+
+    .admin-card .admin-actions {
+      flex-direction: row;
+      justify-content: center;
+      margin-left: 0;
+      gap: 8px;
+    }
+
+    .add-admin-card {
+      height: 60px;
+    }
+
+    .add-admin-content {
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .add-admin-icon {
+      font-size: 1rem;
+    }
+
+    .add-admin-text h5 {
+      font-size: 0.8rem;
+    }
+
+    .add-admin-text p {
+      font-size: 0.7rem;
+    }
+  }
+</style>
+<form action="/api/settings/telegram" method="post" id="telegram-settings-form">
+  <!-- Admin Management (moved to top) -->
+  <div class="settings-form-group">
+    <h6 class="fw-bold text-success mb-3">
+      <i class="fas fa-user-shield me-2"></i>Admin Sozlamalari
+    </h6>
+    
+    <!-- Admin Cards Container -->
+    <div id="admin-cards-container" class="admin-cards-container mb-4">
+      <!-- Admin cards will be loaded here by JavaScript -->
+      <!-- Add Admin Card -->
+      <div class="admin-card add-admin-card" onclick="showAddAdminModal()">
+        <div class="add-admin-content">
+          <div class="add-admin-icon">
+            <i class="fas fa-plus"></i>
+          </div>
+          <div class="add-admin-text">
+            <h5>Admin Qo'shish</h5>
+            <p>Yangi admin qo'shish uchun bosing</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Channel & Group Settings (moved below Admin) -->
+  <div class="settings-form-group">
+    <h6 class="fw-bold text-primary mb-3">
+      <i class="fas fa-comments me-2"></i>Kanal va Guruh Sozlamalari
+    </h6>
+    <div class="settings-form-grid">
+      <div class="form-floating">
+        <input
+          type="text"
+          class="form-control"
+          id="private_channel_id"
+          name="private_channel_id"
+          placeholder="Channel ID"
+          value="{{ settings.private_channel_id or '' }}"
+        />
+        <label for="private_channel_id">
+          <i class="fas fa-broadcast-tower me-1"></i>Maxfiy Kanal ID
+        </label>
+        <div class="form-text">Foydalanuvchilar qo'shiladigan maxfiy kanal ID si</div>
+      </div>
+
+      <div class="form-floating">
+        <input
+          type="text"
+          class="form-control"
+          id="group_id"
+          name="group_id"
+          placeholder="Group ID"
+          value="{{ settings.group_id or '' }}"
+        />
+        <label for="group_id">
+          <i class="fas fa-users me-1"></i>Guruh ID
+        </label>
+        <div class="form-text">Admin guruhi ID si</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Topic ID Settings -->
+  <div class="settings-form-group">
+    <h6 class="fw-bold text-secondary mb-3">
+      <i class="fas fa-hashtag me-2"></i>Topic ID Sozlamalari
+    </h6>
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <div class="form-floating">
+          <input
+            type="text"
+            class="form-control"
+            id="ai_confirmations_topic_id"
+            name="ai_confirmations_topic_id"
+            placeholder="AI Confirmations Topic ID"
+            value="{{ settings.ai_confirmations_topic_id or '' }}"
+          />
+          <label for="ai_confirmations_topic_id">
+            <i class="fas fa-robot me-1"></i>AI Confirmations Topic ID
+          </label>
+          <div class="form-text">AI tomonidan to'lov tasdiqlash topic ID si</div>
+        </div>
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <div class="form-floating">
+          <input
+            type="text"
+            class="form-control"
+            id="confirmation_topic_id"
+            name="confirmation_topic_id"
+            placeholder="Confirmations Topic ID"
+            value="{{ settings.confirmation_topic_id or '' }}"
+          />
+          <label for="confirmation_topic_id">
+            <i class="fas fa-clipboard-check me-1"></i>Confirmations Topic ID
+          </label>
+          <div class="form-text">Manual to'lov tasdiqlash topic ID si</div>
+        </div>
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <div class="form-floating">
+          <input
+            type="text"
+            class="form-control"
+            id="realtime_orders_topic_id"
+            name="realtime_orders_topic_id"
+            placeholder="Realtime Orders Topic ID"
+            value="{{ settings.realtime_orders_topic_id or '' }}"
+          />
+          <label for="realtime_orders_topic_id">
+            <i class="fas fa-bolt me-1"></i>Realtime Orders Topic ID
+          </label>
+          <div class="form-text">Jonli buyurtmalar topic ID si</div>
+        </div>
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <div class="form-floating">
+          <input
+            type="text"
+            class="form-control"
+            id="find_orders_topic_id"
+            name="find_orders_topic_id"
+            placeholder="Find Orders Topic ID"
+            value="{{ settings.find_orders_topic_id or '' }}"
+          />
+          <label for="find_orders_topic_id">
+            <i class="fas fa-search me-1"></i>Find Orders Topic ID
+          </label>
+          <div class="form-text">Buyurtma qidiruv topic ID si</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Settings -->
+  <div class="settings-form-group">
+    <h6 class="fw-bold text-warning mb-3">
+      <i class="fas fa-brain me-2"></i>AI Sozlamalari
+    </h6>
+    <div class="form-floating">
+      <select class="form-select" id="default_ai_model" name="default_ai_model">
+        <option value="gemini-2.5-flash-lite" 
+          {% if settings.default_ai_model == 'gemini-2.5-flash-lite' %}selected{% endif %}>
+          Gemini 2.5 Flash Lite
+        </option>
+        <option value="gemini-2.0-flash"
+          {% if settings.default_ai_model == 'gemini-2.0-flash' %}selected{% endif %}>
+          Gemini 2.0 Flash
+        </option>
+      </select>
+      <label for="default_ai_model">
+        <i class="fas fa-microchip me-1"></i>Standart AI Modeli
+      </label>
+      <div class="form-text">To'lov tasdiqlaash uchun foydalaniladigan AI model</div>
+    </div>
+  </div>
+
+  <div class="save-button-container d-flex justify-content-end">
+    <button type="submit" class="btn btn-primary btn-lg px-4">
+      <i class="fas fa-save me-2"></i>Telegram Sozlamalarini Saqlash
+    </button>
+  </div>
+</form>
+
+<!-- Add Admin Modal -->
+<div id="add-admin-modal" class="admin-modal">
+  <div class="admin-modal-content">
+    <div class="admin-modal-header">
+      <h2 class="admin-modal-title">Admin Qo'shish</h2>
+    </div>
+    <div class="admin-modal-body">
+      <input type="text" id="add-admin-id" class="admin-modal-input" placeholder="Telegram ID (masalan: 123456789)" required />
+      <input type="text" id="add-admin-name" class="admin-modal-input" placeholder="Admin nomi" required />
+    </div>
+    <div class="admin-modal-actions">
+      <button type="button" class="admin-modal-btn admin-modal-btn-secondary" onclick="hideAddAdminModal()">
+        Bekor qilish
+      </button>
+      <button type="button" class="admin-modal-btn admin-modal-btn-primary" onclick="addAdmin()">
+        <i class="fas fa-plus me-1"></i>Qo'shish
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Admin Modal -->
+<div id="edit-admin-modal" class="admin-modal">
+  <div class="admin-modal-content">
+    <div class="admin-modal-header">
+      <h2 class="admin-modal-title">Admin Tahrirlash</h2>
+    </div>
+    <div class="admin-modal-body">
+      <input type="text" id="edit-admin-id" class="admin-modal-input" placeholder="Telegram ID" readonly />
+      <input type="text" id="edit-admin-name" class="admin-modal-input" placeholder="Admin nomi" required />
+    </div>
+    <div class="admin-modal-actions">
+      <button type="button" class="admin-modal-btn admin-modal-btn-secondary" onclick="hideEditAdminModal()">
+        Bekor qilish
+      </button>
+      <button type="button" class="admin-modal-btn admin-modal-btn-primary" onclick="updateAdmin()">
+        <i class="fas fa-save me-1"></i>Saqlash
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentEditAdminId = null;
+
+  // Load admin cards on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    loadAdminCards();
+  });
+
+  // Load and display admin cards
+  async function loadAdminCards() {
+    try {
+      const response = await fetch('/api/telegram-admins');
+      const data = await response.json();
+      
+      if (data.success) {
+        const container = document.getElementById('admin-cards-container');
+        
+        // Remove only individual admin cards, keep the add admin card
+        const adminCards = container.querySelectorAll('.admin-card.individual-admin');
+        adminCards.forEach(card => card.remove());
+        
+        // Get the add admin card to insert before it
+        const addAdminCard = container.querySelector('.add-admin-card');
+        
+        data.admins.forEach(admin => {
+          const card = createAdminCard(admin);
+          container.insertBefore(card, addAdminCard);
+        });
+      } else {
+        console.error('Failed to load admins:', data.message);
+        showAlert('Adminlarni yuklashda xatolik', 'danger');
+      }
+    } catch (error) {
+      console.error('Error loading admin cards:', error);
+      showAlert('Adminlarni yuklashda xatolik', 'danger');
+    }
+  }
+
+  // Create admin card element
+  function createAdminCard(admin) {
+    const card = document.createElement('div');
+    card.className = 'admin-card individual-admin';
+    card.innerHTML = `
+      <div class="admin-info">
+        <div class="admin-name">${escapeHtml(admin.name)}</div>
+        <div class="admin-id">ID: ${escapeHtml(admin.id)}</div>
+      </div>
+      <div class="admin-actions">
+        <button class="admin-btn admin-btn-edit" onclick="editAdmin('${escapeHtml(admin.id)}', '${escapeHtml(admin.name)}')">
+          <i class="fas fa-edit"></i>Edit
+        </button>
+        <button class="admin-btn admin-btn-delete" onclick="deleteAdmin('${escapeHtml(admin.id)}')">
+          <i class="fas fa-trash"></i>Delete
+        </button>
+      </div>
+    `;
+    return card;
+  }
+
+  // Show add admin modal
+  function showAddAdminModal() {
+    document.getElementById('add-admin-id').value = '';
+    document.getElementById('add-admin-name').value = '';
+    document.getElementById('add-admin-modal').classList.add('show');
+  }
+
+  // Hide add admin modal
+  function hideAddAdminModal() {
+    document.getElementById('add-admin-modal').classList.remove('show');
+  }
+
+  // Show edit admin modal
+  function editAdmin(adminId, adminName) {
+    currentEditAdminId = adminId;
+    document.getElementById('edit-admin-id').value = adminId;
+    document.getElementById('edit-admin-name').value = adminName;
+    document.getElementById('edit-admin-modal').classList.add('show');
+  }
+
+  // Hide edit admin modal
+  function hideEditAdminModal() {
+    document.getElementById('edit-admin-modal').classList.remove('show');
+    currentEditAdminId = null;
+  }
+
+  // Add new admin
+  async function addAdmin() {
+    const adminId = document.getElementById('add-admin-id').value.trim();
+    const adminName = document.getElementById('add-admin-name').value.trim();
+
+    if (!adminId || !adminName) {
+      showAlert('Admin ID va nomi talab qilinadi', 'danger');
+      return;
+    }
+
+    if (!adminId.match(/^\d+$/)) {
+      showAlert('Admin ID raqamdan iborat bo\'lishi kerak', 'danger');
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('admin_id', adminId);
+      formData.append('admin_name', adminName);
+
+      const response = await fetch('/api/telegram-admins', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        hideAddAdminModal();
+        loadAdminCards();
+        showAlert(data.message, 'success');
+      } else {
+        showAlert(data.message, 'danger');
+      }
+    } catch (error) {
+      console.error('Error adding admin:', error);
+      showAlert('Adminni qo\'shishda xatolik', 'danger');
+    }
+  }
+
+  // Update existing admin
+  async function updateAdmin() {
+    if (!currentEditAdminId) return;
+
+    const adminName = document.getElementById('edit-admin-name').value.trim();
+
+    if (!adminName) {
+      showAlert('Admin nomi talab qilinadi', 'danger');
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('admin_name', adminName);
+
+      const response = await fetch(`/api/telegram-admins/${currentEditAdminId}`, {
+        method: 'PUT',
+        body: formData
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        hideEditAdminModal();
+        loadAdminCards();
+        showAlert(data.message, 'success');
+      } else {
+        showAlert(data.message, 'danger');
+      }
+    } catch (error) {
+      console.error('Error updating admin:', error);
+      showAlert('Adminni yangilashda xatolik', 'danger');
+    }
+  }
+
+  // Delete admin
+  async function deleteAdmin(adminId) {
+    if (!confirm('Bu adminni o\'chirmoqchimisiz?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/telegram-admins/${adminId}`, {
+        method: 'DELETE'
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        loadAdminCards();
+        showAlert(data.message, 'success');
+      } else {
+        showAlert(data.message, 'danger');
+      }
+    } catch (error) {
+      console.error('Error deleting admin:', error);
+      showAlert('Adminni o\'chirishda xatolik', 'danger');
+    }
+  }
+
+  // Utility function to escape HTML
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // Close modal when clicking outside
+  document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('admin-modal')) {
+      if (e.target.id === 'add-admin-modal') {
+        hideAddAdminModal();
+      } else if (e.target.id === 'edit-admin-modal') {
+        hideEditAdminModal();
+      }
+    }
+  });
+
+  // Handle Enter key in modal inputs
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      if (document.getElementById('add-admin-modal').classList.contains('show')) {
+        addAdmin();
+      } else if (document.getElementById('edit-admin-modal').classList.contains('show')) {
+        updateAdmin();
+      }
+    } else if (e.key === 'Escape') {
+      hideAddAdminModal();
+      hideEditAdminModal();
+    }
+  });
+</script>
+
+<script>
+document.getElementById('telegram-settings-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  const formData = new FormData(this);
+  const submitBtn = this.querySelector('button[type="submit"]');
+  const originalText = submitBtn.innerHTML;
+  
+  // Show loading state
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saqlanmoqda...';
+  
+  try {
+    const response = await fetch('/api/settings/telegram', {
+      method: 'POST',
+      body: formData
+    });
+    
+    if (response.ok) {
+      const result = await response.json();
+      if (result.success) {
+        // Show success message
+        showAlert('Telegram sozlamalari muvaffaqiyatli saqlandi!', 'success');
+      } else {
+        showAlert(result.message || 'Xatolik yuz berdi', 'danger');
+      }
+    } else {
+      const errorData = await response.json().catch(() => ({}));
+      showAlert(errorData.message || 'Server xatosi', 'danger');
+    }
+  } catch (error) {
+    showAlert('Tarmoq xatosi: ' + error.message, 'danger');
+  } finally {
+    // Restore button state
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = originalText;
+  }
+});
+
+function showAlert(message, type) {
+  // Map Bootstrap alert types to toast types
+  const toastType = type === 'danger' ? 'error' : type;
+  
+  // Use the global toast system from base.html
+  if (window.toast) {
+    window.toast[toastType](message);
+  } else {
+    // Fallback to showToast function
+    showToast(toastType, '', message);
+  }
+}
+</script>
+{% endblock %}

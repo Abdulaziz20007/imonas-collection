@@ -1,0 +1,623 @@
+{% extends "base.html" %} {% block title %}Kolleksiyalar - Buyurtmalar
+Boshqaruvi{% endblock %} {% block content %}
+
+<!-- Compact Quick Stats Section -->
+{% if collections %}
+<div class="row g-3 mb-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header py-2">
+        <div class="d-flex align-items-center gap-2">
+          <div class="p-2 rounded bg-info">
+            <i class="fas fa-chart-line text-white fs-6"></i>
+          </div>
+          <div>
+            <h6 class="mb-0 fw-bold">Tezkor Statistika</h6>
+            <small class="text-muted"
+              >Kolleksiyalar bo'yicha umumiy ma'lumot</small
+            >
+          </div>
+        </div>
+      </div>
+      <div class="card-body py-3">
+        <div class="row g-2 text-center">
+          <div class="col-3 col-md-3">
+            <div
+              class="p-3 rounded-2 h-100"
+              style="
+                background: linear-gradient(
+                  135deg,
+                  var(--success-100),
+                  var(--success-200)
+                );
+                border: 1px solid var(--success-300);
+              "
+            >
+              <div class="position-relative">
+                <i
+                  class="fas fa-folder-open opacity-25 position-absolute top-0 end-0 fs-4"
+                  style="color: var(--success-400)"
+                ></i>
+                <div
+                  class="h3 fw-bold mb-1 position-relative"
+                  style="color: var(--success-700)"
+                >
+                  {{ collections|selectattr("status", "equalto",
+                  "open")|list|length }}
+                </div>
+                <small class="fw-semibold d-none d-md-block" style="color: var(--success-800)"
+                  >Ochiq Kolleksiyalar</small
+                >
+                <small class="fw-semibold d-md-none" style="color: var(--success-800); font-size: 0.65rem;"
+                  >Ochiq</small
+                >
+              </div>
+            </div>
+          </div>
+          <div class="col-3 col-md-3">
+            <div
+              class="p-3 rounded-2 h-100"
+              style="
+                background: linear-gradient(
+                  135deg,
+                  var(--warning-100),
+                  var(--warning-200)
+                );
+                border: 1px solid var(--warning-300);
+              "
+            >
+              <div class="position-relative">
+                <i
+                  class="fas fa-pause-circle opacity-25 position-absolute top-0 end-0 fs-4"
+                  style="color: var(--warning-400)"
+                ></i>
+                <div
+                  class="h3 fw-bold mb-1 position-relative"
+                  style="color: var(--warning-700)"
+                >
+                  {{ collections|selectattr("status", "equalto",
+                  "close")|list|length }}
+                </div>
+                <small class="fw-semibold d-none d-md-block" style="color: var(--warning-800)"
+                  >Yopiq Kolleksiyalar</small
+                >
+                <small class="fw-semibold d-md-none" style="color: var(--warning-800); font-size: 0.65rem;"
+                  >Yopiq</small
+                >
+              </div>
+            </div>
+          </div>
+          <div class="col-3 col-md-3">
+            <div
+              class="p-3 rounded-2 h-100"
+              style="
+                background: linear-gradient(
+                  135deg,
+                  var(--primary-100),
+                  var(--primary-200)
+                );
+                border: 1px solid var(--primary-300);
+              "
+            >
+              <div class="position-relative">
+                <i
+                  class="fas fa-check-circle opacity-25 position-absolute top-0 end-0 fs-4"
+                  style="color: var(--primary-400)"
+                ></i>
+                <div
+                  class="h3 fw-bold mb-1 position-relative"
+                  style="color: var(--primary-700)"
+                >
+                  {{ collections|selectattr("status", "equalto",
+                  "finish")|list|length }}
+                </div>
+                <small class="fw-semibold d-none d-md-block" style="color: var(--primary-800)"
+                  >Tugallangan Kolleksiyalar</small
+                >
+                <small class="fw-semibold d-md-none" style="color: var(--primary-800); font-size: 0.65rem;"
+                  >Tugal.</small
+                >
+              </div>
+            </div>
+          </div>
+          <div class="col-3 col-md-3">
+            <div
+              class="p-3 rounded-2 h-100"
+              style="
+                background: linear-gradient(
+                  135deg,
+                  var(--info-100),
+                  var(--info-200)
+                );
+                border: 1px solid var(--info-300);
+              "
+            >
+              <div class="position-relative">
+                <i
+                  class="fas fa-shopping-cart opacity-25 position-absolute top-0 end-0 fs-4"
+                  style="color: var(--info-400)"
+                ></i>
+                <div
+                  class="h3 fw-bold mb-1 position-relative"
+                  style="color: var(--info-700)"
+                >
+                  {{ collections|sum(attribute='order_count') or 0 }}
+                </div>
+                <small class="fw-semibold d-none d-md-block" style="color: var(--info-800)"
+                  >Jami Buyurtmalar</small
+                >
+                <small class="fw-semibold d-md-none" style="color: var(--info-800); font-size: 0.65rem;"
+                  >Buy-lar</small
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Collections Header -->
+<div class="card mb-3">
+  <div class="card-body p-3">
+    <!-- Title Section -->
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <div class="p-2 bg-primary rounded">
+        <i class="fas fa-folder-open text-white fs-5"></i>
+      </div>
+      <div>
+        <h4 class="mb-0 fw-semibold">Kolleksiyalar</h4>
+        <p class="text-muted mb-0 small d-none d-md-block">Buyurtmalar to'plamlari boshqaruvi</p>
+      </div>
+    </div>
+    
+    <!-- Filters Section - Desktop -->
+    <div class="d-none d-md-flex align-items-center gap-3">
+      <!-- Date Filter -->
+      <div class="d-flex align-items-center gap-2">
+        <i class="fas fa-calendar-alt text-primary"></i>
+        <input
+          type="date"
+          id="dateFilter"
+          class="form-control form-control-sm"
+          style="width: 140px"
+          onchange="filterCollections()"
+          placeholder="Sana tanlash"
+        />
+      </div>
+      <!-- Sort Options -->
+      <div class="d-flex align-items-center gap-2">
+        <i class="fas fa-sort text-info"></i>
+        <select
+          id="sortSelect"
+          class="form-select form-select-sm"
+          style="width: 130px"
+          onchange="sortCollections()"
+        >
+          <option value="newest">🆕 Eng yangi</option>
+          <option value="oldest">📅 Eng eski</option>
+          <option value="status">📊 Status bo'yicha</option>
+          <option value="orders">📈 Ko'p buyurtma</option>
+        </select>
+      </div>
+      <!-- Clear Filters -->
+      <button
+        class="btn btn-outline-secondary btn-sm"
+        onclick="clearFilters()"
+        title="Barcha filtrlarni tozalash"
+      >
+        <i class="fas fa-undo-alt"></i>
+      </button>
+      <!-- Total Count -->
+      <div class="badge bg-primary fs-6">
+        <i class="fas fa-layer-group me-1"></i>
+        {{ collections|length }} ta jami
+      </div>
+      <!-- Create Action -->
+      <form action="/collections/create" method="post" class="d-inline">
+        <button
+          type="submit"
+          class="btn btn-success btn-sm"
+        >
+          <i class="fas fa-plus me-2"></i>
+          Yangi Kolleksiya
+        </button>
+      </form>
+    </div>
+
+    <!-- Filters Section - Mobile -->
+    <div class="d-md-none">
+      <div class="row g-2 mb-2">
+        <div class="col-6">
+          <input
+            type="date"
+            id="dateFilterMobile"
+            class="form-control form-control-sm"
+            onchange="filterCollectionsMobile()"
+            placeholder="Sana"
+          />
+        </div>
+        <div class="col-6">
+          <select
+            id="sortSelectMobile"
+            class="form-select form-select-sm"
+            onchange="sortCollectionsMobile()"
+          >
+            <option value="newest">🆕 Yangi</option>
+            <option value="oldest">📅 Eski</option>
+            <option value="status">📊 Status</option>
+            <option value="orders">📈 Ko'p</option>
+          </select>
+        </div>
+      </div>
+      <div class="row g-2 mb-2">
+        <div class="col-12">
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="badge bg-primary fs-6">
+              <i class="fas fa-layer-group me-1"></i>
+              {{ collections|length }} ta
+            </div>
+            <button
+              class="btn btn-outline-secondary btn-sm"
+              onclick="clearFiltersMobile()"
+            >
+              <i class="fas fa-undo-alt me-1"></i>
+              Tozalash
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12">
+          <form action="/collections/create" method="post">
+            <button
+              type="submit"
+              class="btn btn-success btn-sm w-100"
+            >
+              <i class="fas fa-plus me-2"></i>
+              Yangi Kolleksiya Yaratish
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Remaining collections content continues... -->
+<div style="display: none;">
+  <!-- Hidden placeholder to prevent breaking the existing structure -->
+  <form action="/collections/create" method="post" class="d-inline">
+    <button
+      type="submit"
+        class="btn btn-success"
+        onclick="event.preventDefault(); customConfirm('Haqiqatan ham yangi kolleksiya yaratmoqchimisiz? Joriy ochiq kolleksiya yopiladi.', (confirmed) => { if (confirmed) this.form.submit(); });"
+      >
+        <i class="fas fa-plus me-2"></i>
+        Yangi Kolleksiya
+      </button>
+    </form>
+  </div>
+</div>
+
+{% if collections %}
+<div class="row" id="collectionsContainer">
+  {% for collection in collections %}
+  <div
+    class="col-lg-6 col-xl-4 mb-4 collection-item"
+    data-date="{{ collection.created_at[:10] if collection.created_at else '1900-01-01' }}"
+    data-status="{{ collection.status }}"
+    data-orders="{{ collection.order_count or 0 }}"
+    data-id="{{ collection.id }}"
+  >
+    <div class="card h-100 {{ collection.status_class }}">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <h5 class="card-title mb-0">Kolleksiya #{{ collection.id }}</h5>
+          <span class="status-badge">
+            {{ collection.status_icon }} {{ collection.status_text }}
+          </span>
+        </div>
+
+        <div class="row text-center mb-3">
+          <div class="col-4">
+            <div class="fw-bold text-primary fs-4">
+              {{ collection.user_count or 0 }}
+            </div>
+            <small class="text-muted">Foydalanuvchilar</small>
+          </div>
+          <div class="col-4">
+            <div class="fw-bold text-success fs-4">
+              {{ collection.order_count or 0 }}
+            </div>
+            <small class="text-muted">Buyurtmalar</small>
+          </div>
+          <div class="col-4">
+            <div class="fw-bold text-info fs-4">
+              {% if collection.created_at %} {{ collection.created_at[:10] }} {%
+              else %} N/A {% endif %}
+            </div>
+            <small class="text-muted">Yaratilgan</small>
+          </div>
+        </div>
+
+        {% if collection.close_at and collection.status in ['close', 'finish']
+        %}
+        <div class="text-center mb-3">
+          <small class="text-muted">
+            <i class="fas fa-clock me-1"></i>
+            Yopildi: {{ collection.close_at[:10] }}
+          </small>
+        </div>
+        {% endif %} {% if collection.finish_at and collection.status == 'finish'
+        %}
+        <div class="text-center mb-3">
+          <small class="text-muted">
+            <i class="fas fa-check me-1"></i>
+            Tugallandi: {{ collection.finish_at[:10] }}
+          </small>
+        </div>
+        {% endif %}
+
+        <div class="d-grid">
+          {% if collection.user_count and collection.user_count > 0 %}
+          <a href="/orders?collection={{ collection.id }}" class="btn btn-primary">
+            <i class="fas fa-arrow-right me-2"></i>
+            Buyurtmalarni ko'rish
+          </a>
+          {% else %}
+          <button class="btn btn-secondary" disabled>
+            <i class="fas fa-minus me-2"></i>
+            Buyurtmalar Yo'q
+          </button>
+          {% endif %}
+        </div>
+
+        <!-- Status Change Actions (no manual closing for open) -->
+        <div class="mt-2 text-center">
+          <div class="btn-group btn-group-sm" role="group">
+            {% if collection.status == 'close' %}
+            <form action="/collections/set_status" method="post" class="d-inline">
+              <input type="hidden" name="collection_id" value="{{ collection.id }}" />
+              <input type="hidden" name="status" value="open" />
+              <button type="submit" class="btn btn-success">Qayta Ochish</button>
+            </form>
+            <form action="/collections/set_status" method="post" class="d-inline">
+              <input type="hidden" name="collection_id" value="{{ collection.id }}" />
+              <input type="hidden" name="status" value="finish" />
+              <button type="submit" class="btn btn-info">Tugatish</button>
+            </form>
+            {% elif collection.status == 'finish' %}
+            <button class="btn btn-secondary" disabled>Tugatilgan</button>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Modern No Results Message -->
+<div id="noResultsMessage" class="text-center py-5" style="display: none">
+  <div
+    class="d-inline-flex align-items-center justify-content-center rounded-circle mb-4"
+    style="
+      width: 120px;
+      height: 120px;
+      background: linear-gradient(
+        135deg,
+        var(--primary-50),
+        var(--primary-100)
+      );
+      border: 3px solid var(--primary-200);
+    "
+  >
+    <i class="fas fa-search text-primary" style="font-size: 3rem"></i>
+  </div>
+  <h3 class="fw-bold mb-3">Filtrlaringizga Mos Kolleksiya Topilmadi</h3>
+  <p class="text-muted mb-4">
+    Sana yoki saralash mezonlarini o'zgartirib ko'ring yoki yangi kolleksiya
+    yarating.
+  </p>
+  <div class="d-flex gap-3 justify-content-center">
+    <button class="btn btn-primary rounded-3 px-4" onclick="clearFilters()">
+      <i class="fas fa-undo-alt me-2"></i>
+      Filtrlarni Tozalash
+    </button>
+    <form action="/collections/create" method="post" class="d-inline">
+      <button
+        type="submit"
+        class="btn btn-success rounded-3 px-4"
+        onclick="event.preventDefault(); customConfirm('Yangi kolleksiya yaratmoqchimisiz?', (confirmed) => { if (confirmed) this.form.submit(); });"
+      >
+        <i class="fas fa-plus me-2"></i>
+        Yangi Kolleksiya
+      </button>
+    </form>
+  </div>
+</div>
+
+{% else %}
+<div class="text-center py-5">
+  <div
+    class="d-inline-flex align-items-center justify-content-center rounded-circle mb-4"
+    style="
+      width: 120px;
+      height: 120px;
+      background: linear-gradient(
+        135deg,
+        var(--neutral-100),
+        var(--neutral-200)
+      );
+      border: 3px solid var(--neutral-300);
+    "
+  >
+    <i class="fas fa-folder-plus text-muted" style="font-size: 3rem"></i>
+  </div>
+  <h3 class="fw-bold mb-3">Kolleksiyalar Topilmadi</h3>
+  <p class="text-muted mb-4">
+    Hali hech qanday kolleksiya yaratilmagan. Birinchi kolleksiyangizni
+    yarating!
+  </p>
+  <form action="/collections/create" method="post" class="d-inline">
+    <button
+      type="submit"
+      class="btn btn-success btn-lg rounded-3 px-5 py-3"
+      onclick="event.preventDefault(); customConfirm('Birinchi kolleksiyangizni yaratmoqchimisiz?', (confirmed) => { if (confirmed) this.form.submit(); });"
+    >
+      <i class="fas fa-plus me-2"></i>
+      Birinchi Kolleksiyani Yaratish
+    </button>
+  </form>
+</div>
+{% endif %} {% endblock %} {% block scripts %}
+<script>
+  function filterCollectionsMobile() {
+    const dateFilter = document.getElementById("dateFilterMobile").value;
+    const sortSelect = document.getElementById("sortSelectMobile").value;
+    
+    // Sync with desktop controls
+    document.getElementById("dateFilter").value = dateFilter;
+    document.getElementById("sortSelect").value = sortSelect;
+    
+    filterCollections();
+  }
+
+  function sortCollectionsMobile() {
+    const sortSelect = document.getElementById("sortSelectMobile").value;
+    
+    // Sync with desktop controls
+    document.getElementById("sortSelect").value = sortSelect;
+    
+    sortCollections();
+  }
+
+  function clearFiltersMobile() {
+    // Clear mobile controls
+    document.getElementById("dateFilterMobile").value = "";
+    document.getElementById("sortSelectMobile").value = "newest";
+    
+    // Sync with desktop and clear
+    clearFilters();
+  }
+
+  function filterCollections() {
+    const dateFilter = document.getElementById("dateFilter").value;
+    const sortSelect = document.getElementById("sortSelect").value;
+
+    let items = Array.from(document.querySelectorAll(".collection-item"));
+
+    // Filter by date
+    if (dateFilter) {
+      items = items.filter((item) => {
+        const itemDate = item.getAttribute("data-date");
+        return itemDate >= dateFilter;
+      });
+    }
+
+    // Hide all items first
+    document.querySelectorAll(".collection-item").forEach((item) => {
+      item.style.display = "none";
+    });
+
+    // Show filtered items
+    items.forEach((item) => {
+      item.style.display = "block";
+    });
+
+    // Update count and show/hide no results message
+    updateFilteredCount(items.length);
+
+    // Re-apply sorting
+    sortCollections();
+  }
+
+  function sortCollections() {
+    const sortBy = document.getElementById("sortSelect").value;
+    const container = document.getElementById("collectionsContainer");
+    const items = Array.from(
+      container.querySelectorAll(
+        '.collection-item:not([style*="display: none"])'
+      )
+    );
+
+    items.sort((a, b) => {
+      switch (sortBy) {
+        case "newest":
+          return (
+            new Date(b.getAttribute("data-date")) -
+            new Date(a.getAttribute("data-date"))
+          );
+        case "oldest":
+          return (
+            new Date(a.getAttribute("data-date")) -
+            new Date(b.getAttribute("data-date"))
+          );
+        case "status":
+          const statusOrder = { open: 1, close: 2, finish: 3 };
+          return (
+            statusOrder[a.getAttribute("data-status")] -
+            statusOrder[b.getAttribute("data-status")]
+          );
+        case "orders":
+          return (
+            parseInt(b.getAttribute("data-orders")) -
+            parseInt(a.getAttribute("data-orders"))
+          );
+        default:
+          return 0;
+      }
+    });
+
+    // Re-append sorted items
+    items.forEach((item) => {
+      container.appendChild(item);
+    });
+  }
+
+  function clearFilters() {
+    // Clear desktop filters
+    document.getElementById("dateFilter").value = "";
+    document.getElementById("sortSelect").value = "newest";
+    
+    // Clear mobile filters
+    document.getElementById("dateFilterMobile").value = "";
+    document.getElementById("sortSelectMobile").value = "newest";
+
+    // Show all items
+    document.querySelectorAll(".collection-item").forEach((item) => {
+      item.style.display = "block";
+    });
+
+    // Update count
+    const totalItems = document.querySelectorAll(".collection-item").length;
+    updateFilteredCount(totalItems);
+
+    // Re-apply sorting
+    sortCollections();
+  }
+
+  function updateFilteredCount(count) {
+    const noResultsMessage = document.getElementById("noResultsMessage");
+    const collectionsContainer = document.getElementById(
+      "collectionsContainer"
+    );
+
+    if (count === 0) {
+      noResultsMessage.style.display = "block";
+      collectionsContainer.style.display = "none";
+    } else {
+      noResultsMessage.style.display = "none";
+      collectionsContainer.style.display = "flex";
+    }
+  }
+
+  // Initialize sorting on page load
+  document.addEventListener("DOMContentLoaded", function () {
+    sortCollections();
+  });
+</script>
+{% endblock %}

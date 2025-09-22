@@ -1,0 +1,248 @@
+{% extends "base.html" %} {% block title %}Demo - Maxsus Modallar va
+Ogohlantirishlar{% endblock %} {% block content %}
+
+<div class="container py-5">
+  <div class="row">
+    <div class="col-lg-8 mx-auto">
+      <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold mb-3">
+          Maxsus Modal va Ogohlantirishlar Demosi
+        </h1>
+        <p class="text-muted fs-5">
+          Yangi maxsus tasdiqlash modallari va Sonner-ga o'xshash
+          bildirishnomalarni sinab ko'ring
+        </p>
+      </div>
+
+      <!-- Confirmation Modal Tests -->
+      <div class="card mb-5">
+        <div class="card-header">
+          <h3 class="mb-0">
+            <i class="fas fa-exclamation-triangle me-2 text-warning"></i>
+            Tasdiqlash Modallari
+          </h3>
+        </div>
+        <div class="card-body">
+          <p class="text-muted mb-4">
+            Brauzerning standart confirm() funksiyasini almashtiradigan har xil
+            turdagi tasdiqlash dialoglarini sinab ko'ring.
+          </p>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <button
+                class="btn btn-danger w-100"
+                onclick="customConfirm('Bu amaliyotni bajarishni xohlaysizmi?', (confirmed) => { 
+                  if (confirmed) toast.success('Tasdiqlandi!', 'Amal bajarildi'); 
+                  else toast.info('Bekor qilindi', 'Amal bekor qilindi'); 
+                })"
+              >
+                <i class="fas fa-trash me-2"></i>
+                Oddiy Tasdiqlash
+              </button>
+            </div>
+
+            <div class="col-md-6">
+              <button
+                class="btn btn-warning w-100"
+                onclick="customConfirmAdvanced({
+                  title: 'Fayl O\'chirish',
+                  message: 'Bu fayl butunlay o\'chirib tashlanadi va qayta tiklanmaydi. Davom etishni xohlaysizmi?',
+                  confirmText: 'Ha, O\'chirish',
+                  cancelText: 'Yo\'q, Saqlab Qolish',
+                  confirmClass: 'btn-danger',
+                  callback: (confirmed) => { 
+                    if (confirmed) toast.success('Fayl o\'chirildi!'); 
+                    else toast.info('Fayl saqlab qolindi'); 
+                  }
+                })"
+              >
+                <i class="fas fa-file-circle-exclamation me-2"></i>
+                Murakkab Tasdiqlash
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toast Notification Tests -->
+      <div class="card mb-5">
+        <div class="card-header">
+          <h3 class="mb-0">
+            <i class="fas fa-bell me-2 text-info"></i>
+            Bildirishnomalar
+          </h3>
+        </div>
+        <div class="card-body">
+          <p class="text-muted mb-4">
+            Har xil uslub va davomiylikdagi bildirishnomalarni sinab ko'ring.
+          </p>
+
+          <div class="row g-3">
+            <div class="col-md-6 col-lg-3">
+              <button
+                class="btn btn-success w-100"
+                onclick="toast.success('Ma\'lumotlar muvaffaqiyatli saqlandi!', 'Bajarildi')"
+              >
+                <i class="fas fa-check me-2"></i>
+                Muvaffaqiyatli
+              </button>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+              <button
+                class="btn btn-danger w-100"
+                onclick="toast.error('Server bilan bog\'lanishda xatolik yuz berdi.', 'Xatolik')"
+              >
+                <i class="fas fa-times me-2"></i>
+                Xatolik
+              </button>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+              <button
+                class="btn btn-warning w-100"
+                onclick="toast.warning('Iltimos, barcha maydonlarni to\'ldiring.', 'Ogohlantiris')"
+              >
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Ogohlantirish
+              </button>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+              <button
+                class="btn btn-info w-100"
+                onclick="toast.info('Yangi xususiyat tez orada qo\'shiladi.', 'Ma\'lumot')"
+              >
+                <i class="fas fa-info-circle me-2"></i>
+                Ma'lumot
+              </button>
+            </div>
+          </div>
+
+          <hr class="my-4" />
+
+          <div class="row g-3">
+            <div class="col-md-4">
+              <button
+                class="btn btn-outline-primary w-100"
+                onclick="showToast('success', 'Tez', 'Bu bildirishnoma 2 soniyada yo\'qoladi', 2000)"
+              >
+                <i class="fas fa-clock me-2"></i>
+                Tez (2s)
+              </button>
+            </div>
+
+            <div class="col-md-4">
+              <button
+                class="btn btn-outline-secondary w-100"
+                onclick="showToast('info', 'Oddiy', 'Bu oddiy davomiylikdagi bildirishnoma', 5000)"
+              >
+                <i class="fas fa-clock me-2"></i>
+                Oddiy (5s)
+              </button>
+            </div>
+
+            <div class="col-md-4">
+              <button
+                class="btn btn-outline-success w-100"
+                onclick="showToast('warning', 'Doimiy', 'Bu bildirishnoma o\'z-o\'zidan yo\'qolmaydi', 0)"
+              >
+                <i class="fas fa-infinity me-2"></i>
+                Doimiy
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bootstrap Alert to Toast Conversion Demo -->
+      <div class="card mb-5">
+        <div class="card-header">
+          <h3 class="mb-0">
+            <i class="fas fa-exchange-alt me-2 text-primary"></i>
+            Bootstrap Ogohlantirishlarini O'zgartirish
+          </h3>
+        </div>
+        <div class="card-body">
+          <p class="text-muted mb-4">
+            An'anaviy Bootstrap ogohlantirishlari sahifa yuklanganda avtomatik
+            ravishda maxsus bildirishnomalarga aylantiriladi.
+          </p>
+
+          <div id="alertContainer">
+            <!-- These will be converted to toasts automatically -->
+            <div class="alert alert-success" role="alert">
+              <i class="fas fa-check-circle me-2"></i>
+              Bu muvaffaqiyatli Bootstrap alert - avtomatik toast bo'lib
+              aylanadi!
+            </div>
+
+            <div class="alert alert-danger" role="alert">
+              <i class="fas fa-exclamation-circle me-2"></i>
+              Bu xatolik Bootstrap alert - toast shaklida ko'rsatiladi!
+            </div>
+
+            <div class="alert alert-warning" role="alert">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              Bu ogohlantirish Bootstrap alert - toast formatida chiqadi!
+            </div>
+          </div>
+
+          <button type="button" class="btn btn-primary" onclick="location.reload()">
+            <i class="fas fa-refresh me-2" aria-hidden="true"></i>
+            Sahifani Yangilash (Testni Takrorlash)
+          </button>
+        </div>
+      </div>
+
+      <!-- Integration Examples -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="mb-0">
+            <i class="fas fa-code me-2 text-secondary"></i>
+            Foydalanish Namunalar
+          </h3>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <h5>Tasdiqlash Modali</h5>
+              <pre><code>// Oddiy foydalanish
+customConfirm('Xabar?', (confirmed) => {
+  if (confirmed) {
+    // Foydalanuvchi "Ha" ni bosdi
+  }
+});
+
+// Murakkab foydalanish
+customConfirmAdvanced({
+  title: 'Maxsus Sarlavha',
+  message: 'Sizning xabaringiz',
+  confirmText: 'O\'chirish',
+  cancelText: 'Bekor qilish',
+  confirmClass: 'btn-danger',
+  callback: (confirmed) => { ... }
+});</code></pre>
+            </div>
+
+            <div class="col-md-6">
+              <h5>Bildirishnomalar</h5>
+              <pre><code>// Oddiy foydalanish
+toast.success('Muvaffaqiyatli xabar!');
+toast.error('Xatolik xabari!');
+toast.warning('Ogohlantirish xabari!');
+toast.info('Ma\'lumot xabari!');
+
+// Maxsus sarlavha va davomiylik bilan
+showToast('success', 'Maxsus Sarlavha', 
+  'Xabar', 3000);</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

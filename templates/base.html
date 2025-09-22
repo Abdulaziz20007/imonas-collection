@@ -1,0 +1,1994 @@
+<!DOCTYPE html>
+<html lang="uz" data-bs-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Buyurtmalar Boshqaruv Tizimi{% endblock %}</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* macOS Ventura Inspired Design System */
+      :root {
+        --font-system: -apple-system, BlinkMacSystemFont, "SF Pro Display",
+          "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        --transition-fast: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+        --transition-slow: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+
+        /* Light Theme Colors */
+        --bg-primary-light: #f5f5f7;
+        --bg-secondary-light: #ffffff;
+        --bg-secondary-light-rgb: 255, 255, 255;
+        --bg-tertiary-light: #f0f0f2;
+        --bg-quaternary-light: #e8e8ea;
+        --text-primary-light: #1d1d1f;
+        --text-secondary-light: rgba(60, 60, 67, 0.78);
+        --text-tertiary-light: rgba(60, 60, 67, 0.55);
+        --separator-light: rgba(60, 60, 67, 0.29);
+        --accent-light: #007aff;
+        --accent-light-rgb: 0, 122, 255;
+        --accent-light-bg: #e5f2ff;
+        --shadow-color-light: rgba(0, 0, 0, 0.1);
+
+        /* Dark Theme Colors */
+        --bg-primary-dark: #1e1e1e;
+        --bg-secondary-dark: #2c2c2e;
+        --bg-secondary-dark-rgb: 44, 44, 46;
+        --bg-tertiary-dark: #3a3a3c;
+        --bg-quaternary-dark: #48484a;
+        --text-primary-dark: #f5f5f7;
+        --text-secondary-dark: rgba(235, 235, 245, 0.6);
+        --text-tertiary-dark: rgba(235, 235, 245, 0.4);
+        --separator-dark: rgba(84, 84, 88, 0.65);
+        --accent-dark: #0a84ff;
+        --accent-dark-rgb: 10, 132, 255;
+        --accent-dark-bg: #1a3d66;
+        --shadow-color-dark: rgba(0, 0, 0, 0.4);
+
+        /* Semantic Color System - Light */
+        --primary-50-light: #eff6ff;
+        --primary-100-light: #dbeafe;
+        --primary-200-light: #bfdbfe;
+        --primary-300-light: #93c5fd;
+        --primary-400-light: #60a5fa;
+        --primary-500-light: #3b82f6;
+        --primary-600-light: #2563eb;
+        --primary-700-light: #1d4ed8;
+        --primary-800-light: #1e40af;
+        --primary-900-light: #1e3a8a;
+
+        --success-50-light: #f0fdf4;
+        --success-100-light: #dcfce7;
+        --success-200-light: #bbf7d0;
+        --success-300-light: #86efac;
+        --success-400-light: #4ade80;
+        --success-500-light: #22c55e;
+        --success-600-light: #16a34a;
+        --success-700-light: #15803d;
+        --success-800-light: #166534;
+        --success-900-light: #14532d;
+
+        --warning-50-light: #fefce8;
+        --warning-100-light: #fef3c7;
+        --warning-200-light: #fde68a;
+        --warning-300-light: #fcd34d;
+        --warning-400-light: #fbbf24;
+        --warning-500-light: #f59e0b;
+        --warning-600-light: #d97706;
+        --warning-700-light: #b45309;
+        --warning-800-light: #92400e;
+        --warning-900-light: #78350f;
+
+        --danger-50-light: #fef2f2;
+        --danger-100-light: #fee2e2;
+        --danger-200-light: #fecaca;
+        --danger-300-light: #fca5a5;
+        --danger-400-light: #f87171;
+        --danger-500-light: #ef4444;
+        --danger-600-light: #dc2626;
+        --danger-700-light: #b91c1c;
+        --danger-800-light: #991b1b;
+        --danger-900-light: #7f1d1d;
+
+        --info-50-light: #f0f9ff;
+        --info-100-light: #e0f2fe;
+        --info-200-light: #bae6fd;
+        --info-300-light: #7dd3fc;
+        --info-400-light: #38bdf8;
+        --info-500-light: #0ea5e9;
+        --info-600-light: #0284c7;
+        --info-700-light: #0369a1;
+        --info-800-light: #075985;
+        --info-900-light: #0c4a6e;
+
+        --neutral-50-light: #fafafa;
+        --neutral-100-light: #f5f5f5;
+        --neutral-200-light: #e5e5e5;
+        --neutral-300-light: #d4d4d4;
+        --neutral-400-light: #a3a3a3;
+        --neutral-500-light: #737373;
+        --neutral-600-light: #525252;
+        --neutral-700-light: #404040;
+        --neutral-800-light: #262626;
+        --neutral-900-light: #171717;
+
+        /* Semantic Color System - Dark */
+        --primary-50-dark: #1e3a8a;
+        --primary-100-dark: #1e40af;
+        --primary-200-dark: #1d4ed8;
+        --primary-300-dark: #2563eb;
+        --primary-400-dark: #3b82f6;
+        --primary-500-dark: #60a5fa;
+        --primary-600-dark: #93c5fd;
+        --primary-700-dark: #bfdbfe;
+        --primary-800-dark: #dbeafe;
+        --primary-900-dark: #eff6ff;
+
+        --success-50-dark: #14532d;
+        --success-100-dark: #166534;
+        --success-200-dark: #15803d;
+        --success-300-dark: #16a34a;
+        --success-400-dark: #22c55e;
+        --success-500-dark: #4ade80;
+        --success-600-dark: #86efac;
+        --success-700-dark: #bbf7d0;
+        --success-800-dark: #dcfce7;
+        --success-900-dark: #f0fdf4;
+
+        --warning-50-dark: #78350f;
+        --warning-100-dark: #92400e;
+        --warning-200-dark: #b45309;
+        --warning-300-dark: #d97706;
+        --warning-400-dark: #f59e0b;
+        --warning-500-dark: #fbbf24;
+        --warning-600-dark: #fcd34d;
+        --warning-700-dark: #fde68a;
+        --warning-800-dark: #fef3c7;
+        --warning-900-dark: #fefce8;
+
+        --danger-50-dark: #7f1d1d;
+        --danger-100-dark: #991b1b;
+        --danger-200-dark: #b91c1c;
+        --danger-300-dark: #dc2626;
+        --danger-400-dark: #ef4444;
+        --danger-500-dark: #f87171;
+        --danger-600-dark: #fca5a5;
+        --danger-700-dark: #fecaca;
+        --danger-800-dark: #fee2e2;
+        --danger-900-dark: #fef2f2;
+
+        --info-50-dark: #0c4a6e;
+        --info-100-dark: #075985;
+        --info-200-dark: #0369a1;
+        --info-300-dark: #0284c7;
+        --info-400-dark: #0ea5e9;
+        --info-500-dark: #38bdf8;
+        --info-600-dark: #7dd3fc;
+        --info-700-dark: #bae6fd;
+        --info-800-dark: #e0f2fe;
+        --info-900-dark: #f0f9ff;
+
+        --neutral-50-dark: #171717;
+        --neutral-100-dark: #262626;
+        --neutral-200-dark: #404040;
+        --neutral-300-dark: #525252;
+        --neutral-400-dark: #737373;
+        --neutral-500-dark: #a3a3a3;
+        --neutral-600-dark: #d4d4d4;
+        --neutral-700-dark: #e5e5e5;
+        --neutral-800-dark: #f5f5f5;
+        --neutral-900-dark: #fafafa;
+
+        /* Current Theme Variables (default to light) */
+        --bg-primary: var(--bg-primary-light);
+        --bg-secondary: var(--bg-secondary-light);
+        --bg-secondary-rgb: var(--bg-secondary-light-rgb);
+        --bg-tertiary: var(--bg-tertiary-light);
+        --bg-quaternary: var(--bg-quaternary-light);
+        --text-primary: var(--text-primary-light);
+        --text-secondary: var(--text-secondary-light);
+        --text-tertiary: var(--text-tertiary-light);
+        --separator: var(--separator-light);
+        --accent: var(--accent-light);
+        --accent-rgb: var(--accent-light-rgb);
+        --accent-bg: var(--accent-light-bg);
+        --shadow-color: var(--shadow-color-light);
+
+        /* Semantic Colors - Current Theme */
+        --primary-50: var(--primary-50-light);
+        --primary-100: var(--primary-100-light);
+        --primary-200: var(--primary-200-light);
+        --primary-300: var(--primary-300-light);
+        --primary-400: var(--primary-400-light);
+        --primary-500: var(--primary-500-light);
+        --primary-600: var(--primary-600-light);
+        --primary-700: var(--primary-700-light);
+        --primary-800: var(--primary-800-light);
+        --primary-900: var(--primary-900-light);
+        --primary: var(--primary-600);
+
+        --success-50: var(--success-50-light);
+        --success-100: var(--success-100-light);
+        --success-200: var(--success-200-light);
+        --success-300: var(--success-300-light);
+        --success-400: var(--success-400-light);
+        --success-500: var(--success-500-light);
+        --success-600: var(--success-600-light);
+        --success-700: var(--success-700-light);
+        --success-800: var(--success-800-light);
+        --success-900: var(--success-900-light);
+        --success: var(--success-600);
+
+        --warning-50: var(--warning-50-light);
+        --warning-100: var(--warning-100-light);
+        --warning-200: var(--warning-200-light);
+        --warning-300: var(--warning-300-light);
+        --warning-400: var(--warning-400-light);
+        --warning-500: var(--warning-500-light);
+        --warning-600: var(--warning-600-light);
+        --warning-700: var(--warning-700-light);
+        --warning-800: var(--warning-800-light);
+        --warning-900: var(--warning-900-light);
+        --warning: var(--warning-600);
+
+        --danger-50: var(--danger-50-light);
+        --danger-100: var(--danger-100-light);
+        --danger-200: var(--danger-200-light);
+        --danger-300: var(--danger-300-light);
+        --danger-400: var(--danger-400-light);
+        --danger-500: var(--danger-500-light);
+        --danger-600: var(--danger-600-light);
+        --danger-700: var(--danger-700-light);
+        --danger-800: var(--danger-800-light);
+        --danger-900: var(--danger-900-light);
+        --danger: var(--danger-600);
+
+        --info-50: var(--info-50-light);
+        --info-100: var(--info-100-light);
+        --info-200: var(--info-200-light);
+        --info-300: var(--info-300-light);
+        --info-400: var(--info-400-light);
+        --info-500: var(--info-500-light);
+        --info-600: var(--info-600-light);
+        --info-700: var(--info-700-light);
+        --info-800: var(--info-800-light);
+        --info-900: var(--info-900-light);
+        --info: var(--info-600);
+
+        --neutral-50: var(--neutral-50-light);
+        --neutral-100: var(--neutral-100-light);
+        --neutral-200: var(--neutral-200-light);
+        --neutral-300: var(--neutral-300-light);
+        --neutral-400: var(--neutral-400-light);
+        --neutral-500: var(--neutral-500-light);
+        --neutral-600: var(--neutral-600-light);
+        --neutral-700: var(--neutral-700-light);
+        --neutral-800: var(--neutral-800-light);
+        --neutral-900: var(--neutral-900-light);
+
+        /* Sizing & Spacing */
+        --radius-sm: 6px;
+        --radius-md: 10px;
+        --radius-lg: 14px;
+        --radius-xl: 18px;
+        --spacing-xs: 4px;
+        --spacing-sm: 8px;
+        --spacing-md: 12px;
+        --spacing-lg: 16px;
+        --spacing-xl: 24px;
+        --spacing-2xl: 32px;
+
+        /* Shadows */
+        --shadow-sm: 0 1px 2px var(--shadow-color);
+        --shadow-md: 0 3px 6px var(--shadow-color);
+        --shadow-lg: 0 10px 20px var(--shadow-color);
+        --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.15);
+        --shadow-flat: 0 1px 3px rgba(0, 0, 0, 0.12),
+          0 1px 2px rgba(0, 0, 0, 0.24);
+      }
+
+      /* Dark theme styles - both auto and manual */
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          --bg-primary: var(--bg-primary-dark);
+          --bg-secondary: var(--bg-secondary-dark);
+          --bg-secondary-rgb: var(--bg-secondary-dark-rgb);
+          --bg-tertiary: var(--bg-tertiary-dark);
+          --bg-quaternary: var(--bg-quaternary-dark);
+          --text-primary: var(--text-primary-dark);
+          --text-secondary: var(--text-secondary-dark);
+          --text-tertiary: var(--text-tertiary-dark);
+          --separator: var(--separator-dark);
+          --accent: var(--accent-dark);
+          --accent-rgb: var(--accent-dark-rgb);
+          --accent-bg: var(--accent-dark-bg);
+          --shadow-color: var(--shadow-color-dark);
+
+          /* Semantic Colors - Dark Theme */
+          --primary-50: var(--primary-50-dark);
+          --primary-100: var(--primary-100-dark);
+          --primary-200: var(--primary-200-dark);
+          --primary-300: var(--primary-300-dark);
+          --primary-400: var(--primary-400-dark);
+          --primary-500: var(--primary-500-dark);
+          --primary-600: var(--primary-600-dark);
+          --primary-700: var(--primary-700-dark);
+          --primary-800: var(--primary-800-dark);
+          --primary-900: var(--primary-900-dark);
+          --primary: var(--primary-400);
+
+          --success-50: var(--success-50-dark);
+          --success-100: var(--success-100-dark);
+          --success-200: var(--success-200-dark);
+          --success-300: var(--success-300-dark);
+          --success-400: var(--success-400-dark);
+          --success-500: var(--success-500-dark);
+          --success-600: var(--success-600-dark);
+          --success-700: var(--success-700-dark);
+          --success-800: var(--success-800-dark);
+          --success-900: var(--success-900-dark);
+          --success: var(--success-400);
+
+          --warning-50: var(--warning-50-dark);
+          --warning-100: var(--warning-100-dark);
+          --warning-200: var(--warning-200-dark);
+          --warning-300: var(--warning-300-dark);
+          --warning-400: var(--warning-400-dark);
+          --warning-500: var(--warning-500-dark);
+          --warning-600: var(--warning-600-dark);
+          --warning-700: var(--warning-700-dark);
+          --warning-800: var(--warning-800-dark);
+          --warning-900: var(--warning-900-dark);
+          --warning: var(--warning-400);
+
+          --danger-50: var(--danger-50-dark);
+          --danger-100: var(--danger-100-dark);
+          --danger-200: var(--danger-200-dark);
+          --danger-300: var(--danger-300-dark);
+          --danger-400: var(--danger-400-dark);
+          --danger-500: var(--danger-500-dark);
+          --danger-600: var(--danger-600-dark);
+          --danger-700: var(--danger-700-dark);
+          --danger-800: var(--danger-800-dark);
+          --danger-900: var(--danger-900-dark);
+          --danger: var(--danger-400);
+
+          --info-50: var(--info-50-dark);
+          --info-100: var(--info-100-dark);
+          --info-200: var(--info-200-dark);
+          --info-300: var(--info-300-dark);
+          --info-400: var(--info-400-dark);
+          --info-500: var(--info-500-dark);
+          --info-600: var(--info-600-dark);
+          --info-700: var(--info-700-dark);
+          --info-800: var(--info-800-dark);
+          --info-900: var(--info-900-dark);
+          --info: var(--info-400);
+
+          --neutral-50: var(--neutral-50-dark);
+          --neutral-100: var(--neutral-100-dark);
+          --neutral-200: var(--neutral-200-dark);
+          --neutral-300: var(--neutral-300-dark);
+          --neutral-400: var(--neutral-400-dark);
+          --neutral-500: var(--neutral-500-dark);
+          --neutral-600: var(--neutral-600-dark);
+          --neutral-700: var(--neutral-700-dark);
+          --neutral-800: var(--neutral-800-dark);
+          --neutral-900: var(--neutral-900-dark);
+        }
+      }
+
+      /* Manual dark theme override */
+      :root[data-theme="dark"] {
+        --bg-primary: var(--bg-primary-dark);
+        --bg-secondary: var(--bg-secondary-dark);
+        --bg-secondary-rgb: var(--bg-secondary-dark-rgb);
+        --bg-tertiary: var(--bg-tertiary-dark);
+        --bg-quaternary: var(--bg-quaternary-dark);
+        --text-primary: var(--text-primary-dark);
+        --text-secondary: var(--text-secondary-dark);
+        --text-tertiary: var(--text-tertiary-dark);
+        --separator: var(--separator-dark);
+        --accent: var(--accent-dark);
+        --accent-rgb: var(--accent-dark-rgb);
+        --accent-bg: var(--accent-dark-bg);
+        --shadow-color: var(--shadow-color-dark);
+
+        /* Semantic Colors - Dark Theme */
+        --primary-50: var(--primary-50-dark);
+        --primary-100: var(--primary-100-dark);
+        --primary-200: var(--primary-200-dark);
+        --primary-300: var(--primary-300-dark);
+        --primary-400: var(--primary-400-dark);
+        --primary-500: var(--primary-500-dark);
+        --primary-600: var(--primary-600-dark);
+        --primary-700: var(--primary-700-dark);
+        --primary-800: var(--primary-800-dark);
+        --primary-900: var(--primary-900-dark);
+        --primary: var(--primary-400);
+
+        --success-50: var(--success-50-dark);
+        --success-100: var(--success-100-dark);
+        --success-200: var(--success-200-dark);
+        --success-300: var(--success-300-dark);
+        --success-400: var(--success-400-dark);
+        --success-500: var(--success-500-dark);
+        --success-600: var(--success-600-dark);
+        --success-700: var(--success-700-dark);
+        --success-800: var(--success-800-dark);
+        --success-900: var(--success-900-dark);
+        --success: var(--success-400);
+
+        --warning-50: var(--warning-50-dark);
+        --warning-100: var(--warning-100-dark);
+        --warning-200: var(--warning-200-dark);
+        --warning-300: var(--warning-300-dark);
+        --warning-400: var(--warning-400-dark);
+        --warning-500: var(--warning-500-dark);
+        --warning-600: var(--warning-600-dark);
+        --warning-700: var(--warning-700-dark);
+        --warning-800: var(--warning-800-dark);
+        --warning-900: var(--warning-900-dark);
+        --warning: var(--warning-400);
+
+        --danger-50: var(--danger-50-dark);
+        --danger-100: var(--danger-100-dark);
+        --danger-200: var(--danger-200-dark);
+        --danger-300: var(--danger-300-dark);
+        --danger-400: var(--danger-400-dark);
+        --danger-500: var(--danger-500-dark);
+        --danger-600: var(--danger-600-dark);
+        --danger-700: var(--danger-700-dark);
+        --danger-800: var(--danger-800-dark);
+        --danger-900: var(--danger-900-dark);
+        --danger: var(--danger-400);
+
+        --info-50: var(--info-50-dark);
+        --info-100: var(--info-100-dark);
+        --info-200: var(--info-200-dark);
+        --info-300: var(--info-300-dark);
+        --info-400: var(--info-400-dark);
+        --info-500: var(--info-500-dark);
+        --info-600: var(--info-600-dark);
+        --info-700: var(--info-700-dark);
+        --info-800: var(--info-800-dark);
+        --info-900: var(--info-900-dark);
+        --info: var(--info-400);
+
+        --neutral-50: var(--neutral-50-dark);
+        --neutral-100: var(--neutral-100-dark);
+        --neutral-200: var(--neutral-200-dark);
+        --neutral-300: var(--neutral-300-dark);
+        --neutral-400: var(--neutral-400-dark);
+        --neutral-500: var(--neutral-500-dark);
+        --neutral-600: var(--neutral-600-dark);
+        --neutral-700: var(--neutral-700-dark);
+        --neutral-800: var(--neutral-800-dark);
+        --neutral-900: var(--neutral-900-dark);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        background-color: var(--bg-primary);
+        color: var(--text-primary);
+        font-family: var(--font-system);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        transition: background-color var(--transition-fast),
+          color var(--transition-fast);
+      }
+
+      /* Typography */
+      h1,
+      .h1,
+      h2,
+      .h2,
+      h3,
+      .h3,
+      h4,
+      .h4 {
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      /* Navbar */
+      .navbar {
+        background-color: rgba(var(--bg-secondary-rgb), 0.8);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border-bottom: 1px solid var(--separator);
+        padding: var(--spacing-md) 0;
+        transition: var(--transition-fast);
+      }
+
+      .navbar-brand {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: var(--text-primary) !important;
+        gap: var(--spacing-sm);
+      }
+
+      .navbar-brand i {
+        color: var(--accent);
+      }
+
+      .nav-link {
+        color: var(--text-secondary) !important;
+        font-weight: 500;
+        font-size: 0.9rem;
+        padding: var(--spacing-sm) var(--spacing-md) !important;
+        border-radius: var(--radius-sm);
+        margin: 0 var(--spacing-xs);
+        transition: var(--transition-fast);
+        border: none;
+      }
+
+      .nav-link:hover {
+        background-color: var(--bg-tertiary);
+        color: var(--text-primary) !important;
+      }
+
+      .nav-link.active {
+        background-color: var(--accent);
+        color: white !important;
+        font-weight: 500;
+      }
+
+      /* Cards */
+      .card {
+        background-color: var(--bg-secondary);
+        border: 1px solid var(--separator);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        transition: var(--transition-fast);
+        overflow: hidden;
+      }
+
+      .card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+      }
+
+      .card-header {
+        background-color: transparent;
+        border-bottom: 1px solid var(--separator);
+        padding: var(--spacing-lg);
+        font-weight: 600;
+      }
+
+      .card-body {
+        padding: var(--spacing-lg);
+      }
+
+      .card-footer {
+        background-color: var(--bg-primary);
+        border-top: 1px solid var(--separator);
+        padding: var(--spacing-md) var(--spacing-lg);
+      }
+
+      /* Remove old status borders */
+      .status-open,
+      .status-close,
+      .status-finish,
+      .status-unknown {
+        border-left: none;
+      }
+
+      .user-card {
+        cursor: pointer;
+        border-radius: var(--radius-md);
+        padding: var(--spacing-md);
+        transition: var(--transition-fast);
+      }
+
+      .user-card:hover {
+        background-color: var(--bg-tertiary);
+      }
+
+      .user-orders {
+        display: none;
+        background-color: var(--bg-primary);
+        border-radius: var(--radius-md);
+        margin-top: var(--spacing-lg);
+        padding: var(--spacing-md);
+      }
+
+      .user-orders.show {
+        display: block;
+      }
+
+      .image-gallery {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--spacing-sm);
+        margin-top: var(--spacing-md);
+      }
+
+      .image-thumbnail {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: var(--radius-md);
+        border: 2px solid var(--separator);
+        cursor: pointer;
+        transition: var(--transition-fast);
+      }
+
+      .image-thumbnail:hover {
+        transform: scale(1.05);
+        border-color: var(--accent);
+      }
+
+      .breadcrumb {
+        background-color: transparent;
+        padding: 0;
+        margin-bottom: var(--spacing-xl);
+      }
+
+      .breadcrumb-item a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+
+      .breadcrumb-item a:hover {
+        text-decoration: underline;
+      }
+
+      .breadcrumb-item.active {
+        color: var(--text-secondary);
+      }
+
+      @media (max-width: 768px) {
+        body {
+          padding-bottom: 80px;
+        }
+
+        .navbar {
+          position: fixed;
+          top: auto;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          border-top: 1px solid var(--separator);
+          border-bottom: none;
+          z-index: 1030;
+          padding: var(--spacing-sm) 0;
+        }
+
+        .navbar-brand,
+        .navbar-toggler {
+          display: none;
+        }
+
+        .navbar-collapse {
+          display: flex !important;
+          justify-content: center;
+        }
+
+        .navbar-nav {
+          flex-direction: row !important;
+          justify-content: space-around;
+          width: 100%;
+          gap: var(--spacing-xs);
+        }
+
+        .nav-item {
+          flex: 1;
+          text-align: center;
+        }
+
+        .nav-link {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: var(--spacing-xs) !important;
+          padding: var(--spacing-sm) var(--spacing-xs) !important;
+          margin: 0 !important;
+          border-radius: var(--radius-sm) !important;
+          font-size: 0.8rem;
+        }
+
+        .nav-link .nav-text {
+          font-size: 0.65rem;
+          display: none;
+          font-weight: 500;
+        }
+
+        /* Show text only on larger mobile screens if needed */
+        @media (min-width: 480px) and (max-width: 768px) {
+          .nav-link .nav-text {
+            display: block;
+            font-size: 0.6rem;
+          }
+        }
+
+        .nav-link i {
+          font-size: 1.1rem;
+        }
+
+        /* Hide theme toggle on mobile */
+        .nav-item:has(#themeToggle) {
+          display: none;
+        }
+
+        /* Container padding adjustments */
+        .container {
+          padding-left: var(--spacing-md);
+          padding-right: var(--spacing-md);
+        }
+
+        /* Card adjustments for mobile */
+        .card {
+          margin-bottom: var(--spacing-lg);
+        }
+
+        .card-body {
+          padding: var(--spacing-md);
+        }
+
+        /* Table responsive adjustments */
+        .table-responsive {
+          font-size: 0.9rem;
+        }
+
+        /* Form adjustments */
+        .btn {
+          font-size: 0.9rem;
+          padding: var(--spacing-sm) var(--spacing-md);
+        }
+
+        /* Toast adjustments for mobile */
+        #toastContainer {
+          top: var(--spacing-md);
+          right: var(--spacing-md);
+          left: var(--spacing-md);
+          max-width: none;
+        }
+
+        /* Dashboard cards mobile responsive */
+        .col-4 .card-body {
+          padding: var(--spacing-sm);
+        }
+
+        .col-4 .display-4 {
+          font-size: 1.5rem;
+        }
+
+        .col-4 .card-body p.small {
+          font-size: 0.7rem;
+        }
+
+        .col-4 .position-absolute {
+          padding: var(--spacing-xs);
+        }
+
+        .col-4 .fs-2 {
+          font-size: 1.2rem !important;
+        }
+
+        /* Users page mobile optimizations */
+        .user-item .card-body {
+          padding: var(--spacing-sm);
+        }
+
+        .user-item .btn-group {
+          flex-direction: column;
+          gap: var(--spacing-xs);
+        }
+
+        .user-item .btn-group .btn {
+          border-radius: var(--radius-sm);
+          font-size: 0.8rem;
+          padding: var(--spacing-xs) var(--spacing-sm);
+        }
+
+        .user-item .rounded-circle {
+          width: 50px !important;
+          height: 50px !important;
+        }
+
+        .user-item h5 {
+          font-size: 1rem;
+        }
+
+        .user-item .text-muted {
+          font-size: 0.8rem;
+        }
+
+        .user-item .fs-5 {
+          font-size: 1rem !important;
+        }
+
+        /* Page headers mobile optimizations */
+        .card .card-body h4 {
+          font-size: 1.25rem;
+        }
+
+        /* Enhanced mobile navigation */
+        .navbar-nav .nav-link {
+          padding: 0.75rem 1rem;
+          font-size: 0.95rem;
+        }
+
+        /* Mobile-first table improvements */
+        .table-responsive {
+          border: none;
+          border-radius: var(--radius-md);
+          overflow: hidden;
+        }
+
+        .table {
+          margin-bottom: 0;
+        }
+
+        .table thead th {
+          font-size: 0.85rem;
+          padding: 0.75rem 0.5rem;
+          border-bottom-width: 1px;
+        }
+
+        .table tbody td {
+          padding: 0.75rem 0.5rem;
+          font-size: 0.9rem;
+          border-bottom: 1px solid var(--separator);
+        }
+
+        /* Mobile action buttons */
+        .btn-group-vertical .btn {
+          border-radius: var(--radius-sm) !important;
+          margin-bottom: 0.25rem;
+        }
+
+        .btn-group-vertical .btn:last-child {
+          margin-bottom: 0;
+        }
+
+        /* Mobile modal improvements */
+        .modal-dialog {
+          margin: 1rem;
+          max-width: calc(100% - 2rem);
+        }
+
+        .modal-header {
+          padding: 1rem;
+          border-bottom: 1px solid var(--separator);
+        }
+
+        .modal-body {
+          padding: 1rem;
+        }
+
+        .modal-footer {
+          padding: 1rem;
+          border-top: 1px solid var(--separator);
+        }
+
+        /* Mobile search and filter improvements */
+        .input-group .form-control {
+          font-size: 0.9rem;
+        }
+
+        .input-group .btn {
+          font-size: 0.9rem;
+          padding: 0.5rem 0.75rem;
+        }
+
+        /* Mobile status badges */
+        .badge {
+          font-size: 0.75rem;
+          padding: 0.35rem 0.65rem;
+        }
+
+        /* Mobile dropdown improvements */
+        .dropdown-menu {
+          font-size: 0.9rem;
+          min-width: 180px;
+        }
+
+        .dropdown-item {
+          padding: 0.5rem 1rem;
+        }
+
+        /* Mobile pagination */
+        .pagination .page-link {
+          padding: 0.5rem 0.75rem;
+          font-size: 0.9rem;
+        }
+
+        /* Mobile breadcrumb */
+        .breadcrumb {
+          margin-bottom: 1rem;
+          padding: 0.75rem 1rem;
+          font-size: 0.85rem;
+        }
+
+        /* Mobile alert improvements */
+        .alert {
+          padding: 0.75rem 1rem;
+          margin-bottom: 1rem;
+          font-size: 0.9rem;
+        }
+
+        /* Mobile progress bars */
+        .progress {
+          height: 0.75rem;
+        }
+
+        /* Enhanced touch targets */
+        .btn,
+        .form-control,
+        .form-select,
+        .form-check-input {
+          min-height: 42px;
+        }
+
+        .form-check-input {
+          transform: scale(1.1);
+        }
+
+        /* Mobile sidebar improvements */
+        .offcanvas {
+          width: 280px;
+        }
+
+        .offcanvas-header {
+          padding: 1rem;
+        }
+
+        .offcanvas-body {
+          padding: 1rem;
+        }
+
+        /* Filter controls mobile optimization */
+        .form-control-sm {
+          font-size: 0.875rem;
+        }
+      }
+
+      /* Extra small mobile styles */
+      @media (max-width: 480px) {
+        .container {
+          padding-left: var(--spacing-sm);
+          padding-right: var(--spacing-sm);
+        }
+
+        .card-body {
+          padding: var(--spacing-sm);
+        }
+
+        .btn {
+          font-size: 0.8rem;
+        }
+
+        .h1,
+        .h2,
+        .h3,
+        .h4,
+        .h5,
+        .h6 {
+          font-size: 1rem;
+        }
+
+        /* Dashboard stats mobile optimization */
+        .col-4 .card-body {
+          padding: var(--spacing-xs);
+        }
+
+        .col-4 .display-4 {
+          font-size: 1.2rem;
+        }
+
+        .col-4 .card-body p.small {
+          font-size: 0.6rem;
+        }
+
+        /* Extra small mobile navigation */
+        .navbar-brand {
+          font-size: 1rem;
+        }
+
+        .navbar-nav .nav-link {
+          padding: 0.5rem 0.75rem;
+          font-size: 0.85rem;
+        }
+
+        /* Extra small mobile tables */
+        .table thead th,
+        .table tbody td {
+          padding: 0.5rem 0.25rem;
+          font-size: 0.8rem;
+        }
+
+        /* Extra small mobile modals */
+        .modal-dialog {
+          margin: 0.5rem;
+          max-width: calc(100% - 1rem);
+        }
+
+        .modal-header,
+        .modal-body,
+        .modal-footer {
+          padding: 0.75rem;
+        }
+
+        /* Extra small mobile forms */
+        .form-control,
+        .form-select,
+        .btn {
+          padding: 0.5rem 0.75rem;
+          font-size: 0.85rem;
+          min-height: 40px;
+        }
+
+        /* Extra small mobile status */
+        .badge {
+          font-size: 0.7rem;
+          padding: 0.25rem 0.5rem;
+        }
+
+        /* Extra small mobile alerts */
+        .alert {
+          padding: 0.5rem 0.75rem;
+          font-size: 0.8rem;
+        }
+      }
+
+      /* Landscape orientation improvements */
+      @media (max-height: 500px) and (orientation: landscape) {
+        .modal-dialog {
+          max-height: 90vh;
+          overflow-y: auto;
+        }
+
+        .mobile-filter-panel {
+          max-height: 90vh;
+        }
+
+        .navbar-nav .nav-link {
+          padding: 0.5rem 0.75rem;
+        }
+
+        /* Button group mobile optimization */
+        .btn-group-sm .btn {
+          padding: 0.375rem 0.5rem;
+          font-size: 0.8rem;
+        }
+
+        /* Mobile header spacing */
+        .card-body p.small {
+          font-size: 0.75rem;
+        }
+
+        /* Statistics cards column spacing on mobile */
+        .col-3 .p-2 {
+          padding: 0.375rem !important;
+        }
+
+        .col-3 .h5 {
+          font-size: 1rem;
+        }
+
+        /* Form select mobile optimization */
+        .form-select-sm {
+          padding: 0.375rem 0.5rem;
+          font-size: 0.875rem;
+        }
+      }
+
+      @media (max-width: 576px) {
+        .display-1,
+        .display-4,
+        .display-5 {
+          font-size: 2rem;
+        }
+
+        .fs-1 {
+          font-size: 1.5rem !important;
+        }
+
+        .fs-2 {
+          font-size: 1.25rem !important;
+        }
+
+        /* Smaller spacing on very small screens */
+        .container {
+          padding-left: var(--spacing-sm);
+          padding-right: var(--spacing-sm);
+        }
+
+        .card-body {
+          padding: var(--spacing-sm);
+        }
+      }
+
+      /* Buttons */
+      .btn {
+        border-radius: var(--radius-md);
+        font-weight: 500;
+        font-size: 0.9rem;
+        padding: var(--spacing-sm) var(--spacing-lg);
+        border: none;
+        transition: var(--transition-fast);
+        box-shadow: 0 1px 1px var(--shadow-color);
+      }
+
+      .btn:hover {
+        transform: translateY(-1px);
+      }
+
+      .btn:active {
+        transform: translateY(0);
+        filter: brightness(0.95);
+      }
+
+      .btn-primary {
+        background-color: var(--accent);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background-color: var(--accent);
+        filter: brightness(1.1);
+        color: white;
+      }
+
+      .btn-outline-primary {
+        background-color: transparent;
+        color: var(--accent);
+        box-shadow: inset 0 0 0 1px var(--accent);
+      }
+
+      .btn-outline-primary:hover {
+        background-color: var(--accent);
+        color: white;
+      }
+
+      .btn-outline-secondary {
+        background-color: var(--bg-tertiary);
+        color: var(--text-primary);
+        box-shadow: inset 0 0 0 1px var(--separator);
+      }
+
+      .btn-outline-secondary:hover {
+        background-color: var(--bg-quaternary);
+        color: var(--text-primary);
+      }
+
+      /* Badges */
+      .badge {
+        border-radius: var(--radius-sm);
+        font-weight: 500;
+      }
+
+      .bg-primary {
+        background-color: var(--accent) !important;
+        color: white !important;
+      }
+
+      .bg-success {
+        background-color: #34c759 !important;
+      }
+
+      .bg-warning {
+        background-color: #ff9500 !important;
+      }
+
+      .bg-danger {
+        background-color: #ff3b30 !important;
+      }
+
+      .bg-info {
+        background-color: #5ac8fa !important;
+      }
+
+      .text-primary {
+        color: var(--accent) !important;
+      }
+
+      .form-control,
+      .form-select {
+        background-color: var(--bg-tertiary);
+        border: 1px solid var(--separator);
+        border-radius: var(--radius-md);
+        color: var(--text-primary);
+        padding: var(--spacing-sm) var(--spacing-md);
+        transition: var(--transition-fast);
+        box-shadow: none;
+      }
+
+      .form-control:focus,
+      .form-select:focus {
+        background-color: var(--bg-secondary);
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.2);
+        outline: none;
+      }
+
+      .form-label {
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: var(--spacing-sm);
+      }
+
+      .modal-content {
+        background-color: rgba(var(--bg-secondary-rgb), 0.8);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border: 1px solid var(--separator);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+      }
+
+      .modal-header {
+        border-bottom: 1px solid var(--separator);
+      }
+
+      .modal-title {
+        font-weight: 700;
+      }
+
+      .modal-footer {
+        border-top: 1px solid var(--separator);
+      }
+
+      .table {
+        border-collapse: separate;
+        border-spacing: 0;
+        width: 100%;
+      }
+
+      .table thead th {
+        background-color: var(--bg-primary);
+        border-bottom: 1px solid var(--separator);
+        color: var(--text-secondary);
+        font-weight: 500;
+        padding: var(--spacing-md);
+      }
+
+      .table tbody tr {
+        background-color: var(--bg-secondary);
+        transition: background-color var(--transition-fast);
+      }
+
+      .table tbody tr:hover {
+        background-color: var(--bg-tertiary);
+      }
+
+      .table td {
+        padding: var(--spacing-md);
+        border-bottom: 1px solid var(--separator);
+        color: var(--text-secondary);
+      }
+
+      /* Ensure all table bodies use theme styling consistently */
+      .table tbody,
+      tbody {
+        background-color: var(--bg-secondary);
+      }
+
+      .table tbody tr,
+      tbody tr {
+        background-color: var(--bg-secondary);
+        border-color: var(--separator);
+        color: var(--text-primary);
+        transition: background-color var(--transition-fast);
+      }
+
+      .table tbody tr:hover,
+      tbody tr:hover {
+        background-color: var(--bg-tertiary);
+      }
+
+      .table tbody td,
+      tbody td {
+        color: var(--text-primary);
+        border-color: var(--separator);
+      }
+
+      .table thead th,
+      thead th {
+        background-color: var(--bg-tertiary);
+        color: var(--text-secondary);
+        border-color: var(--separator);
+      }
+
+      /* Fix Bootstrap's default table and form backgrounds with theme variables */
+      .table > :not(caption) > * > *,
+      .table > tbody > tr > td,
+      .table > tbody > tr > th,
+      .table > thead > tr > td,
+      .table > thead > tr > th,
+      .table > tfoot > tr > td,
+      .table > tfoot > tr > th {
+        background-color: var(--bg-secondary) !important;
+      }
+
+      .table > thead > tr > th {
+        background-color: var(--bg-tertiary) !important;
+      }
+
+      .form-floating > .form-control,
+      .form-floating > .form-select {
+        background-color: var(--bg-tertiary) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--separator) !important;
+      }
+
+      .form-floating > .form-control:not(:placeholder-shown),
+      .form-floating > .form-select:not(:placeholder-shown) {
+        background-color: var(--bg-tertiary) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--separator) !important;
+      }
+
+      .form-floating > .form-control:focus,
+      .form-floating > .form-select:focus {
+        background-color: var(--bg-secondary) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--accent) !important;
+        box-shadow: 0 0 0 0.25rem rgba(var(--accent-rgb), 0.25) !important;
+      }
+
+      .form-floating > label {
+        color: var(--text-secondary) !important;
+      }
+
+      .form-floating > .form-control:focus ~ label,
+      .form-floating > .form-control:not(:placeholder-shown) ~ label,
+      .form-floating > .form-select:focus ~ label,
+      .form-floating > .form-select:not(:placeholder-shown) ~ label {
+        color: var(--accent) !important;
+      }
+
+      /* Ensure white background behind floating label notch in light theme */
+      :root[data-theme="light"]
+        .form-floating
+        > .form-control:not(:placeholder-shown)
+        ~ label::after,
+      :root:not([data-theme])
+        .form-floating
+        > .form-control:not(:placeholder-shown)
+        ~ label::after {
+        background-color: transparent !important;
+      }
+
+      /* Additional Bootstrap overrides for consistent theming */
+      .table-striped > tbody > tr:nth-of-type(odd) > td,
+      .table-striped > tbody > tr:nth-of-type(odd) > th {
+        background-color: var(--bg-tertiary) !important;
+      }
+
+      .table-hover > tbody > tr:hover > td,
+      .table-hover > tbody > tr:hover > th {
+        background-color: var(--bg-quaternary) !important;
+      }
+
+      .alert {
+        border-radius: var(--radius-md);
+        border: 1px solid var(--separator);
+        background-color: var(--bg-tertiary);
+      }
+
+      .custom-toast {
+        background-color: rgba(var(--bg-secondary-rgb), 0.95);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border: 1px solid var(--separator);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+        margin-bottom: var(--spacing-sm);
+        overflow: hidden;
+        opacity: 0;
+        transform: translateX(100%);
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      }
+
+      .custom-toast.show {
+        opacity: 1;
+        transform: translateX(0);
+      }
+
+      .custom-toast.hide {
+        opacity: 0;
+        transform: translateX(100%);
+      }
+
+      .toast-content {
+        flex: 1;
+        padding: 0 var(--spacing-md);
+      }
+
+      .toast-title {
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: var(--spacing-xs);
+      }
+
+      .toast-message {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        line-height: 1.4;
+      }
+
+      .toast-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: var(--radius-md);
+        font-size: 1.2rem;
+      }
+
+      .toast-success .toast-icon {
+        background-color: var(--success-100);
+        color: var(--success-600);
+      }
+
+      .toast-error .toast-icon {
+        background-color: var(--danger-100);
+        color: var(--danger-600);
+      }
+
+      .toast-warning .toast-icon {
+        background-color: var(--warning-100);
+        color: var(--warning-600);
+      }
+
+      .toast-info .toast-icon {
+        background-color: var(--info-100);
+        color: var(--info-600);
+      }
+
+      .toast-close {
+        background: none;
+        border: none;
+        color: var(--text-tertiary);
+        font-size: 1.2rem;
+        cursor: pointer;
+        padding: var(--spacing-sm);
+        border-radius: var(--radius-sm);
+        transition: var(--transition-fast);
+      }
+
+      .toast-close:hover {
+        background-color: var(--bg-tertiary);
+        color: var(--text-secondary);
+      }
+
+      .toast-progress {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background-color: var(--bg-tertiary);
+      }
+
+      .toast-progress-bar {
+        height: 100%;
+        background-color: var(--accent);
+        width: 100%;
+        transition-property: width;
+        transition-timing-function: linear;
+      }
+
+      /* Image thumbnails for order details modal */
+      .image-thumbnail {
+        width: 160px;
+        height: 160px;
+        object-fit: cover;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--separator);
+        cursor: pointer;
+        margin: var(--spacing-xs);
+        transition: var(--transition-fast);
+        box-shadow: var(--shadow-sm);
+      }
+
+      .image-thumbnail:hover {
+        transform: scale(1.05);
+        border-color: var(--accent);
+        box-shadow: var(--shadow-md);
+      }
+
+      .image-gallery {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--spacing-sm);
+        margin-top: var(--spacing-md);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg">
+      <div class="container">
+        <a class="navbar-brand" href="/">
+          <i class="fas fa-layer-group"></i>
+          Buyurtmalar Boshqaruvi
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="fas fa-tachometer-alt"></i>
+                <span class="nav-text">Boshqaruv Paneli</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/collections">
+                <i class="fas fa-folder-open"></i>
+                <span class="nav-text">Kolleksiyalar</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/users">
+                <i class="fas fa-users"></i>
+                <span class="nav-text">Foydalanuvchilar</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/orders">
+                <i class="fas fa-clipboard-list"></i>
+                <span class="nav-text">Buyurtmalar</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/cards">
+                <i class="fas fa-credit-card"></i>
+                <span class="nav-text">Kartalar</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/settings">
+                <i class="fas fa-cog"></i>
+                <span class="nav-text">Sozlamalar</span>
+              </a>
+            </li>
+            <li class="nav-item d-none d-md-block">
+              <button
+                class="nav-link border-0 bg-transparent"
+                onclick="toggleTheme()"
+                id="themeToggle"
+                title="Mavzu almashtirish"
+              >
+                <i class="fas fa-moon" id="themeIcon"></i>
+                <span class="nav-text d-none">Mavzu</span>
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="container mt-4">{% block content %}{% endblock %}</main>
+
+    <!-- Image Modal -->
+    <div
+      class="modal fade"
+      id="imageModal"
+      tabindex="-1"
+      aria-labelledby="imageModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="imageModalLabel">Rasm Ko'rish</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Yopish"
+            ></button>
+          </div>
+          <div class="modal-body text-center">
+            <img id="modalImage" src="" alt="Preview" class="img-fluid" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Custom Confirmation Modal -->
+    <div
+      class="modal fade"
+      id="confirmationModal"
+      tabindex="-1"
+      aria-labelledby="confirmationModalLabel"
+      aria-hidden="true"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div
+          class="modal-content border-0"
+          style="box-shadow: var(--shadow-xl); border-radius: var(--radius-lg)"
+        >
+          <div
+            class="modal-header border-0 pb-2"
+            style="
+              background: linear-gradient(
+                135deg,
+                var(--neutral-50),
+                var(--primary-50)
+              );
+              border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            "
+          >
+            <h5
+              class="modal-title fw-bold d-flex align-items-center"
+              id="confirmationModalLabel"
+            >
+              <div
+                class="p-2 rounded-circle me-3"
+                style="background-color: var(--warning-500)"
+              >
+                <i class="fas fa-exclamation-triangle text-white"></i>
+              </div>
+              Tasdiqlash
+            </h5>
+          </div>
+          <div class="modal-body px-4 py-4">
+            <p
+              class="mb-0 text-muted"
+              id="confirmationMessage"
+              style="font-size: 1.1rem; line-height: 1.6"
+            ></p>
+          </div>
+          <div
+            class="modal-footer border-0 pt-2 gap-2"
+            style="
+              background: var(--neutral-50);
+              border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+            "
+          >
+            <button
+              type="button"
+              class="btn btn-outline-secondary px-4"
+              data-bs-dismiss="modal"
+              id="confirmationCancelBtn"
+            >
+              <i class="fas fa-times me-2"></i>
+              Bekor qilish
+            </button>
+            <button
+              type="button"
+              class="btn btn-danger px-4"
+              id="confirmationConfirmBtn"
+            >
+              <i class="fas fa-check me-2"></i>
+              Ha, davom etish
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Container for Notifications -->
+    <div
+      id="toastContainer"
+      style="
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        max-width: 400px;
+      "
+    ></div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+      // Custom Confirmation Modal
+      let confirmationModal;
+      let confirmationCallback = null;
+
+      // Custom Toast System
+      let toastIdCounter = 0;
+
+      // Theme management
+      function getTheme() {
+        const savedTheme = localStorage.getItem("theme");
+        if (savedTheme) {
+          return savedTheme;
+        }
+        return window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light";
+      }
+
+      function setTheme(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+        localStorage.setItem("theme", theme);
+
+        const themeIcon = document.getElementById("themeIcon");
+        if (themeIcon) {
+          if (theme === "dark") {
+            themeIcon.className = "fas fa-sun";
+          } else {
+            themeIcon.className = "fas fa-moon";
+          }
+        }
+      }
+
+      function toggleTheme() {
+        const currentTheme = getTheme();
+        const newTheme = currentTheme === "dark" ? "light" : "dark";
+        setTheme(newTheme);
+      }
+
+      // Initialize theme on page load
+      function initializeTheme() {
+        const theme = getTheme();
+        setTheme(theme);
+      }
+
+      // Initialize modals and systems
+      document.addEventListener("DOMContentLoaded", function () {
+        // Initialize theme
+        initializeTheme();
+
+        // Initialize confirmation modal
+        confirmationModal = new bootstrap.Modal(
+          document.getElementById("confirmationModal"),
+          {
+            backdrop: "static",
+            keyboard: false,
+          }
+        );
+
+        // Bind confirmation modal events
+        document
+          .getElementById("confirmationConfirmBtn")
+          .addEventListener("click", function () {
+            if (confirmationCallback) {
+              confirmationCallback(true);
+            }
+            confirmationModal.hide();
+          });
+
+        document
+          .getElementById("confirmationCancelBtn")
+          .addEventListener("click", function () {
+            if (confirmationCallback) {
+              confirmationCallback(false);
+            }
+          });
+
+        // Auto-show existing Bootstrap alerts as custom toasts
+        const existingAlerts = document.querySelectorAll(
+          '.alert:not([id*="realtime"]):not([id*="status"])'
+        );
+        existingAlerts.forEach((alert) => {
+          const classes = alert.className;
+          let type = "info";
+          let title = "";
+
+          if (classes.includes("alert-success")) {
+            type = "success";
+            title = "Muvaffaqiyat!";
+          } else if (classes.includes("alert-danger")) {
+            type = "error";
+            title = "Xatolik!";
+          } else if (classes.includes("alert-warning")) {
+            type = "warning";
+            title = "Ogohlantirish!";
+          } else if (classes.includes("alert-info")) {
+            type = "info";
+            title = "Ma'lumot";
+          }
+
+          // Extract text content, removing any button text
+          let message = alert.textContent.trim();
+          const buttons = alert.querySelectorAll("button");
+          buttons.forEach((btn) => {
+            message = message.replace(btn.textContent, "").trim();
+          });
+
+          if (message && message.length > 0) {
+            showToast(type, title, message);
+            alert.style.display = "none";
+          }
+        });
+
+        // Add click listeners to image thumbnails
+        document.querySelectorAll(".image-thumbnail").forEach((img) => {
+          img.addEventListener("click", function () {
+            showImage(this.src);
+          });
+        });
+      });
+
+      // Custom confirm function to replace browser's confirm()
+      function customConfirm(message, callback) {
+        document.getElementById("confirmationMessage").textContent = message;
+        confirmationCallback = callback;
+        confirmationModal.show();
+      }
+
+      // Enhanced confirm function with custom titles and button text
+      function customConfirmAdvanced(options) {
+        const {
+          title = "Tasdiqlash",
+          message,
+          confirmText = "Ha, davom etish",
+          cancelText = "Bekor qilish",
+          confirmClass = "btn-danger",
+          callback,
+        } = options;
+
+        document.getElementById("confirmationModalLabel").innerHTML = `
+          <div class="p-2 rounded-circle me-3" style="background: linear-gradient(135deg, var(--warning-500), var(--warning-600));">
+            <i class="fas fa-exclamation-triangle text-white"></i>
+          </div>
+          ${title}
+        `;
+        document.getElementById("confirmationMessage").textContent = message;
+        document.getElementById("confirmationConfirmBtn").textContent =
+          confirmText;
+        document.getElementById(
+          "confirmationConfirmBtn"
+        ).className = `btn ${confirmClass} px-4`;
+        document.getElementById(
+          "confirmationCancelBtn"
+        ).innerHTML = `<i class="fas fa-times me-2"></i>${cancelText}`;
+
+        confirmationCallback = callback;
+        confirmationModal.show();
+      }
+
+      // Custom Toast System (Sonner-like)
+      // Usage examples:
+      // toast.success("Settings saved successfully!");
+      // toast.error("Failed to save settings");
+      // toast.warning("Please check your input");
+      // toast.info("Information message");
+      // showAlert("Message", "success"); // For backward compatibility
+      function showToast(type, title, message, duration = 5000) {
+        const icons = {
+          success: "fas fa-check",
+          error: "fas fa-times",
+          warning: "fas fa-exclamation-triangle",
+          info: "fas fa-info-circle",
+        };
+
+        const titles = {
+          success: title || "Muvaffaqiyat!",
+          error: title || "Xatolik!",
+          warning: title || "Ogohlantirish!",
+          info: title || "Ma'lumot",
+        };
+
+        const toastId = `toast-${++toastIdCounter}`;
+
+        const toastHTML = `
+          <div id="${toastId}" class="custom-toast toast-${type}">
+            <div class="d-flex align-items-center p-3">
+              <div class="toast-icon">
+                <i class="${icons[type]}"></i>
+              </div>
+              <div class="toast-content">
+                <div class="toast-title">${titles[type]}</div>
+                <div class="toast-message">${message}</div>
+              </div>
+              <button class="toast-close" onclick="hideToast('${toastId}')">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <div class="toast-progress">
+              <div class="toast-progress-bar" style="transition-duration: ${duration}ms;"></div>
+            </div>
+          </div>
+        `;
+
+        const container = document.getElementById("toastContainer");
+        container.insertAdjacentHTML("afterbegin", toastHTML);
+
+        const toast = document.getElementById(toastId);
+
+        // Show animation
+        setTimeout(() => {
+          toast.classList.add("show");
+          // Start progress bar
+          const progressBar = toast.querySelector(".toast-progress-bar");
+          progressBar.style.width = "0%";
+        }, 100);
+
+        // Auto hide after duration
+        if (duration > 0) {
+          setTimeout(() => {
+            hideToast(toastId);
+          }, duration);
+        }
+
+        return toastId;
+      }
+
+      function hideToast(toastId) {
+        const toast = document.getElementById(toastId);
+        if (toast) {
+          toast.classList.add("hide");
+          setTimeout(() => {
+            toast.remove();
+          }, 300);
+        }
+      }
+
+      // Convenient toast methods - Make it global
+      window.toast = {
+        success: (message, title) => showToast("success", title, message),
+        error: (message, title) => showToast("error", title, message),
+        warning: (message, title) => showToast("warning", title, message),
+        info: (message, title) => showToast("info", title, message),
+        // Additional convenience methods
+        show: (type, message, title) => showToast(type, title, message),
+        // Sonner-style method names
+        message: (message) => showToast("info", "", message),
+      };
+
+      // Make showToast global as well for compatibility
+      window.showToast = showToast;
+
+      // Create global showAlert function for backward compatibility
+      window.showAlert = function (message, type) {
+        const toastType = type === "danger" ? "error" : type;
+        window.toast[toastType](message);
+      };
+
+      // Image modal functionality
+      function showImage(src) {
+        document.getElementById("modalImage").src = src;
+        new bootstrap.Modal(document.getElementById("imageModal")).show();
+      }
+
+      // User expansion functionality
+      function toggleUser(userId) {
+        const ordersDiv = document.getElementById("orders-" + userId);
+        const icon = document.getElementById("icon-" + userId);
+        const text = document.getElementById("text-" + userId);
+
+        if (ordersDiv.classList.contains("show")) {
+          // Collapse
+          ordersDiv.classList.remove("show");
+          icon.classList.remove("fa-chevron-up");
+          icon.classList.add("fa-chevron-down");
+          if (text) text.textContent = "Ochish uchun bosing";
+        } else {
+          // Expand
+          ordersDiv.classList.add("show");
+          icon.classList.remove("fa-chevron-down");
+          icon.classList.add("fa-chevron-up");
+          if (text) text.textContent = "Yopish uchun bosing";
+        }
+      }
+    </script>
+
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

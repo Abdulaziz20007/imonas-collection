@@ -1,0 +1,339 @@
+{% extends "base.html" %} {% block title %}Karta Boshqaruvi - Buyurtmalar
+Boshqaruvi{% endblock %} {% block content %}
+
+<!-- Page Header -->
+<div class="card mb-3">
+  <div class="card-body p-3">
+    <!-- Title Section -->
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <div class="p-2 bg-primary rounded">
+        <i class="fas fa-credit-card text-white fs-5"></i>
+      </div>
+      <div class="flex-grow-1">
+        <h4 class="mb-0 fw-semibold">Karta Boshqaruvi</h4>
+        <p class="text-muted mb-0 small d-none d-md-block">
+          To'lov kartalari sozlamalari
+        </p>
+      </div>
+      <!-- Desktop Add Button -->
+      <div class="d-none d-md-block">
+        <button
+          class="btn btn-primary"
+          data-bs-toggle="modal"
+          data-bs-target="#addCardModal"
+        >
+          <i class="fas fa-plus me-2"></i>
+          Yangi Karta Qo'shish
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Add Button -->
+    <div class="d-md-none">
+      <button
+        class="btn btn-primary w-100"
+        data-bs-toggle="modal"
+        data-bs-target="#addCardModal"
+      >
+        <i class="fas fa-plus me-2"></i>
+        Yangi Karta Qo'shish
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Cards Table -->
+<div class="card">
+  <div class="card-body">
+    {% if cards %}
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Nomi</th>
+            <th scope="col">Raqami</th>
+            <th scope="col">Holati</th>
+            <th scope="col" class="text-end">Amallar</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for card in cards %}
+          <tr>
+            <td>{{ card.id }}</td>
+            <td>{{ card.name }}</td>
+            <td><code>{{ card.number }}</code></td>
+            <td>
+              {% if card.is_active %}
+              <span class="badge bg-success">
+                <i class="fas fa-check-circle me-1"></i>
+                Faol
+              </span>
+              {% else %}
+              <span class="badge bg-secondary">
+                <i class="fas fa-power-off me-1"></i>
+                Faol Emas
+              </span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              <div class="btn-group" role="group">
+                <button
+                  class="btn btn-sm btn-outline-secondary"
+                  title="Tahrirlash"
+                  aria-label="Kartani tahrirlash"
+                  data-bs-toggle="modal"
+                  data-bs-target="#editCardModal{{ card.id }}"
+                >
+                  <i class="fas fa-edit" aria-hidden="true"></i>
+                </button>
+                {% if not card.is_active %}
+                <form
+                  action="/cards/set-active/{{ card.id }}"
+                  method="post"
+                  class="d-inline"
+                >
+                  <button
+                    type="submit"
+                    class="btn btn-sm btn-outline-success"
+                    title="Faollashtirish"
+                    aria-label="Kartani faollashtirish"
+                  >
+                    <i class="fas fa-toggle-on" aria-hidden="true"></i>
+                  </button>
+                </form>
+                {% endif %} {% if card.is_active %}
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-danger disabled"
+                  title="Faol kartani o'chirib bo'lmaydi"
+                  aria-label="Faol kartani o'chirib bo'lmaydi"
+                  disabled
+                >
+                  <i class="fas fa-trash" aria-hidden="true"></i>
+                </button>
+                {% else %}
+                <form
+                  action="/cards/delete/{{ card.id }}"
+                  method="post"
+                  class="d-inline"
+                  onsubmit="event.preventDefault(); customConfirm('Haqiqatan ham bu kartani o\'chirmoqchimisiz?', (confirmed) => { if (confirmed) this.submit(); });"
+                >
+                  <button
+                    type="submit"
+                    class="btn btn-sm btn-outline-danger"
+                    title="O'chirish"
+                    aria-label="Kartani o'chirish"
+                  >
+                    <i class="fas fa-trash" aria-hidden="true"></i>
+                  </button>
+                </form>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+      <div class="display-1 text-muted mb-3">
+        <i class="fas fa-credit-card"></i>
+      </div>
+      <h3 class="text-muted">Kartalar Topilmadi</h3>
+      <p class="text-muted">Hali hech qanday karta qo'shilmagan.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{# Render modals outside of the table to avoid invalid DOM inside tbody #} {% if
+cards %} {% for card in cards %}
+<div
+  class="modal fade"
+  id="editCardModal{{ card.id }}"
+  tabindex="-1"
+  aria-labelledby="editCardModalLabel{{ card.id }}"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editCardModalLabel{{ card.id }}">
+          <i class="fas fa-edit me-2"></i>
+          Kartani Tahrirlash (ID: {{ card.id }})
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Yopish"
+        ></button>
+      </div>
+      <form action="/cards/edit/{{ card.id }}" method="post">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="editCardName{{ card.id }}" class="form-label"
+              >Karta Nomi</label
+            >
+            <input
+              type="text"
+              class="form-control"
+              id="editCardName{{ card.id }}"
+              name="name"
+              value="{{ card.name }}"
+            />
+          </div>
+          <div class="mb-3">
+            <label for="editCardNumber{{ card.id }}" class="form-label"
+              >Karta Raqami</label
+            >
+            <input
+              type="text"
+              class="form-control card-number-input"
+              id="editCardNumber{{ card.id }}"
+              name="number"
+              value="{{ card.number }}"
+              maxlength="19"
+              inputmode="numeric"
+              autocomplete="cc-number"
+              pattern="\d{4} \d{4} \d{4} \d{4}"
+              title="16 raqam, masalan: 8600 1234 5678 9012"
+            />
+            <small class="text-muted"
+              >Faqat bittasini o'zgartirmoqchi bo'lsangiz, boshqasini bo'sh
+              qoldiring.</small
+            >
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            data-bs-dismiss="modal"
+          >
+            Bekor qilish
+          </button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save me-2"></i> Saqlash
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endfor %} {% endif %}
+
+<!-- Add Card Modal -->
+<div
+  class="modal fade"
+  id="addCardModal"
+  tabindex="-1"
+  aria-labelledby="addCardModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addCardModalLabel">
+          <i class="fas fa-plus-circle me-2"></i>
+          Yangi Karta Qo'shish
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Yopish"
+        ></button>
+      </div>
+      <form action="/cards/add" method="post">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="cardName" class="form-label">Karta Nomi</label>
+            <input
+              type="text"
+              class="form-control"
+              id="cardName"
+              name="name"
+              placeholder="Masalan, Asosiy Karta"
+              required
+            />
+          </div>
+          <div class="mb-3">
+            <label for="cardNumber" class="form-label">Karta Raqami</label>
+            <input
+              type="text"
+              class="form-control card-number-input"
+              id="cardNumber"
+              name="number"
+              placeholder="8600 1234 5678 9012"
+              maxlength="19"
+              inputmode="numeric"
+              autocomplete="cc-number"
+              pattern="\d{4} \d{4} \d{4} \d{4}"
+              title="16 raqam, masalan: 8600 1234 5678 9012"
+              required
+            />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            data-bs-dismiss="modal"
+          >
+            Bekor qilish
+          </button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save me-2"></i>
+            Saqlash
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    function formatCardNumber(value) {
+      const digits = value.replace(/\D/g, "").slice(0, 16);
+      return digits.replace(/(\d{4})(?=\d)/g, "$1 ").trim();
+    }
+
+    function handleInput(e) {
+      const start = e.target.selectionStart;
+      const prev = e.target.value;
+      const formatted = formatCardNumber(prev);
+      e.target.value = formatted;
+
+      let newPos = start;
+      const nonDigitBefore = (prev.slice(0, start).match(/\D/g) || []).length;
+      const nonDigitBeforeNew = (formatted.slice(0, start).match(/\D/g) || [])
+        .length;
+      newPos = start + (nonDigitBeforeNew - nonDigitBefore);
+      e.target.setSelectionRange(newPos, newPos);
+    }
+
+    function stripSpacesOnSubmit(form) {
+      form.addEventListener("submit", function () {
+        const inputs = form.querySelectorAll(".card-number-input");
+        inputs.forEach(function (input) {
+          input.value = input.value.replace(/\s+/g, "");
+        });
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const inputs = document.querySelectorAll(".card-number-input");
+      inputs.forEach(function (input) {
+        input.addEventListener("input", handleInput);
+        input.value = formatCardNumber(input.value || "");
+        const form = input.closest("form");
+        if (form) stripSpacesOnSubmit(form);
+      });
+    });
+  })();
+</script>
+{% endblock %}
