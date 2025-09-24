@@ -1,0 +1,194 @@
+{
+  "info": {
+    "_postman_id": "a8f3d1e2-5b4b-4c2c-8a3b-1d2a3d4e5f6a",
+    "name": "Admin API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Admin Login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "username",
+                  "value": "admin",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "admin",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Login as an admin to receive an auth cookie. Postman will automatically handle the cookie for subsequent requests."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Get Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "stats"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "users"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Toggle User Active Status",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users/{{userId}}/toggle-active",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "users", "{{userId}}", "toggle-active"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Collections",
+      "item": [
+        {
+          "name": "Get All Collections",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/collections",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "collections"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create New Collection",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/collections",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "collections"]
+            },
+            "description": "Creates a new collection and closes the currently active one."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Get All Orders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "orders"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Cards",
+      "item": [
+        {
+          "name": "Get All Cards",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/cards",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "cards"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add New Card",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"My New Card\",\n    \"number\": \"8600123456789012\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/cards",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "cards"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:4040",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "1",
+      "type": "string"
+    }
+  ]
+}

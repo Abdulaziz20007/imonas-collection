@@ -124,6 +124,13 @@ class ConfigDatabaseService:
         row = cursor.fetchone()
         return dict(row) if row else None
 
+    def get_admin_by_id(self, admin_id: int):
+        conn = self._get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, username, role FROM admins WHERE id = ?", (admin_id,))
+        row = cursor.fetchone()
+        return dict(row) if row else None
+
     def check_admin_password(self, username, password):
         user = self.get_admin_user(username)
         if user:
@@ -173,6 +180,47 @@ class ConfigDatabaseService:
         conn.commit()
         self.log_action(current_admin_user, 'DELETE_ADMIN', f"Deleted admin with ID {admin_id_to_delete}")
         return cursor.rowcount > 0
+
+    def update_admin(self, admin_id: int, username: str = None, password: str = None, role: str = None, admin_user: str = 'system') -> bool:
+        """Update an admin's username, password and/or role.
+
+        At least one of username, password or role must be provided.
+        Returns True if any row was updated.
+        """
+        updates = []
+        params = []
+        if username is not None:
+            updates.append("username = ?")
+            params.append(username)
+        if password is not None:
+            password_hash = hashlib.sha256(password.encode('utf-8')).hexdigest()
+            updates.append("password_hash = ?")
+            params.append(password_hash)
+        if role is not None:
+            updates.append("role = ?")
+            params.append(role)
+
+        if not updates:
+            return False
+
+        params.append(admin_id)
+        sql = f"UPDATE admins SET {', '.join(updates)} WHERE id = ?"
+        conn = self._get_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute(sql, tuple(params))
+            conn.commit()
+            if cursor.rowcount > 0:
+                self.log_action(admin_user, 'UPDATE_ADMIN', f"Updated admin #{admin_id}: {', '.join([u.split('=')[0].strip() for u in updates])}")
+                return True
+            return False
+        except sqlite3.IntegrityError:
+            # Likely duplicate username
+            return False
+        except Exception as e:
+            conn.rollback()
+            logger.error(f"Error updating admin {admin_id}: {e}")
+            return False
 
 
 config_db_service = ConfigDatabaseService(os.getenv('CONFIG_DATABASE_FILE', 'config.db'))

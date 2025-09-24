@@ -3,7 +3,7 @@ Web application for order management using FastAPI with server-side rendering.
 Provides a web interface to view collections and orders.
 """
 import logging
-import asyncio
+import asyncio, datetime
 import os
 import datetime
 from typing import List, Dict, Any, Optional
@@ -12,10 +12,11 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse, Response, JSONResponse
 from fastapi.exceptions import RequestValidationError
+from fastapi.openapi.docs import get_swagger_ui_html
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.datastructures import URL
 from fastapi import APIRouter
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from telethon import TelegramClient, events
 from telethon.errors import SessionPasswordNeededError, PhoneCodeInvalidError
 import uvicorn
@@ -66,6 +67,7 @@ user_app.add_middleware(SessionMiddleware, secret_key=config.SECRET_KEY)
 admin_router = APIRouter()
 api_router = APIRouter(prefix="/api")
 auth_router = APIRouter()
+admin_api_router = APIRouter(prefix="/api/admin", tags=["Admin API"])
 user_router = APIRouter()
 user_api_router = APIRouter(prefix="/api")
 
@@ -81,6 +83,106 @@ class OrderUpdateRequest(BaseModel):
 class UserAuthRequest(BaseModel):
     code: str
     phone: str
+
+# --- Pydantic Models for Admin API ---
+class User(BaseModel):
+    id: int
+    telegram_id: int
+    username: Optional[str] = None
+    name: Optional[str] = None
+    surname: Optional[str] = None
+    phone: Optional[str] = None
+    is_active: bool
+    reg_step: str
+    code: Optional[str] = None
+    subscription_status: str
+    target_amount: Optional[float] = None
+    paid_amount: float
+    created_at: datetime.datetime
+    order_count: int
+    collections_count: int
+
+class Collection(BaseModel):
+    id: int
+    status: str
+    finish_at: Optional[datetime.datetime] = None
+    close_at: Optional[datetime.datetime] = None
+    created_at: datetime.datetime
+    user_count: int
+    order_count: int
+
+class Order(BaseModel):
+    id: int
+    user_id: int
+    collection_id: int
+    amount: Optional[int] = None
+    status: int
+    created_at: datetime.datetime
+    user_name: Optional[str] = None
+    user_surname: Optional[str] = None
+    user_phone: Optional[str] = None
+    user_code: Optional[str] = None
+    collection_status: str
+    file_count: int
+
+class Card(BaseModel):
+    id: int
+    name: str
+    number: str
+    is_active: bool
+    created_at: datetime.datetime
+
+class DashboardStats(BaseModel):
+    total_users: int
+    total_orders: int
+    total_collections: int
+    open_collections: int
+    new_users_today: int
+    new_orders_today: int
+
+class NewCardRequest(BaseModel):
+    name: str
+    number: str = Field(..., min_length=16, max_length=16, pattern=r'^\d{16}$')
+
+class ToggleUserActiveResponse(BaseModel):
+    id: int
+    telegram_id: int
+    is_active: bool
+
+# --- Additional Schemas for Admin API ---
+class Admin(BaseModel):
+    id: int
+    username: str
+    role: str
+
+class AdminCreate(BaseModel):
+    username: str
+    password: str
+    role: str = Field(..., pattern=r'^(admin|superadmin)$')
+
+class AdminUpdate(BaseModel):
+    username: Optional[str] = None
+    password: Optional[str] = None
+    role: Optional[str] = Field(None, pattern=r'^(admin|superadmin)$')
+
+class CardUpdate(BaseModel):
+    name: Optional[str] = None
+    number: Optional[str] = Field(None, min_length=16, max_length=16, pattern=r'^\d{16}$')
+
+class AIModel(BaseModel):
+    id: str
+    name: str
+
+class DefaultAIModel(BaseModel):
+    model_id: str
+
+class UserbotStatus(BaseModel):
+    state: str
+    me: Optional[Dict[str, Any]] = None
+    error: Optional[str] = None
+
+class UserbotCode(BaseModel):
+    code: str
 
 # --- Userbot (Telethon) management state ---
 userbot_client: Optional[TelegramClient] = None
@@ -635,6 +737,305 @@ def get_authenticated_user(code: str, phone: str) -> Optional[Dict[str, Any]]:
     if db_phone_digits and input_phone_digits and db_phone_digits == input_phone_digits:
         return user
     return None
+
+# --- Admin-only OpenAPI and Swagger UI ---
+@admin_app.get("/openapi-admin.json", include_in_schema=False)
+async def openapi_admin_schema(current_user: str = Depends(verify_jwt)):
+    """Return OpenAPI schema filtered to only Admin API endpoints (tagged 'Admin API')."""
+    openapi_schema = admin_app.openapi()
+    # Filter paths to only those that have at least one operation with tag 'Admin API'
+    filtered_paths = {}
+    for path, methods in openapi_schema.get("paths", {}).items():
+        include_path = False
+        new_methods = {}
+        for method, operation in methods.items():
+            if isinstance(operation, dict) and 'tags' in operation and 'Admin API' in operation['tags']:
+                include_path = True
+                new_methods[method] = operation
+        if include_path and new_methods:
+            filtered_paths[path] = new_methods
+    openapi_schema['paths'] = filtered_paths
+    return JSONResponse(openapi_schema)
+
+@admin_app.get("/swagger", include_in_schema=False)
+async def swagger_ui(current_user: str = Depends(verify_jwt)):
+    """Serve Swagger UI that points to the admin-only OpenAPI schema."""
+    return get_swagger_ui_html(
+        openapi_url="/openapi-admin.json",
+        title="Admin API - Swagger UI"
+    )
+
+# --- New Admin API Endpoints ---
+
+@admin_api_router.get("/stats", response_model=DashboardStats)
+async def get_dashboard_stats_api(current_user: str = Depends(verify_jwt)):
+    """Get main dashboard statistics."""
+    stats = db_service.get_dashboard_stats()
+    return stats
+
+@admin_api_router.get("/users", response_model=List[User])
+async def get_users_api_list(current_user: str = Depends(verify_jwt)):
+    """Get a list of all users with their statistics."""
+    users_with_stats = db_service.get_all_users_with_stats()
+    return users_with_stats
+
+@admin_api_router.post("/users/{user_id}/toggle-active", response_model=ToggleUserActiveResponse)
+async def toggle_user_active_api(user_id: int, current_user: str = Depends(verify_jwt)):
+    """Toggle the active status of a user (ban/unban)."""
+    user = db_service.get_user_by_id(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    new_status = not user['is_active']
+    success = db_service.update_user_active_status(user['telegram_id'], new_status)
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to update user status")
+    
+    updated_user = db_service.get_user_by_id(user_id)
+    if not updated_user:
+        raise HTTPException(status_code=404, detail="User not found after update")
+        
+    return ToggleUserActiveResponse(id=updated_user['id'], telegram_id=updated_user['telegram_id'], is_active=updated_user['is_active'])
+
+@admin_api_router.get("/collections", response_model=List[Collection])
+async def get_collections_api(current_user: str = Depends(verify_jwt)):
+    """Get a list of all collections with their statistics."""
+    collections = get_collections_with_user_counts()
+    return collections
+
+@admin_api_router.post("/collections", response_model=Collection)
+async def create_collection_api(current_user: str = Depends(verify_jwt)):
+    """Create a new collection, which also closes the currently active one."""
+    if db_service.has_close_collections():
+        raise HTTPException(status_code=400, detail="There are closed collections that must be finished first.")
+    
+    new_collection_id = db_service.atomically_open_new_collection()
+    if not new_collection_id:
+        raise HTTPException(status_code=500, detail="Failed to create new collection")
+    
+    async def notify_users_task(collection_id):
+        if not bot_app:
+            logger.warning("bot_app not available. Skipping user notifications for new collection.")
+            return
+        
+        registered_users = db_service.get_users_by_registration_step('done')
+        for user in registered_users:
+            if not user.get('code'):
+                continue
+            try:
+                unique_code = f"{collection_id}-{user['code']}"
+                message_text = f"🎉 Yangi kolleksiya ochildi!\n\n🌟 Sizning yangi unikal kodingiz: `{unique_code}`"
+                sent_message = await bot_app.bot.send_message(chat_id=user['telegram_id'], text=message_text, parse_mode="Markdown")
+                await bot_app.bot.pin_chat_message(chat_id=user['telegram_id'], message_id=sent_message.message_id, disable_notification=True)
+            except Exception as e:
+                logger.error(f"Failed to send/pin code for user {user['telegram_id']}: {e}")
+
+    asyncio.create_task(notify_users_task(new_collection_id))
+    
+    new_collection_data = get_collections_with_user_counts()
+    new_collection = next((c for c in new_collection_data if c['id'] == new_collection_id), None)
+    if not new_collection:
+        raise HTTPException(status_code=404, detail="Newly created collection not found")
+        
+    return new_collection
+
+@admin_api_router.post("/collections/{collection_id}/reopen", response_model=Collection)
+async def reopen_collection_api(collection_id: int, current_user: str = Depends(verify_jwt)):
+    """Reopen a 'closed' collection; merges current 'open' into it and sets it to 'open'."""
+    target = db_service.get_collection_by_id(collection_id)
+    if not target:
+        raise HTTPException(status_code=404, detail="Collection not found")
+    if target.get('status') != 'close':
+        raise HTTPException(status_code=400, detail="Collection is not in 'close' status")
+
+    # Merge current open collection into the target (if exists)
+    current_open = db_service.get_active_collection()
+    if current_open and current_open['id'] != collection_id:
+        db_service.merge_collections(from_collection_id=current_open['id'], to_collection_id=collection_id)
+        db_service.delete_collection(current_open['id'])
+
+    # Reopen the target collection
+    ok = db_service.update_collection_status(collection_id, 'open')
+    if not ok:
+        raise HTTPException(status_code=500, detail="Failed to reopen collection")
+    # Return with stats
+    updated = db_service.get_collection_by_id(collection_id)
+    # Attach counts similarly to get_collections_with_user_counts
+    collections = get_collections_with_user_counts()
+    with_counts = next((c for c in collections if c['id'] == collection_id), None)
+    return with_counts or updated
+
+@admin_api_router.post("/collections/{collection_id}/finish", response_model=Collection)
+async def finish_collection_api(collection_id: int, current_user: str = Depends(verify_jwt)):
+    """Mark a 'closed' collection as 'finish'."""
+    target = db_service.get_collection_by_id(collection_id)
+    if not target:
+        raise HTTPException(status_code=404, detail="Collection not found")
+    if target.get('status') != 'close':
+        raise HTTPException(status_code=400, detail="Collection must be 'close' to finish")
+    ok = db_service.update_collection_status(collection_id, 'finish')
+    if not ok:
+        raise HTTPException(status_code=500, detail="Failed to finish collection")
+    collections = get_collections_with_user_counts()
+    with_counts = next((c for c in collections if c['id'] == collection_id), None)
+    return with_counts or db_service.get_collection_by_id(collection_id)
+
+@admin_api_router.get("/orders", response_model=List[Order])
+async def get_orders_api_list(current_user: str = Depends(verify_jwt)):
+    """Get a list of all orders with user and collection details."""
+    orders_raw = db_service.get_all_orders_with_details(limit=200)
+    orders_transformed = []
+    for o in orders_raw:
+        order_dict = dict(o)
+        order_dict['user_name'] = order_dict.pop('name', None)
+        order_dict['user_surname'] = order_dict.pop('surname', None)
+        order_dict['user_phone'] = order_dict.pop('phone', None)
+        order_dict['user_code'] = order_dict.pop('code', None)
+        orders_transformed.append(order_dict)
+    return orders_transformed
+
+@admin_api_router.get("/cards", response_model=List[Card])
+async def get_cards_api(current_user: str = Depends(verify_jwt)):
+    """Get a list of all payment cards."""
+    return db_service.get_all_cards()
+
+@admin_api_router.post("/cards", response_model=Card)
+async def add_card_api(card_data: NewCardRequest, current_user: str = Depends(verify_jwt)):
+    """Add a new payment card."""
+    card_id = db_service.add_card(card_data.name, card_data.number)
+    if not card_id:
+        raise HTTPException(status_code=400, detail="Card with this number may already exist.")
+    
+    all_cards = db_service.get_all_cards()
+    new_card = next((c for c in all_cards if c['id'] == card_id), None)
+    if not new_card:
+        raise HTTPException(status_code=404, detail="Newly created card not found")
+    return new_card
+
+# --- New endpoints to appear in Swagger (Admin API) ---
+
+@admin_api_router.patch("/cards/{card_id}", response_model=Card)
+async def edit_card_api(card_id: int, update: CardUpdate, current_user: str = Depends(verify_jwt)):
+    """Edit a payment card's name and/or number."""
+    existing = next((c for c in db_service.get_all_cards() if c['id'] == card_id), None)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Card not found")
+    name = update.name if update.name is not None else existing['name']
+    number = update.number if update.number is not None else existing['number']
+    ok = db_service.update_card(card_id, name, number)
+    if not ok:
+        raise HTTPException(status_code=400, detail="Failed to update card (possibly duplicate number)")
+    updated = next((c for c in db_service.get_all_cards() if c['id'] == card_id), None)
+    return updated
+
+@admin_api_router.get("/ai/models", response_model=List[AIModel])
+async def get_ai_models_api(current_user: str = Depends(verify_jwt)):
+    """Get list of available AI models."""
+    # Static list could be loaded from settings/config; keeping simple for now
+    models = [
+        {"id": "gemini-2.0-flash", "name": "Gemini 2.0 Flash"},
+        {"id": "gemini-2.5-flash-lite", "name": "Gemini 2.5 Flash Lite"},
+    ]
+    return models
+
+@admin_api_router.post("/ai/models/default", response_model=DefaultAIModel)
+async def set_default_ai_model_api(payload: DefaultAIModel, request: Request, current_user: str = Depends(verify_jwt)):
+    """Set default AI model in configuration settings."""
+    ok = config_db_service.update_settings({"default_ai_model": payload.model_id}, request.state.current_user or "api")
+    if not ok:
+        raise HTTPException(status_code=500, detail="Failed to update default AI model")
+    return payload
+
+@admin_api_router.get("/userbot/status", response_model=UserbotStatus)
+async def get_userbot_status_api(current_user: str = Depends(verify_jwt)):
+    status = await get_userbot_status()
+    return {
+        "state": status.get("state"),
+        "me": status.get("me"),
+        "error": status.get("error"),
+    }
+
+@admin_api_router.post("/userbot/login/send-code")
+async def userbot_send_code_api(request: Request, current_user: str = Depends(verify_jwt)):
+    """Initiate userbot login by sending verification code to configured phone."""
+    return await api_userbot_send_code(request)
+
+@admin_api_router.post("/userbot/login/verify-code")
+async def userbot_verify_code_api(request: Request, current_user: str = Depends(verify_jwt)):
+    """Verify the userbot login code and complete login."""
+    return await api_userbot_verify_code(request)
+
+@admin_api_router.post("/userbot/logout")
+async def userbot_logout_api(request: Request, current_user: str = Depends(verify_jwt)):
+    """Logout userbot and clean session."""
+    return await api_userbot_logout(request)
+
+@admin_api_router.delete("/cards/{card_id}", status_code=204)
+async def delete_card_api(card_id: int, current_user: str = Depends(verify_jwt)):
+    """Delete a payment card. Cannot delete last or active card."""
+    # Validate constraints inside service: it returns False on violations
+    ok = db_service.delete_card(card_id)
+    if not ok:
+        raise HTTPException(status_code=400, detail="Cannot delete this card. Ensure it's not active and not the last card.")
+    return Response(status_code=204)
+
+@admin_api_router.post("/cards/{card_id}/activate", response_model=Card)
+async def activate_card_api(card_id: int, current_user: str = Depends(verify_jwt)):
+    """Activate a card and deactivate others."""
+    # Ensure card exists
+    existing = next((c for c in db_service.get_all_cards() if c['id'] == card_id), None)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Card not found")
+    ok = db_service.set_active_card(card_id)
+    if not ok:
+        raise HTTPException(status_code=500, detail="Failed to activate card")
+    updated = next((c for c in db_service.get_all_cards() if c['id'] == card_id), None)
+    return updated
+
+@admin_api_router.get("/admins", response_model=List[Admin])
+async def get_admins_api(page: int = 1, size: int = 20, current_user: str = Depends(verify_jwt)):
+    """Retrieve a paginated list of web panel administrators."""
+    admins = config_db_service.get_all_admins()
+    # Simple pagination
+    start = max((page - 1) * size, 0)
+    end = start + size
+    return admins[start:end]
+
+@admin_api_router.post("/admins", response_model=Admin, status_code=201)
+async def add_admin_api(payload: AdminCreate, request: Request, current_user: str = Depends(verify_jwt)):
+    """Create a new web panel administrator."""
+    admin_id = config_db_service.add_admin(payload.username, payload.password, payload.role, request.state.current_user or "api")
+    if not admin_id:
+        raise HTTPException(status_code=400, detail="Username already exists")
+    admin = config_db_service.get_admin_by_id(admin_id)
+    if not admin:
+        raise HTTPException(status_code=404, detail="Admin not found after creation")
+    return admin
+
+@admin_api_router.patch("/admins/{admin_id}", response_model=Admin)
+async def edit_admin_api(admin_id: int, payload: AdminUpdate, request: Request, current_user: str = Depends(verify_jwt)):
+    """Update an existing administrator's fields."""
+    ok = config_db_service.update_admin(
+        admin_id,
+        username=payload.username,
+        password=payload.password,
+        role=payload.role,
+        admin_user=request.state.current_user or "api",
+    )
+    if not ok:
+        raise HTTPException(status_code=400, detail="Failed to update admin (possibly duplicate username or no changes)")
+    admin = config_db_service.get_admin_by_id(admin_id)
+    if not admin:
+        raise HTTPException(status_code=404, detail="Admin not found")
+    return admin
+
+@admin_api_router.delete("/admins/{admin_id}", status_code=204)
+async def delete_admin_api(admin_id: int, request: Request, current_user: str = Depends(verify_jwt)):
+    """Delete a web panel administrator."""
+    ok = config_db_service.delete_admin(admin_id, request.state.current_user or "api")
+    if not ok:
+        raise HTTPException(status_code=404, detail="Admin not found")
+    return Response(status_code=204)
 
 @user_router.get("/", response_class=HTMLResponse)
 async def landing_page(request: Request):
@@ -2627,6 +3028,7 @@ async def debug_orders():
 # Include routers BEFORE defining the catch-all route
 admin_app.include_router(auth_router)
 admin_app.include_router(api_router)
+admin_app.include_router(admin_api_router)
 admin_app.include_router(admin_router)
 
 user_app.include_router(user_router)
