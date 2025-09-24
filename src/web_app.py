@@ -768,19 +768,19 @@ async def swagger_ui(current_user: str = Depends(verify_jwt)):
 # --- New Admin API Endpoints ---
 
 @admin_api_router.get("/stats", response_model=DashboardStats)
-async def get_dashboard_stats_api(current_user: str = Depends(verify_jwt)):
+async def get_dashboard_stats_api():
     """Get main dashboard statistics."""
     stats = db_service.get_dashboard_stats()
     return stats
 
 @admin_api_router.get("/users", response_model=List[User])
-async def get_users_api_list(current_user: str = Depends(verify_jwt)):
+async def get_users_api_list():
     """Get a list of all users with their statistics."""
     users_with_stats = db_service.get_all_users_with_stats()
     return users_with_stats
 
 @admin_api_router.post("/users/{user_id}/toggle-active", response_model=ToggleUserActiveResponse)
-async def toggle_user_active_api(user_id: int, current_user: str = Depends(verify_jwt)):
+async def toggle_user_active_api(user_id: int):
     """Toggle the active status of a user (ban/unban)."""
     user = db_service.get_user_by_id(user_id)
     if not user:
@@ -798,13 +798,13 @@ async def toggle_user_active_api(user_id: int, current_user: str = Depends(verif
     return ToggleUserActiveResponse(id=updated_user['id'], telegram_id=updated_user['telegram_id'], is_active=updated_user['is_active'])
 
 @admin_api_router.get("/collections", response_model=List[Collection])
-async def get_collections_api(current_user: str = Depends(verify_jwt)):
+async def get_collections_api():
     """Get a list of all collections with their statistics."""
     collections = get_collections_with_user_counts()
     return collections
 
 @admin_api_router.post("/collections", response_model=Collection)
-async def create_collection_api(current_user: str = Depends(verify_jwt)):
+async def create_collection_api():
     """Create a new collection, which also closes the currently active one."""
     if db_service.has_close_collections():
         raise HTTPException(status_code=400, detail="There are closed collections that must be finished first.")
@@ -840,7 +840,7 @@ async def create_collection_api(current_user: str = Depends(verify_jwt)):
     return new_collection
 
 @admin_api_router.post("/collections/{collection_id}/reopen", response_model=Collection)
-async def reopen_collection_api(collection_id: int, current_user: str = Depends(verify_jwt)):
+async def reopen_collection_api(collection_id: int):
     """Reopen a 'closed' collection; merges current 'open' into it and sets it to 'open'."""
     target = db_service.get_collection_by_id(collection_id)
     if not target:
@@ -866,7 +866,7 @@ async def reopen_collection_api(collection_id: int, current_user: str = Depends(
     return with_counts or updated
 
 @admin_api_router.post("/collections/{collection_id}/finish", response_model=Collection)
-async def finish_collection_api(collection_id: int, current_user: str = Depends(verify_jwt)):
+async def finish_collection_api(collection_id: int):
     """Mark a 'closed' collection as 'finish'."""
     target = db_service.get_collection_by_id(collection_id)
     if not target:
@@ -881,7 +881,7 @@ async def finish_collection_api(collection_id: int, current_user: str = Depends(
     return with_counts or db_service.get_collection_by_id(collection_id)
 
 @admin_api_router.get("/orders", response_model=List[Order])
-async def get_orders_api_list(current_user: str = Depends(verify_jwt)):
+async def get_orders_api_list():
     """Get a list of all orders with user and collection details."""
     orders_raw = db_service.get_all_orders_with_details(limit=200)
     orders_transformed = []
@@ -895,12 +895,12 @@ async def get_orders_api_list(current_user: str = Depends(verify_jwt)):
     return orders_transformed
 
 @admin_api_router.get("/cards", response_model=List[Card])
-async def get_cards_api(current_user: str = Depends(verify_jwt)):
+async def get_cards_api():
     """Get a list of all payment cards."""
     return db_service.get_all_cards()
 
 @admin_api_router.post("/cards", response_model=Card)
-async def add_card_api(card_data: NewCardRequest, current_user: str = Depends(verify_jwt)):
+async def add_card_api(card_data: NewCardRequest):
     """Add a new payment card."""
     card_id = db_service.add_card(card_data.name, card_data.number)
     if not card_id:
@@ -915,7 +915,7 @@ async def add_card_api(card_data: NewCardRequest, current_user: str = Depends(ve
 # --- New endpoints to appear in Swagger (Admin API) ---
 
 @admin_api_router.patch("/cards/{card_id}", response_model=Card)
-async def edit_card_api(card_id: int, update: CardUpdate, current_user: str = Depends(verify_jwt)):
+async def edit_card_api(card_id: int, update: CardUpdate):
     """Edit a payment card's name and/or number."""
     existing = next((c for c in db_service.get_all_cards() if c['id'] == card_id), None)
     if not existing:
@@ -929,7 +929,7 @@ async def edit_card_api(card_id: int, update: CardUpdate, current_user: str = De
     return updated
 
 @admin_api_router.get("/ai/models", response_model=List[AIModel])
-async def get_ai_models_api(current_user: str = Depends(verify_jwt)):
+async def get_ai_models_api():
     """Get list of available AI models."""
     # Static list could be loaded from settings/config; keeping simple for now
     models = [
@@ -939,15 +939,15 @@ async def get_ai_models_api(current_user: str = Depends(verify_jwt)):
     return models
 
 @admin_api_router.post("/ai/models/default", response_model=DefaultAIModel)
-async def set_default_ai_model_api(payload: DefaultAIModel, request: Request, current_user: str = Depends(verify_jwt)):
+async def set_default_ai_model_api(payload: DefaultAIModel, request: Request):
     """Set default AI model in configuration settings."""
-    ok = config_db_service.update_settings({"default_ai_model": payload.model_id}, request.state.current_user or "api")
+    ok = config_db_service.update_settings({"default_ai_model": payload.model_id}, "api")
     if not ok:
         raise HTTPException(status_code=500, detail="Failed to update default AI model")
     return payload
 
 @admin_api_router.get("/userbot/status", response_model=UserbotStatus)
-async def get_userbot_status_api(current_user: str = Depends(verify_jwt)):
+async def get_userbot_status_api():
     status = await get_userbot_status()
     return {
         "state": status.get("state"),
@@ -956,22 +956,22 @@ async def get_userbot_status_api(current_user: str = Depends(verify_jwt)):
     }
 
 @admin_api_router.post("/userbot/login/send-code")
-async def userbot_send_code_api(request: Request, current_user: str = Depends(verify_jwt)):
+async def userbot_send_code_api(request: Request):
     """Initiate userbot login by sending verification code to configured phone."""
     return await api_userbot_send_code(request)
 
 @admin_api_router.post("/userbot/login/verify-code")
-async def userbot_verify_code_api(request: Request, current_user: str = Depends(verify_jwt)):
+async def userbot_verify_code_api(request: Request):
     """Verify the userbot login code and complete login."""
     return await api_userbot_verify_code(request)
 
 @admin_api_router.post("/userbot/logout")
-async def userbot_logout_api(request: Request, current_user: str = Depends(verify_jwt)):
+async def userbot_logout_api(request: Request):
     """Logout userbot and clean session."""
     return await api_userbot_logout(request)
 
 @admin_api_router.delete("/cards/{card_id}", status_code=204)
-async def delete_card_api(card_id: int, current_user: str = Depends(verify_jwt)):
+async def delete_card_api(card_id: int):
     """Delete a payment card. Cannot delete last or active card."""
     # Validate constraints inside service: it returns False on violations
     ok = db_service.delete_card(card_id)
@@ -980,7 +980,7 @@ async def delete_card_api(card_id: int, current_user: str = Depends(verify_jwt))
     return Response(status_code=204)
 
 @admin_api_router.post("/cards/{card_id}/activate", response_model=Card)
-async def activate_card_api(card_id: int, current_user: str = Depends(verify_jwt)):
+async def activate_card_api(card_id: int):
     """Activate a card and deactivate others."""
     # Ensure card exists
     existing = next((c for c in db_service.get_all_cards() if c['id'] == card_id), None)
@@ -993,7 +993,7 @@ async def activate_card_api(card_id: int, current_user: str = Depends(verify_jwt
     return updated
 
 @admin_api_router.get("/admins", response_model=List[Admin])
-async def get_admins_api(page: int = 1, size: int = 20, current_user: str = Depends(verify_jwt)):
+async def get_admins_api(page: int = 1, size: int = 20):
     """Retrieve a paginated list of web panel administrators."""
     admins = config_db_service.get_all_admins()
     # Simple pagination
@@ -1002,9 +1002,9 @@ async def get_admins_api(page: int = 1, size: int = 20, current_user: str = Depe
     return admins[start:end]
 
 @admin_api_router.post("/admins", response_model=Admin, status_code=201)
-async def add_admin_api(payload: AdminCreate, request: Request, current_user: str = Depends(verify_jwt)):
+async def add_admin_api(payload: AdminCreate, request: Request):
     """Create a new web panel administrator."""
-    admin_id = config_db_service.add_admin(payload.username, payload.password, payload.role, request.state.current_user or "api")
+    admin_id = config_db_service.add_admin(payload.username, payload.password, payload.role, "api")
     if not admin_id:
         raise HTTPException(status_code=400, detail="Username already exists")
     admin = config_db_service.get_admin_by_id(admin_id)
@@ -1013,14 +1013,14 @@ async def add_admin_api(payload: AdminCreate, request: Request, current_user: st
     return admin
 
 @admin_api_router.patch("/admins/{admin_id}", response_model=Admin)
-async def edit_admin_api(admin_id: int, payload: AdminUpdate, request: Request, current_user: str = Depends(verify_jwt)):
+async def edit_admin_api(admin_id: int, payload: AdminUpdate, request: Request):
     """Update an existing administrator's fields."""
     ok = config_db_service.update_admin(
         admin_id,
         username=payload.username,
         password=payload.password,
         role=payload.role,
-        admin_user=request.state.current_user or "api",
+        admin_user="api",
     )
     if not ok:
         raise HTTPException(status_code=400, detail="Failed to update admin (possibly duplicate username or no changes)")
@@ -1030,9 +1030,9 @@ async def edit_admin_api(admin_id: int, payload: AdminUpdate, request: Request, 
     return admin
 
 @admin_api_router.delete("/admins/{admin_id}", status_code=204)
-async def delete_admin_api(admin_id: int, request: Request, current_user: str = Depends(verify_jwt)):
+async def delete_admin_api(admin_id: int, request: Request):
     """Delete a web panel administrator."""
-    ok = config_db_service.delete_admin(admin_id, request.state.current_user or "api")
+    ok = config_db_service.delete_admin(admin_id, "api")
     if not ok:
         raise HTTPException(status_code=404, detail="Admin not found")
     return Response(status_code=204)
@@ -1746,13 +1746,10 @@ async def admin_logout(request: Request):
 
 # API ENDPOINTS FOR SETTINGS
 
-@api_router.post("/settings/telegram", dependencies=[Depends(verify_jwt)])
+@api_router.post("/settings/telegram")
 async def api_update_telegram_settings(request: Request):
     """API endpoint to update telegram settings."""
-    current_user = request.state.current_user
-    if not current_user:
-        return JSONResponse({"success": False, "message": "Not authenticated"}, status_code=401)
-    
+    current_user = "api"
     try:
         form_data = await request.form()
         settings_dict = dict(form_data)
@@ -1780,7 +1777,7 @@ async def api_update_telegram_settings(request: Request):
         return JSONResponse({"success": False, "message": str(e)})
 
 # New API endpoints for Telegram Admin Card Management
-@api_router.get("/telegram-admins", dependencies=[Depends(verify_jwt)])
+@api_router.get("/telegram-admins")
 async def get_telegram_admins():
     """Get list of Telegram admins as JSON."""
     try:
@@ -1795,7 +1792,7 @@ async def get_telegram_admins():
             content={"success": False, "message": str(e)}
         )
 
-@api_router.post("/telegram-admins", dependencies=[Depends(verify_jwt)])
+@api_router.post("/telegram-admins")
 async def add_telegram_admin(request: Request):
     """Add new Telegram admin."""
     try:
@@ -1822,7 +1819,7 @@ async def add_telegram_admin(request: Request):
         logger.error(f"Error adding telegram admin: {e}")
         return JSONResponse(status_code=500, content={"success": False, "message": str(e)})
 
-@api_router.put("/telegram-admins/{admin_id}", dependencies=[Depends(verify_jwt)])
+@api_router.put("/telegram-admins/{admin_id}")
 async def update_telegram_admin(request: Request, admin_id: str):
     """Update existing Telegram admin."""
     try:
@@ -1845,7 +1842,7 @@ async def update_telegram_admin(request: Request, admin_id: str):
         logger.error(f"Error updating telegram admin {admin_id}: {e}")
         return JSONResponse(status_code=500, content={"success": False, "message": str(e)})
 
-@api_router.delete("/telegram-admins/{admin_id}", dependencies=[Depends(verify_jwt)])
+@api_router.delete("/telegram-admins/{admin_id}")
 async def delete_telegram_admin(request: Request, admin_id: str):
     """
     Delete a Telegram admin by their ID.
@@ -1879,13 +1876,10 @@ async def delete_telegram_admin(request: Request, admin_id: str):
             content={"success": False, "message": str(e)}
         )
 
-@api_router.post("/settings/userbot", dependencies=[Depends(verify_jwt)])
+@api_router.post("/settings/userbot")
 async def api_update_userbot_settings(request: Request):
     """API endpoint to update userbot settings."""
-    current_user = request.state.current_user
-    if not current_user:
-        return JSONResponse({"success": False, "message": "Not authenticated"}, status_code=401)
-    
+    current_user = "api"
     try:
         form_data = await request.form()
         settings_dict = dict(form_data)
@@ -1907,13 +1901,10 @@ async def api_update_userbot_settings(request: Request):
         logger.error(f"Error updating userbot settings: {e}")
         return JSONResponse({"success": False, "message": str(e)})
 
-@api_router.post("/settings/payment", dependencies=[Depends(verify_jwt)])
+@api_router.post("/settings/payment")
 async def api_update_payment_settings(request: Request):
     """API endpoint to update payment settings."""
-    current_user = request.state.current_user
-    if not current_user:
-        return JSONResponse({"success": False, "message": "Not authenticated"}, status_code=401)
-    
+    current_user = "api"
     try:
         form_data = await request.form()
         settings_dict = dict(form_data)
@@ -1981,15 +1972,10 @@ def _clean_userbot_session_files():
         logger.error(f"Error during session cleanup: {e}")
         return False
 
-@api_router.post("/userbot/send-code", dependencies=[Depends(verify_jwt)])
+@api_router.post("/userbot/send-code")
 async def api_userbot_send_code(request: Request):
     """API endpoint to send verification code to userbot phone."""
     global userbot_client, userbot_login_state, userbot_run_task
-
-    current_user = request.state.current_user
-    if not current_user:
-        return JSONResponse({"success": False, "message": "Not authenticated"}, status_code=401)
-
     try:
         # Check current status to prevent conflicts
         status = await get_userbot_status()
@@ -2035,7 +2021,7 @@ async def api_userbot_send_code(request: Request):
         config_db_service.update_settings({
             'userbot_phone_number': phone,
             'userbot_password': password,
-        }, current_user)
+        }, "api")
 
         # Perform complete cleanup of existing connections
         await _cleanup_existing_userbot_connections()
@@ -2269,15 +2255,10 @@ async def _run_userbot_with_protection(client: TelegramClient, phone: str):
         logger.info(f"🏁 Protected userbot task finished for {phone}")
 
 
-@api_router.post("/userbot/verify-code", dependencies=[Depends(verify_jwt)])
+@api_router.post("/userbot/verify-code")
 async def api_userbot_verify_code(request: Request):
     """API endpoint to verify userbot code and complete authentication."""
     global userbot_client, userbot_login_state, userbot_run_task
-
-    current_user = request.state.current_user
-    if not current_user:
-        return JSONResponse({"success": False, "message": "Not authenticated"}, status_code=401)
-
     try:
         # Parse form data
         form_data = await request.form()
@@ -2483,15 +2464,10 @@ async def api_userbot_verify_code(request: Request):
         logger.error(f"Error verifying userbot code: {e}")
         return JSONResponse({"success": False, "message": f"Internal error: {str(e)}"})
 
-@api_router.post("/userbot/logout", dependencies=[Depends(verify_jwt)])
+@api_router.post("/userbot/logout")
 async def api_userbot_logout(request: Request):
     """API endpoint to completely logout and clean userbot session."""
     global userbot_client, userbot_run_task, userbot_login_state
-
-    current_user = request.state.current_user
-    if not current_user:
-        return JSONResponse({"success": False, "message": "Not authenticated"}, status_code=401)
-
     logout_results = {
         "task_cancelled": False,
         "server_logout": False,
@@ -2617,15 +2593,10 @@ async def api_userbot_logout(request: Request):
             "details": logout_results
         })
 
-@api_router.post("/userbot/clean-session", dependencies=[Depends(verify_jwt)])
+@api_router.post("/userbot/clean-session")
 async def api_userbot_clean_session(request: Request):
     """API endpoint to forcefully clean all userbot session data."""
     global userbot_client, userbot_run_task, userbot_login_state
-
-    current_user = request.state.current_user
-    if not current_user:
-        return JSONResponse({"success": False, "message": "Not authenticated"}, status_code=401)
-
     cleanup_results = {
         "task_force_cancelled": False,
         "client_force_disconnected": False,
@@ -2737,13 +2708,9 @@ async def api_userbot_clean_session(request: Request):
             "details": cleanup_results
         })
 
-@api_router.get("/userbot/status", dependencies=[Depends(verify_jwt)])
+@api_router.get("/userbot/status")
 async def api_userbot_status(request: Request):
     """API endpoint to get userbot status."""
-    current_user = request.state.current_user
-    if not current_user:
-        return JSONResponse({"success": False, "message": "Not authenticated"}, status_code=401)
-
     try:
         status = await get_userbot_status()
 
