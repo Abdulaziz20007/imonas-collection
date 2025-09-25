@@ -51,7 +51,6 @@ def get_flashed_messages(request: Request):
     return request.session.pop("_messages") if "_messages" in request.session else []
 
 from starlette.middleware.sessions import SessionMiddleware
-from starlette.middleware.cors import CORSMiddleware
 
 admin_app = FastAPI(
     title="Buyurtmalar Boshqaruv Tizimi",
@@ -64,22 +63,6 @@ user_app = FastAPI(
 
 admin_app.add_middleware(SessionMiddleware, secret_key=config.SECRET_KEY)
 user_app.add_middleware(SessionMiddleware, secret_key=config.SECRET_KEY)
-
-# Allow CORS for all origins, methods, and headers
-admin_app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-user_app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 admin_router = APIRouter()
 api_router = APIRouter(prefix="/api")
