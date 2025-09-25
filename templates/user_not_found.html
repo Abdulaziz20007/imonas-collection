@@ -1,114 +1,127 @@
 <!DOCTYPE html>
 <html lang="uz" data-bs-theme="dark">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Foydalanuvchi Topilmadi - Buyurtmalar Boshqaruvi</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Foydalanuvchi Topilmadi - Miss Imona</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
     <style>
-        :root {
-            --text-primary: #ffffff;
-            --text-secondary: #adb5bd;
-            --text-tertiary: #6c757d;
-        }
-        body {
-            background-color: #121212;
-            color: #ffffff;
-        }
-        .card {
-            background-color: #1e1e1e;
-            border-color: #343a40;
-        }
-        .btn-outline-secondary {
-            border-color: #6c757d;
-            color: #6c757d;
-        }
-        .btn-outline-secondary:hover {
-            background-color: #6c757d;
-            color: #ffffff;
-        }
-        .btn-outline-primary {
-            border-color: #0d6efd;
-            color: #0d6efd;
-        }
-        .btn-outline-primary:hover {
-            background-color: #0d6efd;
-            color: #ffffff;
-        }
-        .alert-light {
-            background-color: #2d3748;
-            border-color: #4a5568;
-            color: #e2e8f0;
-        }
+      :root {
+        --text-primary: #ffffff;
+        --text-secondary: #adb5bd;
+        --text-tertiary: #6c757d;
+      }
+      body {
+        background-color: #121212;
+        color: #ffffff;
+      }
+      .card {
+        background-color: #1e1e1e;
+        border-color: #343a40;
+      }
+      .btn-outline-secondary {
+        border-color: #6c757d;
+        color: #6c757d;
+      }
+      .btn-outline-secondary:hover {
+        background-color: #6c757d;
+        color: #ffffff;
+      }
+      .btn-outline-primary {
+        border-color: #0d6efd;
+        color: #0d6efd;
+      }
+      .btn-outline-primary:hover {
+        background-color: #0d6efd;
+        color: #ffffff;
+      }
+      .alert-light {
+        background-color: #2d3748;
+        border-color: #4a5568;
+        color: #e2e8f0;
+      }
     </style>
-</head>
-<body>
-<div class="container-fluid">
-  <div class="row justify-content-center">
-    <div class="col-lg-6 col-md-8 col-sm-10">
-      <div class="text-center py-5">
-        <!-- User Not Found Icon -->
-        <div class="mb-4">
-          <i
-            class="fas fa-user-slash display-1"
-            style="color: var(--text-tertiary)"
-          ></i>
-        </div>
+  </head>
+  <body>
+    <div class="container-fluid">
+      <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8 col-sm-10">
+          <div class="text-center py-5">
+            <!-- User Not Found Icon -->
+            <div class="mb-4">
+              <i
+                class="fas fa-user-slash display-1"
+                style="color: var(--text-tertiary)"
+              ></i>
+            </div>
 
-        <!-- Error Title -->
-        <h1 class="display-4 fw-bold mb-3" style="color: var(--text-primary)">
-          Foydalanuvchi Topilmadi
-        </h1>
-        <h2 class="h4 mb-3" style="color: var(--text-secondary)">
-          Kechirasiz, bunday foydalanuvchi mavjud emas
-        </h2>
+            <!-- Error Title -->
+            <h1
+              class="display-4 fw-bold mb-3"
+              style="color: var(--text-primary)"
+            >
+              Foydalanuvchi Topilmadi
+            </h1>
+            <h2 class="h4 mb-3" style="color: var(--text-secondary)">
+              Kechirasiz, bunday foydalanuvchi mavjud emas
+            </h2>
 
-        <!-- Error Message -->
-        <div class="card mb-4">
-          <div class="card-body">
-            <p class="text-muted mb-2">
-              <i class="fas fa-circle-info me-2"></i>
-              Siz qidirayotgan foydalanuvchi mavjud emas yoki o'chirilgan
-              bo'lishi mumkin.
-            </p>
-            <small class="text-muted">
-              Foydalanuvchi ID'si noto'g'ri yoki foydalanuvchi tizimdan
-              chiqarilgan.
-            </small>
-          </div>
-        </div>
+            <!-- Error Message -->
+            <div class="card mb-4">
+              <div class="card-body">
+                <p class="text-muted mb-2">
+                  <i class="fas fa-circle-info me-2"></i>
+                  Siz qidirayotgan foydalanuvchi mavjud emas yoki o'chirilgan
+                  bo'lishi mumkin.
+                </p>
+                <small class="text-muted">
+                  Foydalanuvchi ID'si noto'g'ri yoki foydalanuvchi tizimdan
+                  chiqarilgan.
+                </small>
+              </div>
+            </div>
 
-        <!-- Action Buttons -->
-        <div class="d-flex justify-content-center gap-3">
-          <button onclick="history.back()" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-2"></i>
-            Orqaga
-          </button>
-          <button
-            onclick="window.location.reload()"
-            class="btn btn-outline-primary"
-          >
-            <i class="fas fa-arrow-rotate-right me-2"></i>
-            Yangilash
-          </button>
-        </div>
+            <!-- Action Buttons -->
+            <div class="d-flex justify-content-center gap-3">
+              <button
+                onclick="history.back()"
+                class="btn btn-outline-secondary"
+              >
+                <i class="fas fa-arrow-left me-2"></i>
+                Orqaga
+              </button>
+              <button
+                onclick="window.location.reload()"
+                class="btn btn-outline-primary"
+              >
+                <i class="fas fa-arrow-rotate-right me-2"></i>
+                Yangilash
+              </button>
+            </div>
 
-        <!-- Additional Help -->
-        <div class="mt-5">
-          <div class="alert alert-light d-inline-block">
-            <small class="text-muted">
-              <i class="fas fa-lightbulb me-1"></i>
-              <strong>Maslahat:</strong> Foydalanuvchi ro'yxatdan o'tganiga
-              ishonch hosil qiling yoki to'g'ri foydalanuvchi ID'sini kiriting.
-            </small>
+            <!-- Additional Help -->
+            <div class="mt-5">
+              <div class="alert alert-light d-inline-block">
+                <small class="text-muted">
+                  <i class="fas fa-lightbulb me-1"></i>
+                  <strong>Maslahat:</strong> Foydalanuvchi ro'yxatdan o'tganiga
+                  ishonch hosil qiling yoki to'g'ri foydalanuvchi ID'sini
+                  kiriting.
+                </small>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
 </html>
