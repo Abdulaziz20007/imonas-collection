@@ -402,8 +402,8 @@ Boshqaruvi{% endblock %} {% block content %}
           box-shadow: var(--shadow-sm);
           transition: var(--transition-fast);
         "
-        onmouseover="this.style.boxShadow='var(--shadow-md)'"
-        onmouseout="this.style.boxShadow='var(--shadow-sm)'"
+        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='var(--shadow-md)'"
+        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-sm)'"
       >
         <div
           class="card-body d-flex flex-column"
