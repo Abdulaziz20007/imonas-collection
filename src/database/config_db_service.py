@@ -60,19 +60,9 @@ class ConfigDatabaseService:
         default_settings = {
             'userbot_phone_number': '+998944448088',
             'userbot_password': 'As9605600',
-            'private_channel_id': '-1002961810984',
-            'group_id': '-1002853927293',
-            'userbot_app_id': '26156821',
-            'userbot_api_hash': '96b2fb23ba2a93bb171a3b525759970e',
-            'find_orders_topic_id': '4',
-            'realtime_orders_topic_id': '2',
-            'confirmation_topic_id': '240',
-            'ai_confirmations_topic_id': '264',
             'default_ai_model': 'gemini-2.0-flash',
             'subscription_price': '500000',
             # Payment settings defaults
-            'payment_checking_wait_time': '60',
-            'order_delay_time': '1',
             'auto_payment_confirmation': 'true',
         }
         

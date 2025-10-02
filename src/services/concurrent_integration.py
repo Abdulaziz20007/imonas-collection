@@ -12,6 +12,7 @@ from src.services.task_orchestrator import get_task_orchestrator, shutdown_task_
 from src.services.order_processing_service import order_processing_service
 from src.services.retry_service import retry_service
 from src.services.async_db_service import async_db_service
+from src.services.data_optimizer_service import data_optimizer_service
 
 logger = logging.getLogger(__name__)
 
@@ -113,12 +114,15 @@ class ConcurrentIntegrationService:
         """Periodically clean up old data."""
         while not self._shutdown_requested:
             try:
-                await asyncio.sleep(3600)  # Run every hour
+                await asyncio.sleep(60)  # Run every minute
 
                 if self._shutdown_requested:
                     break
 
                 logger.debug("Running periodic cleanup task")
+
+                # Run DB/files cleanup using optimizer (uses DATA_RETENTION_DAYS)
+                await data_optimizer_service.run_cleanup_cycle()
 
                 # Clean up old retry statistics
                 await retry_service.cleanup_old_retries(max_age_seconds=3600)

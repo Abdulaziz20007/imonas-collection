@@ -14,6 +14,7 @@ from src.services.async_db_service import async_db_service
 from src.services.order_processing_service import order_processing_service
 from src.services.task_orchestrator import get_task_orchestrator
 from src.config import config
+from src.services.concurrency_manager import concurrency_manager
 
 logger = logging.getLogger(__name__)
 
@@ -197,6 +198,56 @@ async def handle_media_concurrent(update: Update, context: ContextTypes.DEFAULT_
             )
             return
 
+        # DUPLICATE ORDER CHECK: Before creating a new order, check if one already exists
+        existing_order = await async_db_service.find_existing_order(
+            user_id=user['id'],
+            collection_id=active_collection['id'],
+            original_message_id=forward_message_id,
+            original_channel_id=channel_id
+        )
+
+        if existing_order:
+            order_id = existing_order['id']
+            keyboard = InlineKeyboardMarkup([
+                [
+                    InlineKeyboardButton("❌ Bekor qilish", callback_data=f"cancel_existing_order_{order_id}"),
+                    InlineKeyboardButton("✏️ Tahrirlash", callback_data=f"edit_existing_order_{order_id}")
+                ],
+                [
+                    InlineKeyboardButton("⬅️ Asosiy menyu", callback_data="back_to_main")
+                ]
+            ])
+
+            # Fetch additional details for a richer message
+            try:
+                order_details = await async_db_service.get_order_by_id(order_id)
+            except Exception:
+                order_details = None
+
+            amount_val = (order_details or existing_order).get('amount') if (order_details or existing_order) else None
+            amount_text = str(amount_val) if amount_val is not None else "Kiritilmagan"
+            created_at_text = (order_details.get('created_at') if order_details else existing_order.get('created_at')) or ""
+            files_count = 0
+            try:
+                files = order_details.get('file_urls') if order_details else None
+                files_count = len(files) if files else 0
+            except Exception:
+                files_count = 0
+
+            message_text = (
+                "Bu mahsulot allaqachon buyurtma qilingan.\n\n"
+                f"📦 Buyurtma ID: #{order_id}\n"
+                f"🔢 Serya: {amount_text}\n"\
+                f"⏰ Vaqt: {created_at_text}\n\n"
+                "Mavjud buyurtmani bekor qilishingiz yoki tahrirlashingiz mumkin."
+            )
+
+            await message.reply_text(
+                message_text,
+                reply_markup=keyboard
+            )
+            return
+
         # Check current user state for file collection
         user_state = context.user_data.get('state')
 
@@ -262,6 +313,7 @@ async def handle_media_concurrent(update: Update, context: ContextTypes.DEFAULT_
         # Extract bot token for background processing (context may not be thread-safe)
         bot_token = context.bot.token if context.bot else None
 
+        main_loop = asyncio.get_running_loop()
         # Submit background task without waiting for it
         background_task = orchestrator.submit_nowait(
             _process_order_background_sync,
@@ -272,7 +324,8 @@ async def handle_media_concurrent(update: Update, context: ContextTypes.DEFAULT_
             order_id,
             user_id,
             file_to_download.file_id,  # Pass file_id for actual download
-            bot_token  # Pass bot token instead of context
+            bot_token,  # Pass bot token instead of context
+            main_loop
         )
 
         # Log the background task submission
@@ -296,7 +349,8 @@ def _process_order_background_sync(
     order_id: int,
     user_telegram_id: int,
     file_id: str,
-    bot_token: str
+    bot_token: str,
+    main_loop: asyncio.AbstractEventLoop
 ) -> Dict[str, Any]:
     """
     Synchronous wrapper for background order processing.
@@ -312,7 +366,8 @@ def _process_order_background_sync(
             result = loop.run_until_complete(
                 _process_order_background_async(
                     channel_id, message_id, file_unique_id,
-                    media_type, order_id, user_telegram_id, file_id, bot_token
+                    media_type, order_id, user_telegram_id, file_id, bot_token,
+                    main_loop
                 )
             )
             return result
@@ -336,7 +391,8 @@ async def _process_order_background_async(
     order_id: int,
     user_telegram_id: int,
     file_id: str,
-    bot_token: str
+    bot_token: str,
+    main_loop: asyncio.AbstractEventLoop
 ) -> Dict[str, Any]:
     """Async background processing of the order."""
     try:
@@ -377,8 +433,17 @@ async def _process_order_background_async(
         # Set status to downloading
         await async_db_service.update_product_media_status(file_unique_id, "downloading")
 
-        # Perform actual download
-        download_result = await _download_file_async(file_id, file_unique_id, media_type, bot_token)
+        # Perform actual download, limited by concurrency manager
+        async with concurrency_manager.limit():
+            download_result = await _download_file_async(
+                file_id,
+                file_unique_id,
+                media_type,
+                bot_token,
+                channel_id,
+                message_id,
+                main_loop
+            )
 
         if download_result["success"]:
             # Update product_media with paths
@@ -430,59 +495,84 @@ async def _process_order_background_async(
         }
 
 
-async def _download_file_async(file_id: str, file_unique_id: str, media_type: str, bot_token: str) -> Dict[str, Any]:
-    """Download file using bot API."""
+async def _download_file_async(
+    file_id: str,
+    file_unique_id: str,
+    media_type: str,
+    bot_token: str,
+    channel_id: int,
+    message_id: int,
+    main_loop: asyncio.AbstractEventLoop
+) -> Dict[str, Any]:
+    """Download file using userbot to bypass size limits, with bot API as fallback."""
     result = {
         "success": False,
         "file_path": None,
         "thumbnail_path": None,
         "error": None
     }
-
+    file_path = None
     try:
-        # Import required modules
         import os
+        from src.web_app import userbot_client
         from telegram import Bot
-
-        # Create a bot instance from the token
-        bot = Bot(token=bot_token)
 
         # Generate file path
         file_extension = '.jpg' if media_type == 'photo' else '.mp4'
         file_path = os.path.join('uploads', f"{file_unique_id}{file_extension}")
-
-        # Ensure uploads directory exists
         os.makedirs('uploads', exist_ok=True)
 
-        # Download file
-        file_obj = await bot.get_file(file_id)
-        await file_obj.download_to_drive(file_path)
-
-        result["file_path"] = file_path
-        result["success"] = True
-
-        # Generate thumbnail for videos
-        if media_type == 'video':
+        # Primary method: Userbot for large files
+        if userbot_client and userbot_client.is_connected():
             try:
-                from src.services.file_service import generate_video_thumbnail_to_dir
-                thumbnail_dir = os.path.join('uploads', 'thumbnail')
-                os.makedirs(thumbnail_dir, exist_ok=True)
+                logger.info(f"Attempting to download {file_unique_id} using userbot...")
+                async def download_coro():
+                    """Coroutine to be executed on the main event loop."""
+                    message_to_download = await userbot_client.get_messages(channel_id, ids=message_id)
+                    if not message_to_download:
+                        raise Exception(f"Message {message_id} not found in channel {channel_id}")
+                    await userbot_client.download_media(message_to_download, file=file_path)
 
-                orchestrator = get_task_orchestrator()
-                thumbnail_path = await orchestrator.submit(
-                    generate_video_thumbnail_to_dir, file_path, thumbnail_dir
-                )
-                result["thumbnail_path"] = thumbnail_path
+                future = asyncio.run_coroutine_threadsafe(download_coro(), main_loop)
+                future.result(timeout=config.DOWNLOAD_TIMEOUT)  # Use a longer timeout for large files
+                logger.info(f"Successfully downloaded file {file_unique_id} to {file_path} using userbot")
+                result["success"] = True
+            except Exception as userbot_error:
+                logger.warning(f"Userbot download failed for {file_unique_id}: {repr(userbot_error)}. Falling back to bot API.")
+                result["success"] = False
+        else:
+            logger.warning("Userbot not connected, falling back to bot API for download.")
+            result["success"] = False
 
-            except Exception as thumb_error:
-                logger.warning(f"Thumbnail generation failed: {thumb_error}")
-                # Don't fail the whole process for thumbnail errors
+        # Fallback method: Bot API for smaller files or if userbot fails
+        if not result["success"]:
+            logger.info(f"Attempting to download {file_unique_id} using bot API (fallback)...")
+            bot = Bot(token=bot_token)
+            file_obj = await bot.get_file(file_id)
+            await file_obj.download_to_drive(file_path)
+            logger.info(f"Successfully downloaded file {file_unique_id} to {file_path} using bot API")
+            result["success"] = True
 
-        logger.info(f"Successfully downloaded file {file_unique_id} to {file_path}")
+        # If download was successful (either way)
+        if result["success"]:
+            result["file_path"] = file_path
+            if media_type == 'video':
+                try:
+                    from src.services.file_service import generate_video_thumbnail_to_dir
+                    thumbnail_dir = os.path.join('uploads', 'thumbnail')
+                    os.makedirs(thumbnail_dir, exist_ok=True)
+                    orchestrator = get_task_orchestrator()
+                    thumbnail_path = await orchestrator.submit(
+                        generate_video_thumbnail_to_dir, file_path, thumbnail_dir
+                    )
+                    result["thumbnail_path"] = thumbnail_path
+                except Exception as thumb_error:
+                    logger.warning(f"Thumbnail generation failed: {thumb_error}")
 
     except Exception as e:
-        logger.error(f"File download failed for {file_unique_id}: {e}")
+        logger.error(f"File download failed for {file_unique_id}: {e}", exc_info=True)
         result["error"] = str(e)
+        result["success"] = False
 
     return result
 
@@ -542,9 +632,21 @@ async def _notify_user_order_failed(user_telegram_id: int, order_id: int, error:
         from telegram import Bot
         bot = Bot(token=bot_token)
 
+        error_text = ""
+        if error:
+            user_friendly_error = ""
+            error_lower = str(error).lower()
+            if "file is too big" in error_lower:
+                user_friendly_error = "Fayl hajmi juda katta."
+            elif "timeout" in error_lower:
+                user_friendly_error = "Faylni yuklashda vaqt tugadi."
+            
+            if user_friendly_error:
+                error_text = f"\nSabab: {user_friendly_error}"
+
         await bot.send_message(
             chat_id=user_telegram_id,
-            text=f"❌ Kechirasiz, buyurtma #{order_id} ni qayta ishlab bo'lmadi.\n\n"
+            text=f"❌ Kechirasiz, buyurtma #{order_id} ni qayta ishlab bo'lmadi.{error_text}\n\n"
                  f"Iltimos, keyinroq qayta urinib ko'ring yoki admin bilan bog'laning."
         )
 

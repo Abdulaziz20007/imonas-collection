@@ -18,8 +18,10 @@ from telegram.ext import ContextTypes
 from src.database.db_service import db_service
 from src.config import config
 from src.database.config_db_service import config_db_service
+from src.utils.keyboards import get_region_keyboard
 from src.receipt_processor import receipt_processor
 from src.services.file_service import generate_video_thumbnail as _generate_video_thumbnail
+from src.services.concurrency_manager import concurrency_manager
 from src.services.file_service import generate_thumbnails_for_all_videos as _generate_thumbnails_for_all_videos
 from src.services.file_service import generate_video_thumbnail_to_dir as _generate_video_thumbnail_to_dir
 from telegram import Update
@@ -452,16 +454,17 @@ class MessageProcessor:
                         os.makedirs("receipts", exist_ok=True)
                         receipt_path = os.path.join("receipts", f"receipt_{user['telegram_id']}_{photo.file_unique_id}.jpg")
                         
-                        # Use optimized download for receipts too
-                        receipt_download_success = await self._download_file_optimized(
-                            file_url=receipt_file.file_path,
-                            file_path=receipt_path,
-                            timeout=15  # Shorter timeout for receipts
-                        )
-                        
-                        if not receipt_download_success:
-                            # Fallback to original method for receipt if optimized fails
-                            await receipt_file.download_to_drive(receipt_path)
+                        async with concurrency_manager.limit():
+                            # Use optimized download for receipts too
+                            receipt_download_success = await self._download_file_optimized(
+                                file_url=receipt_file.file_path,
+                                file_path=receipt_path,
+                                timeout=15  # Shorter timeout for receipts
+                            )
+
+                            if not receipt_download_success:
+                                # Fallback to original method for receipt if optimized fails
+                                await receipt_file.download_to_drive(receipt_path)
 
                         # Immediately acknowledge to the user (without wait time)
                         try:
@@ -675,8 +678,9 @@ class MessageProcessor:
             # Prefer awaiting_order_id (set by prompt) over transient order_id
             order_id = context.user_data.get('awaiting_order_id') or context.user_data.get('order_id')
             user_id = message.from_user.id
+            is_editing = context.user_data.get('is_editing_order', False)
 
-            logger.info(f"SERIES_UPDATE: START - Order ID {order_id}, User ID {user_id}, Amount: '{amount_text}'")
+            logger.info(f"SERIES_UPDATE: START - Order ID {order_id}, User ID {user_id}, Amount: '{amount_text}', Is Editing: {is_editing}")
 
             if not order_id:
                 logger.warning(f"SERIES_UPDATE: No order_id in context for user {user_id}")
@@ -709,14 +713,23 @@ class MessageProcessor:
                 logger.warning(f"SERIES_UPDATE: Order {order_id} ownership mismatch for user {user_id}")
                 return "❌ Bu buyurtma sizga tegishli emas."
 
-            # Update order with the amount (run in thread pool to avoid blocking)
-            update_success = await loop.run_in_executor(self.executor,
-                self.db_service.update_order_amount, order_id, amount)
+            # Update order amount, merging if this is an edit
+            update_success = await loop.run_in_executor(
+                self.executor,
+                self.db_service.update_order_amount,
+                order_id,
+                amount,
+                is_editing,
+            )
+            
+            if is_editing:
+                context.user_data.pop('is_editing_order', None) # Clean up the flag
+
             if not update_success:
-                logger.error(f"SERIES_UPDATE: Failed to update order {order_id} with amount {amount}")
+                logger.error(f"SERIES_UPDATE: Failed to update order {order_id} with amount")
                 return "❌ Buyurtma seriyasini saqlashda xatolik."
 
-            logger.info(f"SERIES_UPDATE: SUCCESS - Order {order_id} updated with amount {amount}")
+            logger.info(f"SERIES_UPDATE: SUCCESS - Order {order_id} updated.")
 
             # Dispatch finalization in background (non-blocking for user response)
             try:
@@ -894,65 +907,58 @@ class MessageProcessor:
                     # Single file - send as photo or video with caption
                     file_path = file_paths[0]
                     if os.path.exists(file_path):
-                        try:
-                            # Check file size and use appropriate timeout
-                            file_size = os.path.getsize(file_path) if os.path.exists(file_path) else 0
-                            timeout_seconds = min(300, max(60, file_size // 100000))  # 60s-300s based on file size
-                            
-                            if file_path.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.tif', '.webp', '.ico', '.svg')):
-                                await asyncio.wait_for(
-                                    context.bot.send_photo(
-                                        chat_id=config.GROUP_ID,
-                                        photo=file_path,
-                                        caption=notification_text,
-                                        message_thread_id=int(config.REALTIME_ORDERS_TOPIC_ID)
-                                    ),
-                                    timeout=timeout_seconds
-                                )
+                        max_retries = 3
+                        for attempt in range(max_retries):
+                            try:
+                                # Check file size and use appropriate timeout
+                                file_size = os.path.getsize(file_path) if os.path.exists(file_path) else 0
+                                timeout_seconds = min(300, max(60, file_size // 100000))  # 60s-300s based on file size
+                                
+                                if file_path.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.tif', '.webp', '.ico', '.svg')):
+                                    await asyncio.wait_for(
+                                        context.bot.send_photo(
+                                            chat_id=config.GROUP_ID,
+                                            photo=file_path,
+                                            caption=notification_text,
+                                            message_thread_id=int(config.REALTIME_ORDERS_TOPIC_ID)
+                                        ),
+                                        timeout=timeout_seconds
+                                    )
+                                elif file_path.lower().endswith(('.mp4', '.webm', '.mov')):
+                                    await asyncio.wait_for(
+                                        context.bot.send_video(
+                                            chat_id=config.GROUP_ID,
+                                            video=file_path,
+                                            caption=notification_text,
+                                            message_thread_id=int(config.REALTIME_ORDERS_TOPIC_ID)
+                                        ),
+                                        timeout=timeout_seconds
+                                    )
                                 logger.info(f"Real-time notification sent for order {order_id}")
-                            elif file_path.lower().endswith(('.mp4', '.webm', '.mov')):
-                                await asyncio.wait_for(
-                                    context.bot.send_video(
-                                        chat_id=config.GROUP_ID,
-                                        video=file_path,
-                                        caption=notification_text,
-                                        message_thread_id=int(config.REALTIME_ORDERS_TOPIC_ID)
-                                    ),
-                                    timeout=timeout_seconds
-                                )
-                                logger.info(f"Real-time notification sent for order {order_id}")
-                            else:
-                                await asyncio.wait_for(
-                                    context.bot.send_photo(
-                                        chat_id=config.GROUP_ID,
-                                        photo=file_path,
-                                        caption=notification_text,
-                                        message_thread_id=int(config.REALTIME_ORDERS_TOPIC_ID)
-                                    ),
-                                    timeout=timeout_seconds
-                                )
-                                logger.info(f"Real-time notification sent for order {order_id}")
-                        except Exception as e:
-                            logger.error(f"Error sending file for order {order_id}: {e}")
-                            # Suppress fallback text-only message; automatic retries will reattempt media
+                                break  # Success, exit retry loop
+                            except Exception as e:
+                                logger.error(f"Error sending file for order {order_id} (attempt {attempt + 1}/{max_retries}): {e}")
+                                if attempt < max_retries - 1:
+                                    await asyncio.sleep(5 * (attempt + 1))  # Exponential backoff
+                                else:
+                                    # Final attempt failed, log and continue
+                                    logger.error(f"Final attempt failed to send file for order {order_id}")
                     else:
                         # Suppress text-only missing file note
                         logger.warning(f"Media file missing for order {order_id}: {file_path}")
                 else:
                     # Multiple files - send as media group
-                    media_group = []
-                    valid_files = []
-                    opened_files = []
-
-                    try:
-                        for j, file_path in enumerate(file_paths):
-                            if os.path.exists(file_path):
-                                try:
-                                    # Open file in binary mode for Telegram API
+                    max_retries = 3
+                    for attempt in range(max_retries):
+                        media_group = []
+                        valid_files = []
+                        opened_files = []
+                        try:
+                            # Prepare media group
+                            for j, file_path in enumerate(file_paths):
+                                if os.path.exists(file_path):
                                     file_obj = open(file_path, 'rb')
                                     opened_files.append(file_obj)
-
-                                    # Add caption only to the first file
                                     caption = notification_text if j == 0 else None
                                     if file_path.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.tif', '.webp', '.ico', '.svg')):
                                         media_group.append(InputMediaPhoto(media=file_obj, caption=caption))
@@ -961,37 +967,36 @@ class MessageProcessor:
                                     else:
                                         media_group.append(InputMediaPhoto(media=file_obj, caption=caption))
                                     valid_files.append(file_path)
-                                except Exception as e:
-                                    logger.error(f"Error preparing file {file_path} for order {order_id}: {e}")
 
-                        if media_group:
-                            try:
-                                # Calculate timeout based on total file size
-                                total_size = sum(os.path.getsize(f) if os.path.exists(f) else 0 for f in valid_files)
-                                timeout_seconds = min(600, max(120, total_size // 50000))  # 120s-600s for media groups
+                            if not media_group:
+                                logger.warning(f"No valid files to send for order {order_id}")
+                                break # No point retrying
 
-                                await asyncio.wait_for(
-                                    context.bot.send_media_group(
-                                        chat_id=config.GROUP_ID,
-                                        media=media_group,
-                                        message_thread_id=int(config.REALTIME_ORDERS_TOPIC_ID)
-                                    ),
-                                    timeout=timeout_seconds
-                                )
-                                logger.info(f"Real-time notification sent for order {order_id}")
-                            except Exception as e:
-                                logger.error(f"Error sending media group for order {order_id}: {e}")
-                                # Do not log misleading success message on failure
-                        else:
-                            # No valid files found; do not send text-only fallback
-                            logger.warning(f"No valid files to send for order {order_id}")
-                    finally:
-                        # Always close opened files to prevent resource leaks
-                        for file_obj in opened_files:
-                            try:
-                                file_obj.close()
-                            except:
-                                pass
+                            # Send media group
+                            total_size = sum(os.path.getsize(f) for f in valid_files)
+                            timeout_seconds = min(600, max(120, total_size // 50000))
+                            await asyncio.wait_for(
+                                context.bot.send_media_group(
+                                    chat_id=config.GROUP_ID,
+                                    media=media_group,
+                                    message_thread_id=int(config.REALTIME_ORDERS_TOPIC_ID)
+                                ),
+                                timeout=timeout_seconds
+                            )
+                            logger.info(f"Real-time notification sent for order {order_id}")
+                            break # Success
+                        except Exception as e:
+                            logger.error(f"Error sending media group for order {order_id} (attempt {attempt + 1}/{max_retries}): {e}")
+                            if attempt < max_retries - 1:
+                                await asyncio.sleep(5 * (attempt + 1))
+                            else:
+                                logger.error(f"Final attempt failed to send media group for order {order_id}")
+                        finally:
+                            for file_obj in opened_files:
+                                try:
+                                    file_obj.close()
+                                except:
+                                    pass
             else:
                 logger.warning("GROUP_ID or REALTIME_ORDERS_TOPIC_ID not configured")
             
@@ -1535,6 +1540,54 @@ class MessageProcessor:
     async def process_callback_query(self, query, context: ContextTypes.DEFAULT_TYPE = None) -> Optional[Dict[str, Any]]:
         """Processes an inline keyboard button press."""
         callback_data = query.data
+
+        if callback_data.startswith("select_region:"):
+            try:
+                region = callback_data.split(":", 1)[1]
+                telegram_id = query.from_user.id
+
+                self.db_service.update_user_info(telegram_id, 'region', region)
+                self.db_service.update_user_registration_step(telegram_id, 'done')
+
+                # Activate the user and generate a unique code
+                self.db_service.update_user_active_status(telegram_id, True)
+                unique_code = self._generate_unique_code()
+                # Ensure code is unique
+                while self.db_service.get_user_by_code(unique_code):
+                    unique_code = self._generate_unique_code()
+                
+                self.db_service.update_user_info(telegram_id, 'code', unique_code)
+
+                # Check if user is already in the private channel
+                if self.bot_app and config.PRIVATE_CHANNEL_ID:
+                    try:
+                        chat_member = await self.bot_app.bot.get_chat_member(
+                            chat_id=config.PRIVATE_CHANNEL_ID,
+                            user_id=telegram_id
+                        )
+                        if chat_member.status in ['creator', 'administrator', 'member']:
+                            self.db_service.update_user_subscription_status(telegram_id, 'active')
+                            logger.info(f"User {telegram_id} is already in the channel. Activating subscription.")
+                            return {"text": (f"✅ Tabriklaymiz, ro'yxatdan muvaffaqiyatli o'tdingiz!\n\n"
+                                    f"🔑 Sizning shaxsiy kodingiz: `{unique_code}`\n\n"
+                                    f"Siz allaqachon maxfiy kanal a'zosisiz. Botdan foydalanishni boshlashingiz mumkin!\n\n"
+                                    f"📷 Buyurtma berish uchun mahsulotni yuboring."), "keyboard": None, "parse_mode": "Markdown"}
+                    except Exception as e:
+                        logger.error(f"Could not check channel membership for user {telegram_id}: {e}")
+                        # Fallback to normal payment flow if check fails
+
+                self.db_service.update_user_payment_step(telegram_id, 'pending')
+                keyboard = InlineKeyboardMarkup([
+                    [InlineKeyboardButton("Kanalga qo'shilish", callback_data="join_channel")]
+                ])
+                
+                response_text = (f"✅ Tabriklaymiz, ro'yxatdan muvaffaqiyatli o'tdingiz!\n\n"
+                                 f"🔑 Sizning shaxsiy kodingiz: `{unique_code}`\n\n"
+                                 f"Botdan foydalanish uchun, iltimos, maxfiy kanalga qo'shiling.")
+                return {"text": response_text, "keyboard": keyboard, "parse_mode": "Markdown"}
+            except Exception as e:
+                logger.error(f"Error processing region selection: {e}")
+                return {"text": "❌ Viloyatni saqlashda xatolik yuz berdi.", "keyboard": None}
 
         # No add_card_type callbacks anymore
 
@@ -2338,6 +2391,9 @@ class MessageProcessor:
         elif user['reg_step'] == 'phone':
             # Phone step should not accept text input anymore, only contact messages
             return "❌ Iltimos, telefon raqamingizni yuborish uchun 📱 tugmasini bosing.", self._get_phone_contact_keyboard()
+        
+        elif user['reg_step'] == 'region':
+            return "Viloyatingizni tanlang:", get_region_keyboard()
 
         return "", None  # Should not be reached
 
@@ -2388,43 +2444,8 @@ class MessageProcessor:
             # Handle registration flow
             if user['reg_step'] == 'phone':
                 self.db_service.update_user_info(telegram_id, 'phone', normalized_phone)
-                self.db_service.update_user_registration_step(telegram_id, 'done')
-                
-                # Activate the user and generate a unique code
-                self.db_service.update_user_active_status(telegram_id, True)
-                unique_code = self._generate_unique_code()
-                # Ensure code is unique
-                while self.db_service.get_user_by_code(unique_code):
-                    unique_code = self._generate_unique_code()
-                
-                self.db_service.update_user_info(telegram_id, 'code', unique_code)
-
-                # Check if user is already in the private channel
-                if self.bot_app and config.PRIVATE_CHANNEL_ID:
-                    try:
-                        chat_member = await self.bot_app.bot.get_chat_member(
-                            chat_id=config.PRIVATE_CHANNEL_ID,
-                            user_id=telegram_id
-                        )
-                        if chat_member.status in ['creator', 'administrator', 'member']:
-                            self.db_service.update_user_subscription_status(telegram_id, 'active')
-                            logger.info(f"User {telegram_id} is already in the channel. Activating subscription.")
-                            return (f"✅ Tabriklaymiz, ro'yxatdan muvaffaqiyatli o'tdingiz!\n\n"
-                                    f"🔑 Sizning shaxsiy kodingiz: `{unique_code}`\n\n"
-                                    f"Siz allaqachon maxfiy kanal a'zosisiz. Botdan foydalanishni boshlashingiz mumkin!\n\n"
-                                    f"📷 Buyurtma berish uchun mahsulotni yuboring."), None
-                    except Exception as e:
-                        logger.error(f"Could not check channel membership for user {telegram_id}: {e}")
-                        # Fallback to normal payment flow if check fails
-
-                self.db_service.update_user_payment_step(telegram_id, 'pending')
-                keyboard = InlineKeyboardMarkup([
-                    [InlineKeyboardButton("Kanalga qo'shilish", callback_data="join_channel")]
-                ])
-                
-                return (f"✅ Tabriklaymiz, ro'yxatdan muvaffaqiyatli o'tdingiz!\n\n"
-                        f"🔑 Sizning shaxsiy kodingiz: `{unique_code}`\n\n"
-                        f"Botdan foydalanish uchun, iltimos, maxfiy kanalga qo'shiling."), keyboard
+                self.db_service.update_user_registration_step(telegram_id, 'region')
+                return "Viloyatingizni tanlang:", get_region_keyboard()
             
             # If user is fully registered, this might be for editing
             elif user['reg_step'] == 'done':
@@ -2581,6 +2602,8 @@ class MessageProcessor:
             elif user['reg_step'] == 'phone':
                 return ("📞 Telefon raqamingizni yuboring:\n\n"
                        "📱 Quyidagi tugmani bosing:"), self._get_phone_contact_keyboard()
+            elif user['reg_step'] == 'region':
+                return "Viloyatingizni tanlang:", get_region_keyboard()
     
     def process_mystats_command(self, message: Dict[str, Any]) -> str:
         """

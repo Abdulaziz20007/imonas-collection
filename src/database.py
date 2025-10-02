@@ -907,13 +907,13 @@ class DatabaseService:
         Returns:
             List[str]: List of file URLs/paths for the order
         """
-        sql = "SELECT file_url FROM order_files WHERE order_id = ? ORDER BY id ASC"
+        sql = "SELECT file_url FROM order_files WHERE order_id = ? AND status = 'downloaded' AND file_url IS NOT NULL ORDER BY id ASC"
         try:
             conn = self._get_connection()
             cursor = conn.cursor()
             cursor.execute(sql, (order_id,))
             rows = cursor.fetchall()
-            return [row[0] for row in rows]
+            return [row[0] for row in rows if row[0]]
         except Exception as e:
             logger.error(f"Error getting order files: {str(e)}")
             return []

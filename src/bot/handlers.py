@@ -9,7 +9,7 @@ from datetime import time as dt_time
 from typing import Any, Dict, Optional
 
 from telegram import Update, ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ContextTypes, MessageHandler, filters
+from telegram.ext import ContextTypes, MessageHandler, filters, ConversationHandler
 
 from src.database.db_service import db_service
 from src.config import config
@@ -92,6 +92,36 @@ async def edit_profile(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         message_dict = update.message.to_dict()
         response_text, keyboard = message_processor.process_edit_command(message_dict)
         await update.message.reply_text(response_text, reply_markup=keyboard)
+
+
+async def myreports(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Allows users to view and download their generated reports."""
+    if not is_private_chat(update):
+        return
+    if await check_user_blocked(update, context):
+        return
+    
+    user_telegram_id = update.effective_user.id
+    user = db_service.get_user_by_telegram_id(user_telegram_id)
+    if not user:
+        await update.message.reply_text("❌ Xatolik: Foydalanuvchi topilmadi.")
+        return
+
+    reports = db_service.get_reports_for_user(user['id'])
+    
+    if not reports:
+        await update.message.reply_text("Sizda hali hisobotlar mavjud emas.")
+        return
+
+    message = "📋 Sizning hisobotlaringiz:\n\nHisobotni yuklab olish uchun bosing."
+    buttons = []
+    for report in reports:
+        collection_date = report['collection_date'][:10] if report.get('collection_date') else 'N/A'
+        button_text = f"Kolleksiya #{report['collection_id']} ({collection_date})"
+        buttons.append([InlineKeyboardButton(button_text, callback_data=f"get_report_{report['id']}")])
+
+    reply_markup = InlineKeyboardMarkup(buttons)
+    await update.message.reply_text(message, reply_markup=reply_markup)
 
 
 async def prompt_for_series(context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -200,3 +230,33 @@ async def handle_media(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                 order_id = context.user_data.get('order_id', 'unknown')
                 cancel_keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("❌ Bekor qilish", callback_data=f"cancel_order_{order_id}")]])
                 await update.message.reply_text("📝 Seriyani kiriting", reply_markup=cancel_keyboard)
+
+
+# States for conversation handler
+SELECTING_COLLECTION, AWAITING_REPORTS = range(2)
+
+async def send_reports_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Starts the send reports conversation (placeholder)."""
+    if update.message:
+        await update.message.reply_text("This feature is not yet implemented.")
+    return ConversationHandler.END
+
+async def select_collection_for_report(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Handles collection selection for reports (placeholder)."""
+    if update.callback_query:
+        query = update.callback_query
+        await query.answer()
+        await query.edit_message_text("This feature is not yet implemented.")
+    return ConversationHandler.END
+
+async def handle_report_document(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Handles the report document upload (placeholder)."""
+    if update.message:
+        await update.message.reply_text("This feature is not yet implemented.")
+    return ConversationHandler.END
+
+async def send_reports_cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Cancels the send reports conversation."""
+    if update.message:
+        await update.message.reply_text("Operation cancelled.")
+    return ConversationHandler.END

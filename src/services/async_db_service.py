@@ -69,6 +69,16 @@ class AsyncDatabaseService:
             original_channel_id
         )
 
+    async def find_existing_order(self, user_id: int, collection_id: int, original_message_id: int, original_channel_id: int) -> Optional[Dict[str, Any]]:
+        """Find an existing, active order (non-blocking)."""
+        return await self._orchestrator.submit(
+            db_service.find_existing_order,
+            user_id,
+            collection_id,
+            original_message_id,
+            original_channel_id
+        )
+
     async def get_order_by_id(self, order_id: int) -> Optional[Dict[str, Any]]:
         """Get order by ID (non-blocking)."""
         return await self._orchestrator.submit(db_service.get_order_by_id, order_id)
@@ -187,6 +197,27 @@ class AsyncDatabaseService:
     async def get_user_orders_by_collection(self, user_id: int, collection_id: int, limit: int = 10) -> List[Dict[str, Any]]:
         """Get user orders by collection (non-blocking)."""
         return await self._orchestrator.submit(db_service.get_user_orders_by_collection, user_id, collection_id, limit)
+
+    # Report operations
+    async def get_collections_for_reporting(self) -> List[Dict[str, Any]]:
+        """Get collections for reporting (non-blocking)."""
+        return await self._orchestrator.submit(db_service.get_collections_for_reporting)
+
+    async def create_or_update_user_report(self, user_id: int, collection_id: int, file_path: str) -> Optional[int]:
+        """Create or update a user report (non-blocking)."""
+        return await self._orchestrator.submit(db_service.create_or_update_user_report, user_id, collection_id, file_path)
+
+    async def get_user_report_status_for_collection(self, collection_id: int) -> Dict[int, bool]:
+        """Get user report status for a collection (non-blocking)."""
+        return await self._orchestrator.submit(db_service.get_user_report_status_for_collection, collection_id)
+
+    async def check_and_set_all_reports_sent(self, collection_id: int) -> bool:
+        """Check and set all_reports_sent flag for a collection (non-blocking)."""
+        return await self._orchestrator.submit(db_service.check_and_set_all_reports_sent, collection_id)
+
+    async def get_reports_for_user(self, user_id: int) -> List[Dict[str, Any]]:
+        """Get reports for a user (non-blocking)."""
+        return await self._orchestrator.submit(db_service.get_reports_for_user, user_id)
 
     # Utility operations
     async def execute_raw_query(self, query: str, params: tuple = ()) -> Any:

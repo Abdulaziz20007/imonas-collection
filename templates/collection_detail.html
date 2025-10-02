@@ -1,7 +1,22 @@
 {% extends "base.html" %} {% block title %}Kolleksiya #{{ collection.id }} -
-Buyurtmalar Boshqaruvi{% endblock %} {% block content %}
+Buyurtmalar Boshqaruvi{% endblock %} {% block head %}
+<style>
+  @keyframes pulse-green-bg {
+    0%,
+    100% {
+      box-shadow: -2px 0 20px rgba(16, 185, 129, 0.5),
+        -4px 0 40px rgba(16, 185, 129, 0.3);
+      opacity: 1;
+    }
+    50% {
+      box-shadow: -2px 0 30px rgba(16, 185, 129, 0.7),
+        -4px 0 60px rgba(16, 185, 129, 0.5);
+      opacity: 0.9;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
 
-<!-- Breadcrumb Navigation -->
 <nav aria-label="breadcrumb" class="mb-4">
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="/">Boshqaruv Paneli</a></li>
@@ -12,1026 +27,478 @@ Buyurtmalar Boshqaruvi{% endblock %} {% block content %}
   </ol>
 </nav>
 
-<!-- Collection Header -->
-<div
-  class="card mb-3 mb-md-4"
-  style="
-    background: var(--bg-secondary);
-    border: 1px solid var(--separator);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-md);
-  "
->
-  <div class="card-body" style="padding: var(--spacing-lg)">
-    <div class="row align-items-start">
-      <div class="col-12">
-        <div class="d-flex align-items-center gap-2 gap-md-3 mb-3">
-          <div
-            class="p-2 p-md-3 flex-shrink-0"
+<div class="card mb-4">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <h2 class="mb-1 fw-bold">Kolleksiya #{{ collection.id }}</h2>
+        <span class="badge bg-{{ collection.status_class }}"
+          >{{ collection.status_icon }} {{ collection.status_text }}</span
+        >
+        <small class="text-muted ms-2">
+          <i class="fas fa-calendar-plus me-1"></i>
+          Yaratilgan: {{ collection.created_at[:10] }}
+        </small>
+      </div>
+      <div>
+        {% if collection.status == 'finish' %}
+        <button
+          class="btn btn-dark btn-lg shadow-sm"
+          onclick="openMultipleReportsModal({{ collection.id }})"
+          style="
+            background: #2c3e50;
+            border: none;
+            border-radius: 15px;
+            padding: 12px 28px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(44, 62, 80, 0.3);
+          "
+          onmouseover="this.style.transform='translateY(-2px)'; this.style.backgroundColor='#34495e'; this.style.boxShadow='0 6px 20px rgba(44, 62, 80, 0.4)'"
+          onmouseout="this.style.transform='translateY(0)'; this.style.backgroundColor='#2c3e50'; this.style.boxShadow='0 4px 15px rgba(44, 62, 80, 0.3)'"
+        >
+          <i class="fas fa-paper-plane me-2"></i>
+          Hisobotlar Yuborish
+        </button>
+        {% else %}
+        <div class="d-flex flex-column align-items-end">
+          <button
+            class="btn btn-secondary btn-lg shadow-sm"
+            disabled
             style="
-              background: linear-gradient(
-                135deg,
-                var(--primary-500),
-                var(--primary-600)
-              );
-              border-radius: var(--radius-md);
+              background: #6c757d;
+              border: none;
+              border-radius: 15px;
+              padding: 12px 28px;
+              font-weight: 600;
+              letter-spacing: 0.5px;
+              opacity: 0.6;
+              cursor: not-allowed;
             "
+            title="Hisobotlar faqat tugallangan kolleksiyalarga yuboriladi"
           >
-            <i class="fas fa-folder-open text-white fs-5 fs-md-4"></i>
-          </div>
-          <div class="flex-grow-1 min-width-0">
-            <h2
-              class="mb-1 fw-bold fs-4 fs-md-2"
-              style="color: var(--text-primary)"
-            >
-              Kolleksiya #{{ collection.id }}
-            </h2>
-            <div
-              class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-2 gap-md-3"
-            >
-              <span
-                class="badge px-2 px-md-3 py-1 py-md-2"
-                style="font-size: 0.8rem; background: var(--{{ collection.status_class }}-100); color: var(--{{ collection.status_class }}-800); border: 1px solid var(--{{ collection.status_class }}-200);"
-              >
-                {{ collection.status_icon }} {{ collection.status_text }}
-              </span>
-              {% if collection.created_at %}
-              <small style="font-size: 0.8rem; color: var(--text-secondary)">
-                <i class="fas fa-calendar-plus me-1"></i>
-                <span class="d-none d-md-inline">Yaratilgan: </span>{{
-                collection.created_at[:10] }}
-              </small>
-              {% endif %} {% if collection.close_at and collection.status in
-              ['close', 'finish'] %}
-              <small
-                class="d-none d-md-inline"
-                style="font-size: 0.8rem; color: var(--text-secondary)"
-              >
-                <i class="fas fa-calendar-times me-1"></i>
-                Yopilgan: {{ collection.close_at[:10] }}
-              </small>
-              {% endif %} {% if collection.finish_at and collection.status ==
-              'finish' %}
-              <small
-                class="d-none d-md-inline"
-                style="font-size: 0.8rem; color: var(--text-secondary)"
-              >
-                <i class="fas fa-calendar-check me-1"></i>
-                Tugallangan: {{ collection.finish_at[:10] }}
-              </small>
-              {% endif %}
-            </div>
-          </div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div
-          class="d-flex flex-column flex-md-row gap-2 justify-content-md-end"
-        >
-          {% if collection.status == 'close' %}
-          <div class="d-flex flex-column flex-md-row gap-2">
-            <form
-              action="/collections/set_status"
-              method="post"
-              class="flex-fill flex-md-grow-0"
-            >
-              <input
-                type="hidden"
-                name="collection_id"
-                value="{{ collection.id }}"
-              />
-              <input type="hidden" name="status" value="open" />
-              <button
-                type="submit"
-                class="btn btn-success w-100 w-md-auto btn-sm"
-              >
-                <i class="fas fa-play me-2"></i>
-                <span class="d-md-none">Qayta Ochish</span>
-                <span class="d-none d-md-inline">Qayta Ochish</span>
-              </button>
-            </form>
-            <form
-              action="/collections/set_status"
-              method="post"
-              class="flex-fill flex-md-grow-0"
-            >
-              <input
-                type="hidden"
-                name="collection_id"
-                value="{{ collection.id }}"
-              />
-              <input type="hidden" name="status" value="finish" />
-              <button type="submit" class="btn btn-info w-100 w-md-auto btn-sm">
-                <i class="fas fa-check me-2"></i>
-                <span class="d-md-none">Tugatish</span>
-                <span class="d-none d-md-inline">Tugatish</span>
-              </button>
-            </form>
-          </div>
-          {% elif collection.status == 'finish' %}
-          <button class="btn btn-secondary w-100 w-md-auto btn-sm" disabled>
-            <i class="fas fa-check-circle me-2"></i>
-            <span class="d-md-none">Tugallangan</span>
-            <span class="d-none d-md-inline">Tugallangan</span>
+            <i class="fas fa-lock me-2"></i>
+            Hisobotlar Yuborish
           </button>
-          {% endif %}
+          <small class="text-muted mt-1" style="font-size: 0.75rem">
+            <i class="fas fa-info-circle me-1"></i>
+            Kolleksiya tugallanganda mavjud bo'ladi
+          </small>
         </div>
+        {% endif %}
       </div>
     </div>
   </div>
 </div>
 
-<!-- Collection Statistics -->
-<div class="row g-2 g-md-3 mb-4">
-  <div class="col-4 col-md-4">
-    <div
-      class="card h-100"
-      style="
-        background: var(--bg-secondary);
-        border: 1px solid var(--separator);
-        border-radius: var(--radius-md);
-        box-shadow: var(--shadow-sm);
-      "
-    >
-      <div class="card-body text-center p-2 p-md-3">
-        <div
-          class="p-2 p-md-3 d-inline-flex align-items-center justify-content-center mb-2"
-          style="
-            background: var(--primary-100);
-            border-radius: var(--radius-md);
-          "
-        >
-          <i
-            class="fas fa-users fs-5 fs-md-3"
-            style="color: var(--primary-600)"
-          ></i>
-        </div>
-        <h4 class="fw-bold mb-1 fs-5 fs-md-3" style="color: var(--primary-600)">
-          {{ collection.user_count or 0 }}
-        </h4>
-        <p
-          class="mb-0 small d-none d-md-block"
-          style="color: var(--text-secondary)"
-        >
-          Foydalanuvchilar
-        </p>
-        <p
-          class="mb-0 d-md-none"
-          style="font-size: 0.7rem; color: var(--text-secondary)"
-        >
-          Foydalanuvchi
-        </p>
+<div class="row g-4 mb-4">
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-body text-center">
+        <i class="fas fa-shopping-cart fa-2x text-primary mb-2"></i>
+        <h4 class="fw-bold mb-1">{{ collection.total_orders }}</h4>
+        <p class="text-muted mb-0">Jami Buyurtmalar</p>
       </div>
     </div>
   </div>
-  <div class="col-4 col-md-4">
-    <div
-      class="card h-100"
-      style="
-        background: var(--bg-secondary);
-        border: 1px solid var(--separator);
-        border-radius: var(--radius-md);
-        box-shadow: var(--shadow-sm);
-      "
-    >
-      <div class="card-body text-center p-2 p-md-3">
-        <div
-          class="p-2 p-md-3 d-inline-flex align-items-center justify-content-center mb-2"
-          style="
-            background: var(--success-100);
-            border-radius: var(--radius-md);
-          "
-        >
-          <i
-            class="fas fa-shopping-cart fs-5 fs-md-3"
-            style="color: var(--success-600)"
-          ></i>
-        </div>
-        <h4 class="fw-bold mb-1 fs-5 fs-md-3" style="color: var(--success-600)">
-          {{ collection.order_count or 0 }}
-        </h4>
-        <p
-          class="mb-0 small d-none d-md-block"
-          style="color: var(--text-secondary)"
-        >
-          Buyurtmalar
-        </p>
-        <p
-          class="mb-0 d-md-none"
-          style="font-size: 0.7rem; color: var(--text-secondary)"
-        >
-          Buyurtma
-        </p>
-      </div>
-    </div>
-  </div>
-  <div class="col-4 col-md-4">
-    <div
-      class="card h-100"
-      style="
-        background: var(--bg-secondary);
-        border: 1px solid var(--separator);
-        border-radius: var(--radius-md);
-        box-shadow: var(--shadow-sm);
-      "
-    >
-      <div class="card-body text-center p-2 p-md-3">
-        <div
-          class="p-2 p-md-3 d-inline-flex align-items-center justify-content-center mb-2"
-          style="background: var(--info-100); border-radius: var(--radius-md)"
-        >
-          <i
-            class="fas fa-images fs-5 fs-md-3"
-            style="color: var(--info-600)"
-          ></i>
-        </div>
-        <h4 class="fw-bold mb-1 fs-5 fs-md-3" style="color: var(--info-600)">
-          {% set total_files = 0 %} {% for user in users %} {% for order in
-          user.orders %} {% if order.files %} {% set total_files = total_files +
-          order.files|length %} {% endif %} {% endfor %} {% endfor %} {{
-          total_files }}
-        </h4>
-        <p
-          class="mb-0 small d-none d-md-block"
-          style="color: var(--text-secondary)"
-        >
-          Jami Fayllar
-        </p>
-        <p
-          class="mb-0 d-md-none"
-          style="font-size: 0.7rem; color: var(--text-secondary)"
-        >
-          Fayl
-        </p>
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-body text-center">
+        <i class="fas fa-users fa-2x text-success mb-2"></i>
+        <h4 class="fw-bold mb-1">{{ collection.unique_users }}</h4>
+        <p class="text-muted mb-0">Unikal Foydalanuvchilar</p>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Users and Orders Section -->
-<div
-  class="card"
-  style="
-    background: var(--bg-secondary);
-    border: 1px solid var(--separator);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-md);
-  "
->
+<!-- Enhanced Users and Orders Section -->
+<div class="users-list-container">
+  {% for user in users %}
   <div
-    class="card-header border-0"
-    style="
-      background: var(--bg-tertiary);
-      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-      padding: var(--spacing-lg);
-    "
+    class="user-card-enhanced card mb-4 shadow-sm border-0"
+    style="position: relative"
   >
-    <!-- Desktop Layout -->
-    <div class="d-none d-lg-flex justify-content-between align-items-center">
-      <!-- Left side - Title -->
-      <div class="d-flex align-items-center">
-        <div
-          style="
-            padding: var(--spacing-sm);
-            background: linear-gradient(
-              135deg,
-              var(--primary-500),
-              var(--primary-600)
-            );
-            border-radius: var(--radius-md);
-            margin-right: var(--spacing-md);
-          "
-        >
-          <i class="fas fa-users text-white"></i>
-        </div>
-        <h5 class="mb-0 fw-semibold" style="color: var(--text-primary)">
-          Buyurtma Bergan Foydalanuvchilar
-        </h5>
-      </div>
+    <!-- Report Status Indicator Light -->
+    {% if user.has_report %}
+    <div
+      id="report-indicator-{{ user.id }}"
+      style="
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 8px;
+        background: linear-gradient(135deg, #10b981, #059669);
+        box-shadow: -2px 0 20px rgba(16, 185, 129, 0.5),
+          -4px 0 40px rgba(16, 185, 129, 0.3);
+        border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+        z-index: 5;
+        animation: pulse-green-bg 2s ease-in-out infinite;
+      "
+      title="Hisobot yuborilgan"
+    ></div>
+    {% else %}
+    <div id="report-indicator-{{ user.id }}" style="display: none"></div>
+    {% endif %}
 
-      <!-- Right side - Count and Buttons -->
-      {% if users %}
-      <div class="d-flex align-items-center gap-3">
-        <span
-          class="fs-6"
-          style="
-            background: var(--primary-100);
-            color: var(--primary-700);
-            padding: var(--spacing-sm) var(--spacing-md);
-            border-radius: var(--radius-md);
-            border: 1px solid var(--primary-200);
-          "
-        >
-          <i class="fas fa-users me-1"></i>
-          {{ users|length }} ta foydalanuvchi
-        </span>
-        <div class="d-flex gap-2">
-          <button
-            class="btn btn-sm"
-            onclick="collapseAllUsers()"
-            title="Barchasini yig'ish"
-            style="
-              background: var(--neutral-100);
-              color: var(--neutral-700);
-              border: 1px solid var(--neutral-300);
-              padding: var(--spacing-xs) var(--spacing-sm);
-              border-radius: var(--radius-sm);
-            "
-          >
-            <i class="fas fa-compress-alt me-1"></i>
-            Yig'ish
-          </button>
-          <button
-            class="btn btn-sm"
-            onclick="expandAllUsers()"
-            title="Barchasini ochish"
-            style="
-              background: var(--primary-100);
-              color: var(--primary-700);
-              border: 1px solid var(--primary-300);
-              padding: var(--spacing-xs) var(--spacing-sm);
-              border-radius: var(--radius-sm);
-            "
-          >
-            <i class="fas fa-expand-alt me-1"></i>
-            Ochish
-          </button>
-        </div>
-      </div>
-      {% else %}
-      <div style="color: var(--text-secondary)">
-        <i class="fas fa-info-circle me-1"></i>
-        Foydalanuvchilar yo'q
-      </div>
-      {% endif %}
-    </div>
-
-    <!-- Mobile Layout -->
-    <div class="d-lg-none">
-      <!-- Title Row -->
-      <div class="d-flex align-items-center mb-3">
-        <div
-          style="
-            padding: var(--spacing-xs);
-            background: linear-gradient(
-              135deg,
-              var(--primary-500),
-              var(--primary-600)
-            );
-            border-radius: var(--radius-sm);
-            margin-right: var(--spacing-sm);
-          "
-        >
-          <i class="fas fa-users text-white"></i>
-        </div>
-        <h6 class="mb-0 fw-semibold" style="color: var(--text-primary)">
-          Foydalanuvchilar
-        </h6>
-      </div>
-
-      {% if users %}
-      <!-- Controls Row -->
-      <div class="d-flex justify-content-between align-items-center">
-        <span
-          style="
-            background: var(--primary-100);
-            color: var(--primary-700);
-            padding: var(--spacing-xs) var(--spacing-sm);
-            border-radius: var(--radius-sm);
-            border: 1px solid var(--primary-200);
-          "
-        >
-          {{ users|length }} ta
-        </span>
-        <div class="d-flex gap-1">
-          <button
-            class="btn btn-sm"
-            onclick="collapseAllUsers()"
-            style="
-              background: var(--neutral-100);
-              color: var(--neutral-700);
-              border: 1px solid var(--neutral-300);
-              padding: var(--spacing-xs);
-              border-radius: var(--radius-sm);
-            "
-          >
-            <i class="fas fa-compress-alt"></i>
-          </button>
-          <button
-            class="btn btn-sm"
-            onclick="expandAllUsers()"
-            style="
-              background: var(--primary-100);
-              color: var(--primary-700);
-              border: 1px solid var(--primary-300);
-              padding: var(--spacing-xs);
-              border-radius: var(--radius-sm);
-            "
-          >
-            <i class="fas fa-expand-alt"></i>
-          </button>
-        </div>
-      </div>
-      {% else %}
-      <div class="small" style="color: var(--text-secondary)">
-        <i class="fas fa-info-circle me-1"></i>
-        Foydalanuvchilar yo'q
-      </div>
-      {% endif %}
-    </div>
-  </div>
-  <div class="card-body p-0">
-    {% if users %}
-    <div class="list-group list-group-flush">
-      {% for user in users %}
-      <div class="list-group-item">
-        <!-- User Header (Clickable) -->
-        <div
-          class="user-card d-flex justify-content-between align-items-center"
-          onclick="toggleUser({{ user.id }})"
-          style="
-            cursor: pointer;
-            padding: var(--spacing-sm) var(--spacing-md);
-            transition: var(--transition-fast);
-          "
-        >
-          <div class="d-flex align-items-center flex-grow-1">
-            <div class="flex-shrink-0" style="margin-right: var(--spacing-md)">
-              <div
-                class="text-white rounded-circle d-flex align-items-center justify-content-center"
-                style="
-                  width: 40px;
-                  height: 40px;
-                  background: linear-gradient(
-                    135deg,
-                    var(--primary-500),
-                    var(--primary-600)
-                  );
-                  border-radius: var(--radius-md);
-                "
-              >
-                <i class="fas fa-user" style="font-size: 0.9rem"></i>
-              </div>
-            </div>
-            <div class="flex-grow-1 min-width-0">
-              <h6
-                class="mb-1 fw-semibold text-truncate"
-                style="font-size: 0.95rem; color: var(--text-primary)"
-              >
-                {{ user.name or 'Nomi yo\'q' }} {{ user.surname or '' }}
-              </h6>
-              <div
-                class="d-flex flex-column flex-md-row align-items-start align-items-md-center"
-                style="gap: var(--spacing-xs) var(--spacing-md)"
-              >
-                <small
-                  class="text-truncate"
-                  style="font-size: 0.8rem; color: var(--text-secondary)"
-                >
-                  <i class="fas fa-phone me-1"></i>
-                  {{ user.phone or 'Telefon yo\'q' }}
-                </small>
-                <small
-                  class="d-none d-md-inline"
-                  style="font-size: 0.8rem; color: var(--text-secondary)"
-                >
-                  <i class="fas fa-key me-1"></i>
-                  Kod: {{ user.code or 'N/A' }}
-                </small>
-                <span
-                  style="
-                    font-size: 0.7rem;
-                    background: var(--primary-100);
-                    color: var(--primary-700);
-                    padding: var(--spacing-xs) var(--spacing-sm);
-                    border-radius: var(--radius-sm);
-                    border: 1px solid var(--primary-200);
-                  "
-                >
-                  {{ user.order_count }} buyurtma
-                </span>
-              </div>
-            </div>
-          </div>
-          <div
-            class="d-flex align-items-center flex-shrink-0"
-            style="gap: var(--spacing-sm)"
-          >
-            <div class="text-end d-none d-md-block">
-              <div
-                class="fw-semibold"
-                style="font-size: 0.85rem; color: var(--primary-600)"
-              >
-                {{ user.order_count }} buyurtma
-              </div>
-              <small
-                id="text-{{ user.id }}"
-                style="font-size: 0.75rem; color: var(--text-tertiary)"
-                >Ochish uchun bosing</small
-              >
-            </div>
-            <i
-              class="fas fa-chevron-down"
-              id="icon-{{ user.id }}"
+    <!-- User Header -->
+    <div
+      class="user-header p-4 cursor-pointer"
+      onclick="toggleUserOrders('{{ user.id }}')"
+      style="
+        background: linear-gradient(
+          135deg,
+          var(--bg-secondary) 0%,
+          var(--bg-tertiary) 100%
+        );
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      "
+    >
+      <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center">
+          <!-- User Avatar -->
+          <div class="user-avatar me-3">
+            <div
+              class="avatar-circle d-flex align-items-center justify-content-center"
               style="
-                font-size: 0.9rem;
-                color: var(--text-secondary);
-                transition: var(--transition-fast);
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                background: linear-gradient(
+                  135deg,
+                  var(--primary-500),
+                  var(--primary-600)
+                );
+                color: white;
+                font-size: 1.2rem;
+                font-weight: 600;
               "
-            ></i>
-          </div>
-        </div>
-
-        <!-- User Orders (Expandable) -->
-        <div class="user-orders" id="orders-{{ user.id }}">
-          <div
-            style="
-              border-top: 1px solid var(--separator);
-              padding: var(--spacing-md);
-              background: var(--bg-tertiary);
-              margin: 0 calc(-1 * var(--spacing-md));
-            "
-          >
-            <h6
-              class="mb-2 mb-md-3"
-              style="font-size: 0.9rem; color: var(--text-secondary)"
             >
-              <i class="fas fa-list me-2"></i>
-              <span class="d-none d-md-inline"
-                >{{ user.name or 'Bu foydalanuvchi' }}ning buyurtmalari:</span
-              >
-              <span class="d-md-none">Buyurtmalar:</span>
-            </h6>
+              {{ (user.name or 'U')[0]|upper }}
+            </div>
+          </div>
 
-            {% if user.orders %}
-            <div class="row g-3">
-              {% for order in user.orders %} {% if order.status == 1 %}
-              <!-- Only show active orders -->
-              <div class="col-12 col-sm-6 col-lg-6 col-xl-3">
-                <div
-                  class="card h-100 order-card"
+          <!-- User Info -->
+          <div class="user-info">
+            <div class="user-name-section">
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <h5 class="mb-0 fw-bold text-primary">
+                  {{ user.name or 'N/A' }} {{ user.surname or '' }}
+                </h5>
+                {% if user.code %}
+                <span
+                  class="badge bg-gradient px-3 py-2"
                   style="
                     background: linear-gradient(
-                      145deg,
-                      var(--bg-secondary),
-                      var(--bg-tertiary)
+                      135deg,
+                      #667eea 0%,
+                      #764ba2 100%
                     );
-                    border: 1px solid var(--separator);
-                    border-radius: var(--radius-lg);
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08),
-                      0 2px 4px rgba(0, 0, 0, 0.05);
-                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                    position: relative;
-                    overflow: hidden;
+                    font-size: 0.85rem;
+                    font-weight: 600;
                   "
                 >
-                  <!-- Decorative gradient overlay -->
-                  <div
-                    style="
-                      position: absolute;
-                      top: 0;
-                      right: 0;
-                      width: 60px;
-                      height: 60px;
-                      background: linear-gradient(
-                        135deg,
-                        var(--primary-100),
-                        var(--primary-200)
-                      );
-                      opacity: 0.7;
-                      border-radius: 0 var(--radius-lg) 0 50px;
-                    "
-                  ></div>
+                  <i class="fas fa-hashtag me-1"></i>{{ collection.id }}-{{
+                  user.code }}
+                </span>
+                {% endif %}
+              </div>
+              <div class="user-meta d-flex align-items-center flex-wrap gap-3">
+                {% if user.username %}
+                <span class="text-muted small">
+                  <i class="fab fa-telegram-plane me-1"></i>@{{ user.username }}
+                </span>
+                {% endif %} {% if user.phone %}
+                <span class="text-muted small">
+                  <i class="fas fa-phone me-1"></i>{{ user.phone }}
+                </span>
+                {% endif %} {% if user.region %}
+                <span class="text-muted small">
+                  <i class="fas fa-map-marker-alt me-1"></i>{{ user.region }}
+                </span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
 
-                  <div
-                    class="card-body"
+        <!-- Right side info -->
+        <div class="user-stats d-flex align-items-center">
+          <div class="text-end me-3">
+            <div class="badge bg-primary px-3 py-2" style="font-size: 0.9rem">
+              <i class="fas fa-shopping-bag me-1"></i>
+              {{ user.order_count }} buyurtma
+            </div>
+            {% if user.telegram_id %}
+            <div class="text-muted small mt-1">ID: {{ user.telegram_id }}</div>
+            {% endif %}
+          </div>
+          {% if collection.status == 'finish' %}
+          <button
+            id="report-button-{{ user.id }}"
+            class="btn btn-secondary me-3"
+            onclick="event.stopPropagation(); openSingleReportModal({{ user.id }}, '{{ user.name or 'User' }}', {{ collection.id }}, {{ 'true' if user.has_report else 'false' }});"
+            style="
+              background: #495057;
+              border: none;
+              border-radius: 12px;
+              padding: 8px 16px;
+              font-weight: 500;
+              color: white;
+              font-size: 0.85rem;
+              transition: all 0.3s ease;
+              box-shadow: 0 3px 10px rgba(73, 80, 87, 0.3);
+            "
+            onmouseover="this.style.transform='translateY(-1px)'; this.style.backgroundColor='#5a6268'; this.style.boxShadow='0 4px 15px rgba(73, 80, 87, 0.4)'"
+            onmouseout="this.style.transform='translateY(0)'; this.style.backgroundColor='#495057'; this.style.boxShadow='0 3px 10px rgba(73, 80, 87, 0.3)'"
+          >
+            {% if user.has_report %}
+            <i class="fas fa-sync me-1"></i>Hisobotni Yangilash {% else %}
+            <i class="fas fa-file-pdf me-1"></i>Hisobotni Yuborish {% endif %}
+          </button>
+          {% else %}
+          <button
+            class="btn btn-outline-secondary me-3"
+            disabled
+            style="
+              border: 1px solid #6c757d;
+              border-radius: 12px;
+              padding: 8px 16px;
+              font-weight: 500;
+              color: #6c757d;
+              font-size: 0.85rem;
+              opacity: 0.6;
+              cursor: not-allowed;
+            "
+            title="Hisobotlar faqat tugallangan kolleksiyalarga yuboriladi"
+          >
+            <i class="fas fa-lock me-1"></i>
+            Hisobot
+          </button>
+          {% endif %}
+          <i
+            class="fas fa-chevron-down transition-all"
+            id="chevron-{{ user.id }}"
+            style="
+              color: var(--text-secondary);
+              transition: transform 0.3s ease;
+            "
+          ></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Orders (Collapsible) -->
+    <div
+      class="user-orders-container"
+      id="orders-container-{{ user.id }}"
+      style="display: none"
+    >
+      <div
+        class="orders-header px-4 py-3 border-top border-bottom"
+        style="background: var(--bg-primary)"
+      >
+        <h6 class="mb-0 text-secondary fw-semibold">
+          <i class="fas fa-list-ul me-2"></i>
+          Buyurtmalar ({{ user.order_count }})
+        </h6>
+      </div>
+      <div class="orders-grid p-4">
+        <div class="row g-4">
+          {% for order in user.orders %}
+          <div class="col-md-6 col-xl-4">
+            <div
+              class="order-card-enhanced card border-0 shadow-sm h-100"
+              style="
+                cursor: pointer;
+                transition: all 0.3s ease;
+                border-radius: var(--radius-lg);
+                overflow: hidden;
+              "
+              onclick="viewOrderDetails({{ order.id }})"
+              onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='var(--shadow-md)'"
+              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-sm)'"
+            >
+              <!-- Order Image -->
+              <div
+                class="order-image-container position-relative"
+                style="height: 200px; overflow: hidden"
+              >
+                {% if order.display_image_url %}
+                <img
+                  src="/{{ order.display_image_url }}"
+                  class="card-img-top"
+                  alt="Order image"
+                  style="
+                    height: 100%;
+                    width: 100%;
+                    object-fit: cover;
+                    transition: transform 0.3s ease;
+                  "
+                  onmouseover="this.style.transform='scale(1.05)'"
+                  onmouseout="this.style.transform='scale(1)'"
+                />
+                <div
+                  class="image-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+                  style="
+                    background: rgba(0, 0, 0, 0.4);
+                    opacity: 0;
+                    transition: opacity 0.3s ease;
+                  "
+                >
+                  <i class="fas fa-eye text-white fa-2x"></i>
+                </div>
+                {% else %}
+                <div
+                  class="d-flex align-items-center justify-content-center h-100"
+                  style="
+                    background: linear-gradient(
+                      135deg,
+                      var(--neutral-100),
+                      var(--neutral-200)
+                    );
+                    color: var(--text-tertiary);
+                  "
+                >
+                  <div class="text-center">
+                    <i class="fas fa-image fa-3x mb-2"></i>
+                    <div class="small">Rasm yo'q</div>
+                  </div>
+                </div>
+                {% endif %}
+
+                <!-- Order ID Badge -->
+                <div class="position-absolute top-0 start-0 m-3">
+                  <span
+                    class="badge px-3 py-2"
                     style="
-                      padding: var(--spacing-lg);
-                      position: relative;
-                      z-index: 1;
+                      background: rgba(var(--primary-600), 0.9);
+                      backdrop-filter: blur(10px);
+                      border-radius: var(--radius-md);
+                      font-size: 0.8rem;
                     "
                   >
+                    #{{ order.id }}
+                  </span>
+                </div>
+
+                <!-- File Count Badge -->
+                {% if order.file_count and order.file_count > 0 %}
+                <div class="position-absolute top-0 end-0 m-3">
+                  <span
+                    class="badge px-2 py-1"
+                    style="
+                      background: rgba(var(--info-600), 0.9);
+                      backdrop-filter: blur(10px);
+                      border-radius: var(--radius-sm);
+                      font-size: 0.75rem;
+                    "
+                  >
+                    <i class="fas fa-paperclip me-1"></i>{{ order.file_count }}
+                  </span>
+                </div>
+                {% endif %}
+              </div>
+
+              <!-- Order Content -->
+              <div class="card-body p-4">
+                <div class="order-header mb-3">
+                  <h6 class="card-title mb-2 fw-bold text-primary">
+                    Buyurtma #{{ order.id }}
+                  </h6>
+
+                  <!-- Order Details Grid -->
+                  <div class="order-details">
+                    {% if order.amount %}
                     <div
-                      class="d-flex justify-content-between align-items-start mb-3"
+                      class="detail-item d-flex justify-content-between align-items-center mb-2"
                     >
-                      <h6
-                        class="mb-0 fw-bold"
-                        style="color: var(--primary-600); font-size: 0.95rem"
-                      >
-                        <i
-                          class="fas fa-shopping-bag me-2"
-                          style="
-                            padding: 6px;
-                            background: var(--primary-100);
-                            border-radius: var(--radius-sm);
-                            color: var(--primary-600);
-                          "
-                        ></i>
-                        Buyurtma #{{ order.id }}
-                      </h6>
-                      <span
-                        class="status-badge"
-                        style="
-                          padding: var(--spacing-xs) var(--spacing-sm);
-                          border-radius: var(--radius-md);
-                          font-size: 0.7rem;
-                          font-weight: 600;
-                          text-transform: uppercase;
-                          letter-spacing: 0.5px;
-                          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                          {% if order.collection_status == 'open' %}
-                            background: linear-gradient(135deg, var(--success-100), var(--success-200));
-                            color: var(--success-700);
-                            border: 1px solid var(--success-300);
-                          {% elif order.collection_status == 'close' %}
-                            background: linear-gradient(135deg, var(--warning-100), var(--warning-200));
-                            color: var(--warning-700);
-                            border: 1px solid var(--warning-300);
-                          {% else %}
-                            background: linear-gradient(135deg, var(--info-100), var(--info-200));
-                            color: var(--info-700);
-                            border: 1px solid var(--info-300);
-                          {% endif %}
-                        "
-                      >
-                        {% if order.collection_status == 'open' %}
-                        <i
-                          class="fas fa-circle"
-                          style="
-                            font-size: 6px;
-                            margin-right: 4px;
-                            color: var(--success-500);
-                          "
-                        ></i
-                        >Faol {% elif order.collection_status == 'close' %}
-                        <i
-                          class="fas fa-pause"
-                          style="font-size: 8px; margin-right: 4px"
-                        ></i
-                        >Yopiq {% elif order.collection_status == 'finish' %}
-                        <i
-                          class="fas fa-check"
-                          style="font-size: 8px; margin-right: 4px"
-                        ></i
-                        >Tugallangan {% else %}
-                        <i
-                          class="fas fa-question"
-                          style="font-size: 8px; margin-right: 4px"
-                        ></i
-                        >Noma'lum {% endif %}
+                      <span class="text-muted small">
+                        <i class="fas fa-layer-group me-2 text-primary"></i
+                        >Seriya
                       </span>
+                      <span class="fw-medium">{{ order.amount }}</span>
                     </div>
-
-                    <div class="mb-3">
-                      <div
-                        style="
-                          background: var(--bg-tertiary);
-                          border-radius: var(--radius-md);
-                          padding: var(--spacing-sm) var(--spacing-md);
-                          border-left: 3px solid var(--primary-400);
-                        "
-                      >
-                        <div
-                          class="d-flex justify-content-between align-items-center"
-                        >
-                          <small
-                            style="
-                              color: var(--text-secondary);
-                              font-weight: 500;
-                            "
-                          >
-                            <i
-                              class="fas fa-barcode me-2"
-                              style="color: var(--primary-500)"
-                            ></i>
-                            Seriya:
-                          </small>
-                          <strong
-                            style="color: var(--primary-600); font-size: 0.9rem"
-                            >{{ order.amount or 'N/A' }}</strong
-                          >
-                        </div>
-                      </div>
-                    </div>
-
-                    {% if order.created_at %}
-                    <div class="mb-3">
-                      <div
-                        class="d-flex align-items-center"
-                        style="
-                          background: rgba(var(--primary-500-rgb), 0.05);
-                          border-radius: var(--radius-sm);
-                          padding: var(--spacing-xs) var(--spacing-sm);
-                        "
-                      >
-                        <i
-                          class="fas fa-clock me-2"
-                          style="color: var(--primary-500); font-size: 0.8rem"
-                        ></i>
-                        <small
-                          style="color: var(--text-secondary); font-weight: 500"
-                        >
-                          {{ order.created_at[:16] | replace('T', ' ') }}
-                        </small>
-                      </div>
-                    </div>
-                    {% endif %}
-
-                    <!-- Order Thumbnail Preview -->
-                    {% if order.display_image_url %}
-                    <div class="mb-3">
-                      <div
-                        class="position-relative image-container"
-                        style="
-                          border-radius: var(--radius-lg);
-                          overflow: hidden;
-                          background: linear-gradient(
-                            145deg,
-                            var(--bg-tertiary),
-                            var(--bg-secondary)
-                          );
-                          box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
-                        "
-                      >
-                        <img
-                          src="/{{ order.display_image_url }}"
-                          alt="Order preview"
-                          class="w-100 order-image"
-                          style="
-                            height: 140px;
-                            object-fit: cover;
-                            cursor: pointer;
-                            transition: all 0.3s ease;
-                            filter: brightness(1.02) contrast(1.05);
-                          "
-                          onclick="viewOrderDetails({{ order.id }})"
-                          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
-                        />
-                        <!-- Image overlay for better interaction -->
-                        <div
-                          style="
-                            position: absolute;
-                            top: 0;
-                            left: 0;
-                            right: 0;
-                            bottom: 0;
-                            background: linear-gradient(
-                              45deg,
-                              rgba(0, 0, 0, 0),
-                              rgba(0, 0, 0, 0.1)
-                            );
-                            opacity: 0;
-                            transition: opacity 0.3s ease;
-                            pointer-events: none;
-                          "
-                          class="image-overlay"
-                        ></div>
-                        <!-- View button overlay -->
-                        <div
-                          style="
-                            position: absolute;
-                            top: 8px;
-                            right: 8px;
-                            background: rgba(0, 0, 0, 0.7);
-                            color: white;
-                            border-radius: var(--radius-sm);
-                            padding: 4px 8px;
-                            font-size: 0.7rem;
-                            opacity: 0;
-                            transform: translateY(-10px);
-                            transition: all 0.3s ease;
-                          "
-                          class="view-hint"
-                        >
-                          <i class="fas fa-eye me-1"></i>Ko'rish
-                        </div>
-                        <div
-                          class="w-100 d-flex align-items-center justify-content-center"
-                          style="
-                            height: 140px;
-                            display: none;
-                            color: var(--text-secondary);
-                            background: var(--bg-tertiary);
-                          "
-                        >
-                          <div class="text-center">
-                            <i
-                              class="fas fa-image-slash fs-4 mb-2"
-                              style="color: var(--text-tertiary)"
-                            ></i>
-                            <div class="small">Rasm yuklanmadi</div>
-                          </div>
-                        </div>
-                      </div>
-                      {% if order.files and order.files|length > 1 %}
-                      <div class="mt-2 text-center">
-                        <span
-                          style="
-                            background: var(--info-100);
-                            color: var(--info-700);
-                            padding: var(--spacing-xs) var(--spacing-sm);
-                            border-radius: var(--radius-md);
-                            font-size: 0.75rem;
-                            font-weight: 500;
-                            border: 1px solid var(--info-200);
-                          "
-                        >
-                          <i class="fas fa-images me-1"></i>
-                          +{{ order.files|length - 1 }} ko'proq fayl
-                        </span>
-                      </div>
-                      {% endif %}
-                    </div>
-                    {% elif order.files %}
-                    <div class="mb-3">
-                      <div
-                        class="w-100 d-flex align-items-center justify-content-center position-relative"
-                        style="
-                          height: 140px;
-                          background: linear-gradient(
-                            135deg,
-                            var(--info-50),
-                            var(--info-100)
-                          );
-                          border-radius: var(--radius-lg);
-                          color: var(--info-700);
-                          cursor: pointer;
-                          border: 2px dashed var(--info-300);
-                          transition: all 0.3s ease;
-                          overflow: hidden;
-                        "
-                        onclick="viewOrderDetails({{ order.id }})"
-                      >
-                        <div class="text-center position-relative z-index-1">
-                          <div
-                            style="
-                              background: var(--info-200);
-                              width: 50px;
-                              height: 50px;
-                              border-radius: 50%;
-                              display: flex;
-                              align-items: center;
-                              justify-content: center;
-                              margin: 0 auto 8px;
-                              box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-                            "
-                          >
-                            <i
-                              class="fas fa-folder-open fs-5"
-                              style="color: var(--info-600)"
-                            ></i>
-                          </div>
-                          <div class="fw-semibold" style="font-size: 0.9rem">
-                            {{ order.files|length }} ta fayl
-                          </div>
-                          <div class="small opacity-75">
-                            Ko'rish uchun bosing
-                          </div>
-                        </div>
-                        <!-- Animated background pattern -->
-                        <div
-                          style="
-                            position: absolute;
-                            top: -50%;
-                            left: -50%;
-                            width: 200%;
-                            height: 200%;
-                            background: repeating-linear-gradient(
-                              45deg,
-                              transparent,
-                              transparent 10px,
-                              rgba(255, 255, 255, 0.05) 10px,
-                              rgba(255, 255, 255, 0.05) 20px
-                            );
-                            opacity: 0.3;
-                          "
-                        ></div>
-                      </div>
-                    </div>
-                    {% else %}
-                    <div class="mb-3">
-                      <div
-                        class="w-100 d-flex align-items-center justify-content-center"
-                        style="
-                          height: 140px;
-                          background: linear-gradient(
-                            135deg,
-                            var(--neutral-50),
-                            var(--neutral-100)
-                          );
-                          border-radius: var(--radius-lg);
-                          color: var(--text-tertiary);
-                          border: 2px dashed var(--neutral-300);
-                        "
-                      >
-                        <div class="text-center">
-                          <div
-                            style="
-                              background: var(--neutral-200);
-                              width: 40px;
-                              height: 40px;
-                              border-radius: 50%;
-                              display: flex;
-                              align-items: center;
-                              justify-content: center;
-                              margin: 0 auto 8px;
-                            "
-                          >
-                            <i class="fas fa-file-slash fs-6"></i>
-                          </div>
-                          <div class="small">Fayllar yo'q</div>
-                        </div>
-                      </div>
-                    </div>
-                    {% endif %}
-
-                    <!-- Order Actions -->
+                    {% endif %} {% if order.created_at %}
                     <div
-                      class="d-flex justify-content-center mt-auto pt-2"
-                      style="gap: var(--spacing-xs)"
+                      class="detail-item d-flex justify-content-between align-items-center mb-2"
                     >
-                      <button
-                        class="btn btn-sm action-btn"
-                        onclick="viewOrderDetails({{ order.id }})"
-                        title="Buyurtma tafsilotlarini ko'rish"
-                        style="
-                          background: linear-gradient(
-                            135deg,
-                            var(--primary-500),
-                            var(--primary-600)
-                          );
-                          color: white;
-                          border: none;
-                          padding: var(--spacing-sm) var(--spacing-md);
-                          border-radius: var(--radius-md);
-                          font-weight: 600;
-                          font-size: 0.85rem;
-                          box-shadow: 0 2px 8px
-                            rgba(var(--primary-500-rgb), 0.3);
-                          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                          position: relative;
-                          overflow: hidden;
-                          width: 100%;
-                        "
+                      <span class="text-muted small">
+                        <i class="fas fa-calendar-plus me-2 text-success"></i
+                        >Yaratilgan
+                      </span>
+                      <span class="fw-medium small"
+                        >{{ order.created_at[:16] | replace('T', ' ') }}</span
                       >
-                        <span style="position: relative; z-index: 1">
-                          <i class="fas fa-eye me-2"></i>Tafsilotlarni Ko'rish
-                        </span>
-                        <!-- Button shine effect -->
-                        <div
-                          style="
-                            position: absolute;
-                            top: 0;
-                            left: -100%;
-                            width: 100%;
-                            height: 100%;
-                            background: linear-gradient(
-                              90deg,
-                              transparent,
-                              rgba(255, 255, 255, 0.3),
-                              transparent
-                            );
-                            transition: left 0.6s;
-                          "
-                          class="btn-shine"
-                        ></div>
-                      </button>
+                    </div>
+                    {% endif %}
+
+                    <div
+                      class="detail-item d-flex justify-content-between align-items-center"
+                    >
+                      <span class="text-muted small">
+                        <i class="fas fa-info-circle me-2 text-info"></i>Holat
+                      </span>
+                      <span
+                        class="badge {% if collection.status == 'open' %}bg-success {% elif collection.status == 'close' %}bg-warning {% elif collection.status == 'finish' %}bg-primary {% else %}bg-secondary{% endif %}"
+                      >
+                        {% if collection.status == 'open' %}
+                        <i class="fas fa-play me-1"></i>Faol {% elif
+                        collection.status == 'close' %}
+                        <i class="fas fa-pause me-1"></i>Yopiq {% elif
+                        collection.status == 'finish' %}
+                        <i class="fas fa-check me-1"></i>Tugallangan {% else %}
+                        <i class="fas fa-question me-1"></i>Noma'lum {% endif %}
+                      </span>
                     </div>
                   </div>
                 </div>
+
+                <!-- Action Button -->
+                <div class="mt-3">
+                  <button
+                    class="btn btn-outline-primary btn-sm w-100 d-flex align-items-center justify-content-center"
+                    style="border-radius: var(--radius-md); font-weight: 500"
+                  >
+                    <i class="fas fa-eye me-2"></i>Tafsilotlarini ko'rish
+                  </button>
+                </div>
               </div>
-              {% endif %} {% endfor %}
             </div>
-            {% else %}
-            <div class="text-center py-4 text-muted">
-              <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
-              Bu foydalanuvchining buyurtmalari topilmadi
-            </div>
-            {% endif %}
           </div>
+          {% endfor %}
         </div>
       </div>
-      {% endfor %}
     </div>
-    {% else %}
-    <!-- Empty State -->
-    <div class="text-center py-5">
-      <div
-        class="p-4 bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
-      >
-        <i class="fas fa-user-slash text-muted fa-3x"></i>
-      </div>
-      <h5 class="text-muted mb-2">Bu kolleksiyada buyurtma yo'q</h5>
-      <p class="text-muted mb-3">
-        Hali hech kim buyurtma bermagan yoki barcha buyurtmalar bekor qilingan.
-      </p>
-      <a href="/collections" class="btn btn-primary">
-        <i class="fas fa-arrow-left me-2"></i>
-        Kolleksiyalarga Qaytish
-      </a>
-    </div>
-    {% endif %}
   </div>
+  {% else %}
+  <div class="empty-state text-center py-5">
+    <div class="empty-icon mb-4">
+      <div
+        class="d-inline-flex align-items-center justify-content-center"
+        style="
+          width: 100px;
+          height: 100px;
+          border-radius: 50%;
+          background: linear-gradient(
+            135deg,
+            var(--neutral-100),
+            var(--neutral-200)
+          );
+          color: var(--text-tertiary);
+        "
+      >
+        <i class="fas fa-users-slash fa-3x"></i>
+      </div>
+    </div>
+    <h4 class="text-muted mb-2">Bu kolleksiyada buyurtmalar yo'q</h4>
+    <p class="text-muted">
+      Hozircha bu kolleksiya bo'yicha buyurtmalar mavjud emas.
+    </p>
+  </div>
+  {% endfor %}
 </div>
 
 <!-- Order Details Modal -->
@@ -1042,11 +509,34 @@ Buyurtmalar Boshqaruvi{% endblock %} {% block content %}
   aria-labelledby="orderDetailsModalLabel"
   aria-hidden="true"
 >
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="orderDetailsModalLabel">
-          <i class="fas fa-file-lines me-2"></i>
+  <div
+    class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"
+  >
+    <div
+      class="modal-content border-0"
+      style="border-radius: var(--radius-lg); box-shadow: var(--shadow-xl)"
+    >
+      <div
+        class="modal-header border-0 pb-2"
+        style="
+          background: linear-gradient(
+            135deg,
+            var(--primary-50),
+            var(--primary-100)
+          );
+          border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        "
+      >
+        <h5
+          class="modal-title fw-bold d-flex align-items-center"
+          id="orderDetailsModalLabel"
+        >
+          <div
+            class="p-2 rounded-circle me-3"
+            style="background-color: var(--primary-500)"
+          >
+            <i class="fas fa-file-lines text-white"></i>
+          </div>
           Buyurtma Tafsilotlari
         </h5>
         <button
@@ -1056,7 +546,7 @@ Buyurtmalar Boshqaruvi{% endblock %} {% block content %}
           aria-label="Yopish"
         ></button>
       </div>
-      <div class="modal-body" id="orderDetailsContent">
+      <div class="modal-body p-4" id="orderDetailsContent">
         <div class="text-center">
           <div class="spinner-border text-primary" role="status">
             <span class="visually-hidden">Yuklanmoqda...</span>
@@ -1067,307 +557,363 @@ Buyurtmalar Boshqaruvi{% endblock %} {% block content %}
   </div>
 </div>
 
+<!-- Multiple Reports Upload Modal -->
+<div
+  class="modal fade"
+  id="multipleReportsModal"
+  tabindex="-1"
+  aria-labelledby="multipleReportsModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div
+      class="modal-content border-0"
+      style="
+        border-radius: 15px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        overflow: hidden;
+        background: #2c3e50;
+      "
+    >
+      <div class="modal-header border-0 text-white pb-0">
+        <h5
+          class="modal-title fw-bold d-flex align-items-center"
+          id="multipleReportsModalLabel"
+        >
+          <div
+            class="p-3 rounded-circle me-3"
+            style="background: rgba(255, 255, 255, 0.1)"
+          >
+            <i class="fas fa-paper-plane text-white"></i>
+          </div>
+          Kolleksiyaga Hisobotlar Yuborish
+        </h5>
+        <button
+          type="button"
+          class="btn-close btn-close-white"
+          data-bs-dismiss="modal"
+          aria-label="Yopish"
+        ></button>
+      </div>
+      <div class="modal-body p-0">
+        <div
+          class="p-5"
+          style="background: white; margin: 15px; border-radius: 10px"
+        >
+          <form id="multipleReportsForm" enctype="multipart/form-data">
+            <input
+              type="hidden"
+              id="multipleCollectionId"
+              name="collection_id"
+            />
+
+            <div class="mb-4">
+              <label class="form-label fw-semibold text-dark mb-3">
+                <i class="fas fa-file-pdf text-danger me-2"></i>
+                PDF Hisobotlarni Tanlang (Bir nechta fayl)
+                <small class="text-muted d-block mt-1">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Fayl nomi bu kolleksiyada buyurtma bergan foydalanuvchi kodi
+                  bo'lishi kerak
+                </small>
+              </label>
+              <div
+                class="upload-zone"
+                id="multipleUploadZone"
+                style="
+                  border: 2px dashed #6c757d;
+                  border-radius: 10px;
+                  padding: 50px 20px;
+                  text-align: center;
+                  background: #f8f9fa;
+                  transition: all 0.3s ease;
+                  cursor: pointer;
+                  position: relative;
+                  overflow: hidden;
+                "
+              >
+                <div class="upload-content">
+                  <div class="upload-icon mb-3">
+                    <i
+                      class="fas fa-cloud-upload-alt"
+                      style="
+                        font-size: 4rem;
+                        color: #6c757d;
+                        transition: all 0.3s ease;
+                      "
+                    ></i>
+                  </div>
+                  <h4 class="mb-3 fw-bold text-dark">
+                    Fayllarni bu yerga tashlang
+                  </h4>
+                  <p class="text-muted mb-4">yoki fayl tanlash uchun bosing</p>
+                  <div class="upload-specs">
+                    <span class="badge bg-light text-dark px-3 py-2 me-2 mb-2">
+                      <i class="fas fa-file-pdf text-danger me-1"></i>PDF
+                      fayllar
+                    </span>
+                    <span class="badge bg-light text-dark px-3 py-2 me-2 mb-2">
+                      <i class="fas fa-layer-group me-1"></i>Bir nechta fayl
+                    </span>
+                    <span class="badge bg-warning text-dark px-3 py-2 mb-2">
+                      <i class="fas fa-user me-1"></i>Foydalanuvchi kodi
+                    </span>
+                  </div>
+                </div>
+                <input
+                  type="file"
+                  id="multipleReportsInput"
+                  name="reports"
+                  multiple
+                  accept=".pdf"
+                  style="
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    opacity: 0;
+                    cursor: pointer;
+                  "
+                />
+              </div>
+              <div
+                class="selected-files mt-3"
+                id="multipleSelectedFiles"
+                style="display: none"
+              >
+                <h6 class="fw-semibold text-dark mb-2">
+                  <i class="fas fa-check-circle text-success me-2"></i>Tanlangan
+                  fayllar:
+                </h6>
+                <div class="files-list" id="multipleFilesList"></div>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-3">
+              <button
+                type="button"
+                class="btn btn-outline-secondary px-4 py-2"
+                data-bs-dismiss="modal"
+                style="border-radius: 15px; font-weight: 500"
+              >
+                <i class="fas fa-times me-2"></i>Bekor qilish
+              </button>
+              <button
+                type="submit"
+                class="btn px-5 py-2"
+                style="
+                  background: #2c3e50;
+                  border: none;
+                  border-radius: 10px;
+                  color: white;
+                  font-weight: 600;
+                  box-shadow: 0 4px 15px rgba(44, 62, 80, 0.3);
+                "
+                id="multipleSubmitBtn"
+                disabled
+              >
+                <i class="fas fa-paper-plane me-2"></i>Hisobotlarni Yuborish
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Single Report Upload Modal -->
+<div
+  class="modal fade"
+  id="singleReportModal"
+  tabindex="-1"
+  aria-labelledby="singleReportModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div
+      class="modal-content border-0"
+      style="
+        border-radius: 15px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        overflow: hidden;
+        background: #495057;
+      "
+    >
+      <div class="modal-header border-0 text-white pb-0">
+        <h5
+          class="modal-title fw-bold d-flex align-items-center"
+          id="singleReportModalLabel"
+        >
+          <div
+            class="p-3 rounded-circle me-3"
+            style="background: rgba(255, 255, 255, 0.1)"
+          >
+            <i class="fas fa-file-pdf text-white"></i>
+          </div>
+          <span id="singleReportUserName">Foydalanuvchiga</span> Hisobot
+          Yuborish
+        </h5>
+        <button
+          type="button"
+          class="btn-close btn-close-white"
+          data-bs-dismiss="modal"
+          aria-label="Yopish"
+        ></button>
+      </div>
+      <div class="modal-body p-0">
+        <div
+          class="p-5"
+          style="background: white; margin: 15px; border-radius: 10px"
+        >
+          <form id="singleReportForm" enctype="multipart/form-data">
+            <input type="hidden" id="singleUserId" name="user_id" />
+            <input type="hidden" id="singleCollectionId" name="collection_id" />
+            <input type="hidden" id="singleHasReport" value="false" />
+
+            <div class="mb-4">
+              <label class="form-label fw-semibold text-dark mb-3">
+                <i class="fas fa-file-pdf text-danger me-2"></i>
+                PDF Hisobotni Tanlang
+                <small class="text-muted d-block mt-1">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Fayl nomi ixtiyoriy bo'lishi mumkin (backend tomonida
+                  o'zgartiriladi)
+                </small>
+              </label>
+              <div
+                class="upload-zone"
+                id="singleUploadZone"
+                style="
+                  border: 2px dashed #6c757d;
+                  border-radius: 10px;
+                  padding: 50px 20px;
+                  text-align: center;
+                  background: #f8f9fa;
+                  transition: all 0.3s ease;
+                  cursor: pointer;
+                  position: relative;
+                  overflow: hidden;
+                "
+              >
+                <div class="upload-content">
+                  <div class="upload-icon mb-3">
+                    <i
+                      class="fas fa-file-upload"
+                      style="
+                        font-size: 4rem;
+                        color: #6c757d;
+                        transition: all 0.3s ease;
+                      "
+                    ></i>
+                  </div>
+                  <h4 class="mb-3 fw-bold text-dark">
+                    Faylni bu yerga tashlang
+                  </h4>
+                  <p class="text-muted mb-4">yoki fayl tanlash uchun bosing</p>
+                  <div class="upload-specs">
+                    <span class="badge bg-light text-dark px-3 py-2 me-2 mb-2">
+                      <i class="fas fa-file-pdf text-danger me-1"></i>PDF fayl
+                    </span>
+                    <span class="badge bg-light text-dark px-3 py-2 me-2 mb-2">
+                      <i class="fas fa-user me-1"></i>Bitta fayl
+                    </span>
+                    <span class="badge bg-success text-white px-3 py-2 mb-2">
+                      <i class="fas fa-check me-1"></i>Ixtiyoriy nom
+                    </span>
+                  </div>
+                </div>
+                <input
+                  type="file"
+                  id="singleReportInput"
+                  name="report"
+                  accept=".pdf"
+                  style="
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    opacity: 0;
+                    cursor: pointer;
+                  "
+                />
+              </div>
+              <div
+                class="selected-file mt-3"
+                id="singleSelectedFile"
+                style="display: none"
+              >
+                <h6 class="fw-semibold text-dark mb-2">
+                  <i class="fas fa-check-circle text-success me-2"></i>Tanlangan
+                  fayl:
+                </h6>
+                <div class="file-info" id="singleFileInfo"></div>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-3">
+              <button
+                type="button"
+                class="btn btn-outline-secondary px-4 py-2"
+                data-bs-dismiss="modal"
+                style="border-radius: 15px; font-weight: 500"
+              >
+                <i class="fas fa-times me-2"></i>Bekor qilish
+              </button>
+              <button
+                type="submit"
+                class="btn px-5 py-2"
+                style="
+                  background: #495057;
+                  border: none;
+                  border-radius: 10px;
+                  color: white;
+                  font-weight: 600;
+                  box-shadow: 0 4px 15px rgba(73, 80, 87, 0.3);
+                "
+                id="singleSubmitBtn"
+                disabled
+              >
+                <i class="fas fa-paper-plane me-2"></i>Hisobotni Yuborish
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock %} {% block scripts %}
-<style>
-  /* User card hover effect using theme variables */
-  .user-card:hover {
-    background-color: var(--primary-50);
-    border-radius: var(--radius-sm);
-    transition: var(--transition-fast);
-  }
-
-  /* Enhanced Order card hover effects */
-  .order-card {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .order-card::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 255, 255, 0.1),
-      transparent
-    );
-    transition: left 0.6s;
-    z-index: 1;
-  }
-
-  .order-card:hover::before {
-    left: 100%;
-  }
-
-  .order-card:hover {
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), 0 8px 16px rgba(0, 0, 0, 0.1);
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  /* Image container hover effects */
-  .image-container:hover .order-image {
-    transform: scale(1.05);
-    filter: brightness(1.1) contrast(1.1);
-  }
-
-  .image-container:hover .image-overlay {
-    opacity: 1;
-  }
-
-  .image-container:hover .view-hint {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  /* File container hover effect */
-  .order-card:hover .mb-3 > div[onclick] {
-    transform: scale(1.02);
-    border-color: var(--info-400);
-  }
-
-  /* Action button hover effects */
-  .action-btn:hover {
-    box-shadow: 0 4px 16px rgba(var(--primary-500-rgb), 0.4);
-  }
-
-  .action-btn:hover .btn-shine {
-    left: 100%;
-  }
-
-  .action-btn:active {
-    box-shadow: 0 2px 8px rgba(var(--primary-500-rgb), 0.3);
-  }
-
-  /* Status badge animation */
-  .status-badge {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .status-badge::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 255, 255, 0.3),
-      transparent
-    );
-    transition: left 0.5s;
-  }
-
-  .order-card:hover .status-badge::before {
-    left: 100%;
-  }
-
-  /* Pulse animation for active status */
-  @keyframes pulse {
-    0% {
-      transform: scale(1);
-      opacity: 1;
-    }
-    50% {
-      transform: scale(1.05);
-      opacity: 0.8;
-    }
-    100% {
-      transform: scale(1);
-      opacity: 1;
-    }
-  }
-
-  .status-badge i[class*="fa-circle"] {
-    animation: pulse 2s infinite;
-  }
-
-  /* Card entrance animation */
-  @keyframes cardSlideIn {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  .order-card {
-    animation: cardSlideIn 0.6s ease-out forwards;
-  }
-
-  /* Staggered animation delay for cards */
-  .order-card:nth-child(1) {
-    animation-delay: 0.1s;
-  }
-  .order-card:nth-child(2) {
-    animation-delay: 0.2s;
-  }
-  .order-card:nth-child(3) {
-    animation-delay: 0.3s;
-  }
-  .order-card:nth-child(4) {
-    animation-delay: 0.4s;
-  }
-
-  /* Enhanced loading state */
-  @keyframes shimmer {
-    0% {
-      background-position: -200px 0;
-    }
-    100% {
-      background-position: calc(200px + 100%) 0;
-    }
-  }
-
-  /* Beautiful glow effect for focused cards */
-  .order-card:focus-within {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--primary-200), 0 20px 40px rgba(0, 0, 0, 0.15);
-  }
-
-  /* Responsive hover effects - disable on touch devices */
-  @media (hover: none) {
-    .order-card:hover {
-      transform: none;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.05);
-    }
-
-    .image-container:hover .order-image {
-      transform: none;
-      filter: brightness(1.02) contrast(1.05);
-    }
-
-    .action-btn:hover {
-      transform: none;
-    }
-  }
-
-  /* File thumbnail hover effect */
-  .image-thumbnail:hover {
-    transform: scale(1.05);
-    box-shadow: var(--shadow-md);
-  }
-
-  /* Button hover effects */
-  .btn:hover {
-    box-shadow: var(--shadow-sm);
-    opacity: 0.9;
-  }
-
-  /* Theme-aware user list item styling */
-  .list-group-item {
-    background: var(--bg-secondary);
-    border-color: var(--separator);
-    transition: var(--transition-fast);
-  }
-
-  .list-group-item:hover {
-    background: var(--bg-tertiary);
-  }
-
-  /* Theme-aware table styling for modal */
-  .modal-content {
-    background: var(--bg-secondary);
-    border: 1px solid var(--separator);
-    border-radius: var(--radius-lg);
-  }
-
-  .modal-header {
-    border-bottom: 1px solid var(--separator);
-    background: var(--bg-tertiary);
-  }
-
-  .modal-title {
-    color: var(--text-primary);
-  }
-
-  /* User orders expandable sections */
-  .user-orders {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease-out;
-  }
-
-  .user-orders.show {
-    max-height: 2000px;
-    transition: max-height 0.5s ease-in;
-  }
-
-  /* Enhanced table styling for better theme integration */
-  table tr:hover td {
-    background-color: var(--bg-tertiary);
-  }
-
-  /* Chevron rotation animation */
-  .user-card i[id^="icon-"] {
-    transition: transform var(--transition-fast);
-  }
-
-  .user-card i[id^="icon-"].fa-chevron-up {
-    transform: rotate(180deg);
-  }
-</style>
-
 <script>
-  // Enhanced user toggle function with loading state
-  function toggleUser(userId) {
-    const ordersDiv = document.getElementById("orders-" + userId);
-    const icon = document.getElementById("icon-" + userId);
-    const text = document.getElementById("text-" + userId);
+  // Enhanced user toggle functionality
+  function toggleUserOrders(userId) {
+    const ordersContainer = document.getElementById(
+      "orders-container-" + userId
+    );
+    const chevron = document.getElementById("chevron-" + userId);
 
-    if (ordersDiv.classList.contains("show")) {
-      // Collapse
-      ordersDiv.classList.remove("show");
-      icon.classList.remove("fa-chevron-up");
-      icon.classList.add("fa-chevron-down");
-      if (text) text.textContent = "Ochish uchun bosing";
+    if (
+      ordersContainer.style.display === "none" ||
+      ordersContainer.style.display === ""
+    ) {
+      // Show orders
+      ordersContainer.style.display = "block";
+      chevron.style.transform = "rotate(180deg)";
+      chevron.classList.remove("fa-chevron-down");
+      chevron.classList.add("fa-chevron-up");
     } else {
-      // Expand
-      ordersDiv.classList.add("show");
-      icon.classList.remove("fa-chevron-down");
-      icon.classList.add("fa-chevron-up");
-      if (text) text.textContent = "Yopish uchun bosing";
+      // Hide orders
+      ordersContainer.style.display = "none";
+      chevron.style.transform = "rotate(0deg)";
+      chevron.classList.remove("fa-chevron-up");
+      chevron.classList.add("fa-chevron-down");
     }
   }
 
-  // Expand all users
-  function expandAllUsers() {
-    document.querySelectorAll(".user-orders").forEach((ordersDiv) => {
-      ordersDiv.classList.add("show");
-    });
-    document.querySelectorAll('[id^="icon-"]').forEach((icon) => {
-      icon.classList.remove("fa-chevron-down");
-      icon.classList.add("fa-chevron-up");
-    });
-    document.querySelectorAll('[id^="text-"]').forEach((text) => {
-      text.textContent = "Yopish uchun bosing";
-    });
-  }
-
-  // Collapse all users
-  function collapseAllUsers() {
-    document.querySelectorAll(".user-orders").forEach((ordersDiv) => {
-      ordersDiv.classList.remove("show");
-    });
-    document.querySelectorAll('[id^="icon-"]').forEach((icon) => {
-      icon.classList.remove("fa-chevron-up");
-      icon.classList.add("fa-chevron-down");
-    });
-    document.querySelectorAll('[id^="text-"]').forEach((text) => {
-      text.textContent = "Ochish uchun bosing";
-    });
-  }
-
-  // View order details function
+  // Enhanced viewOrderDetails function
   function viewOrderDetails(orderId) {
     const modal = new bootstrap.Modal(
       document.getElementById("orderDetailsModal")
@@ -1375,14 +921,21 @@ Buyurtmalar Boshqaruvi{% endblock %} {% block content %}
     const modalTitle = document.getElementById("orderDetailsModalLabel");
     const modalContent = document.getElementById("orderDetailsContent");
 
-    modalTitle.innerHTML = `<i class="fas fa-file-lines me-2"></i>Buyurtma #${orderId} Tafsilotlari`;
+    modalTitle.innerHTML = `
+    <div class="p-2 rounded-circle me-3" style="background-color: var(--primary-500)">
+      <i class="fas fa-file-lines text-white"></i>
+    </div>
+    Buyurtma #${orderId} Tafsilotlari
+  `;
+
     modalContent.innerHTML = `
-      <div class="text-center">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Yuklanmoqda...</span>
-        </div>
+    <div class="text-center py-4">
+      <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+        <span class="visually-hidden">Yuklanmoqda...</span>
       </div>
-    `;
+      <p class="mt-3 text-muted">Ma'lumotlar yuklanmoqda...</p>
+    </div>
+  `;
 
     modal.show();
 
@@ -1391,104 +944,832 @@ Buyurtmalar Boshqaruvi{% endblock %} {% block content %}
       .then((response) => response.json())
       .then((data) => {
         if (data.error) {
-          modalContent.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+          modalContent.innerHTML = `
+          <div class="alert alert-danger border-0" style="border-radius: var(--radius-md);">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            ${data.error}
+          </div>
+        `;
           return;
         }
 
-        let filesHtml =
-          '<p style="color: var(--text-secondary);">Fayllar yo\'q.</p>';
+        let filesHtml = `
+        <div class="text-center py-4">
+          <div class="d-inline-flex align-items-center justify-content-center"
+               style="width: 60px; height: 60px; border-radius: 50%; background: var(--neutral-100); color: var(--text-tertiary);">
+            <i class="fas fa-image fa-2x"></i>
+          </div>
+          <p class="mt-3 text-muted">Fayllar yo'q.</p>
+        </div>
+      `;
+
         if (data.files && data.files.length > 0) {
-          filesHtml = '<div class="row g-3">';
+          filesHtml = '<div class="image-gallery row g-3">';
           data.files.forEach((filePath) => {
             const filename = filePath.split("/").pop().split("\\").pop();
             const fileUrl = `/uploads/${filename}`;
             if (filename.toLowerCase().match(/\.(jpg|jpeg|png|gif)$/)) {
               filesHtml += `
-                <div class="col-md-3 col-4">
-                  <img src="${fileUrl}" alt="Order Image" class="img-fluid"
+              <div class="col-6 col-md-4 col-lg-3">
+                <div class="position-relative">
+                  <img src="${fileUrl}" alt="Order Image"
+                       class="image-thumbnail w-100"
+                       style="height: 120px; object-fit: cover; border-radius: var(--radius-md); cursor: pointer; transition: transform 0.3s ease;"
                        onclick="showImage('${fileUrl}')"
-                       style="cursor: pointer; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--separator); box-shadow: var(--shadow-sm); transition: var(--transition-fast);">
-                </div>`;
-            } else if (filename.toLowerCase().match(/\.(mp4|mov|avi|webm)$/)) {
+                       onmouseover="this.style.transform='scale(1.05)'"
+                       onmouseout="this.style.transform='scale(1)'">
+                  <div class="position-absolute top-0 end-0 m-2">
+                    <span class="badge bg-dark bg-opacity-75" style="font-size: 0.7rem;">
+                      <i class="fas fa-image"></i>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            `;
+            } else if (filename.toLowerCase().match(/\.(mp4|mov|avi)$/)) {
               filesHtml += `
-                <div class="col-md-4 col-6">
-                  <video class="img-fluid"
-                         style="aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--separator); box-shadow: var(--shadow-sm);"
-                         controls preload="metadata">
+              <div class="col-6 col-md-4 col-lg-3">
+                <div class="position-relative">
+                  <video class="w-100" style="height: 120px; object-fit: cover; border-radius: var(--radius-md);" controls preload="metadata">
                     <source src="${fileUrl}" type="video/mp4">
-                    Videoni ko'rsatib bo'lmadi.
+                    Brauzeringiz video o'ynatishni qo'llab-quvvatlamaydi.
                   </video>
-                </div>`;
+                  <div class="position-absolute top-0 end-0 m-2">
+                    <span class="badge bg-dark bg-opacity-75" style="font-size: 0.7rem;">
+                      <i class="fas fa-video"></i>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            `;
+            } else {
+              filesHtml += `
+              <div class="col-6 col-md-4 col-lg-3">
+                <div class="d-flex flex-column align-items-center p-3 border rounded" style="height: 120px; border-radius: var(--radius-md);">
+                  <i class="fas fa-file fa-2x text-muted mb-2"></i>
+                  <small class="text-muted text-center">${filename}</small>
+                  <a href="${fileUrl}" target="_blank" class="btn btn-sm btn-outline-primary mt-auto">
+                    <i class="fas fa-download me-1"></i>Yuklab olish
+                  </a>
+                </div>
+              </div>
+            `;
             }
           });
           filesHtml += "</div>";
         }
 
+        const orderDate = data.created_at
+          ? new Date(data.created_at).toLocaleString("uz-UZ")
+          : "N/A";
+
         modalContent.innerHTML = `
-          <div class="row g-3">
-            <div class="col-md-6">
-              <h5 style="color: var(--text-primary); margin-bottom: var(--spacing-md);"><i class="fas fa-user me-2"></i>Foydalanuvchi</h5>
-              <div style="background: var(--bg-secondary); border: 1px solid var(--separator); border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
-                <div style="padding: var(--spacing-md);">
-                  <table style="width: 100%; border-collapse: collapse;">
-                    <tr style="border-bottom: 1px solid var(--separator);"><td style="padding: var(--spacing-xs) 0; font-weight: 600; color: var(--text-secondary); width: 35%;"><strong>Ism:</strong></td><td style="padding: var(--spacing-xs) 0; color: var(--text-primary);">${
-                      data.name || "N/A"
-                    } ${data.surname || ""}</td></tr>
-                    <tr style="border-bottom: 1px solid var(--separator);"><td style="padding: var(--spacing-xs) 0; font-weight: 600; color: var(--text-secondary);"><strong>Telefon:</strong></td><td style="padding: var(--spacing-xs) 0; color: var(--text-primary);">${
-                      data.phone || "N/A"
-                    }</td></tr>
-                    <tr style="border-bottom: 1px solid var(--separator);"><td style="padding: var(--spacing-xs) 0; font-weight: 600; color: var(--text-secondary);"><strong>Username:</strong></td><td style="padding: var(--spacing-xs) 0; color: var(--text-primary);">@${
-                      data.username || "N/A"
-                    }</td></tr>
-                    <tr><td style="padding: var(--spacing-xs) 0; font-weight: 600; color: var(--text-secondary);"><strong>Kod:</strong></td><td style="padding: var(--spacing-xs) 0; color: var(--text-primary);">${
-                      data.code || "N/A"
-                    }</td></tr>
-                  </table>
+        <div class="order-details-content">
+          <!-- Order Header -->
+          <div class="order-header mb-4 p-4 rounded" style="background: linear-gradient(135deg, var(--primary-50), var(--primary-100));">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <div class="detail-item">
+                  <label class="text-muted small mb-1">Buyurtma ID</label>
+                  <div class="fw-bold">#${data.id}</div>
                 </div>
               </div>
-            </div>
-            <div class="col-md-6">
-              <h5 style="color: var(--text-primary); margin-bottom: var(--spacing-md);"><i class="fas fa-box me-2"></i>Buyurtma</h5>
-              <div style="background: var(--bg-secondary); border: 1px solid var(--separator); border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
-                <div style="padding: var(--spacing-md);">
-                  <table style="width: 100%; border-collapse: collapse;">
-                    <tr style="border-bottom: 1px solid var(--separator);"><td style="padding: var(--spacing-xs) 0; font-weight: 600; color: var(--text-secondary); width: 35%;"><strong>ID:</strong></td><td style="padding: var(--spacing-xs) 0; color: var(--text-primary);">#${
-                      data.id
-                    }</td></tr>
-                    <tr style="border-bottom: 1px solid var(--separator);"><td style="padding: var(--spacing-xs) 0; font-weight: 600; color: var(--text-secondary);"><strong>Kolleksiya:</strong></td><td style="padding: var(--spacing-xs) 0; color: var(--text-primary);">#${
-                      data.collection_id
-                    }</td></tr>
-                    <tr style="border-bottom: 1px solid var(--separator);"><td style="padding: var(--spacing-xs) 0; font-weight: 600; color: var(--text-secondary);"><strong>Seriya:</strong></td><td style="padding: var(--spacing-xs) 0; color: var(--text-primary);">${
-                      data.amount || "N/A"
-                    }</td></tr>
-                    <tr><td style="padding: var(--spacing-xs) 0; font-weight: 600; color: var(--text-secondary);"><strong>Yaratilgan:</strong></td><td style="padding: var(--spacing-xs) 0; color: var(--text-primary);">${new Date(
-                      data.created_at
-                    ).toLocaleString("uz-UZ")}</td></tr>
-                  </table>
+              <div class="col-md-6">
+                <div class="detail-item">
+                  <label class="text-muted small mb-1">Yaratilgan vaqti</label>
+                  <div class="fw-medium">${orderDate}</div>
+                </div>
+              </div>
+              ${
+                data.amount
+                  ? `
+              <div class="col-md-6">
+                <div class="detail-item">
+                  <label class="text-muted small mb-1">Seriya</label>
+                  <div class="fw-medium">${data.amount}</div>
+                </div>
+              </div>
+              `
+                  : ""
+              }
+              <div class="col-md-6">
+                <div class="detail-item">
+                  <label class="text-muted small mb-1">Fayllar soni</label>
+                  <div class="fw-medium">
+                    <span class="badge bg-info">
+                      <i class="fas fa-paperclip me-1"></i>
+                      ${data.files ? data.files.length : 0} ta
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-          <hr style="border-color: var(--separator); margin: var(--spacing-lg) 0;">
-          <h5 style="color: var(--text-primary); margin-bottom: var(--spacing-md);"><i class="fas fa-images me-2"></i>Fayllar (${
-            data.files ? data.files.length : 0
-          } ta)</h5>
-          ${filesHtml}
-        `;
+
+          <!-- Files Section -->
+          <div class="files-section">
+            <div class="d-flex align-items-center mb-3">
+              <h6 class="mb-0 fw-semibold text-secondary">
+                <i class="fas fa-folder-open me-2"></i>
+                Yuklangan fayllar
+              </h6>
+              ${
+                data.files && data.files.length > 0
+                  ? `
+                <span class="badge bg-secondary ms-2">${data.files.length} ta</span>
+              `
+                  : ""
+              }
+            </div>
+            ${filesHtml}
+          </div>
+        </div>
+      `;
       })
       .catch((error) => {
         console.error("Error fetching order details:", error);
-        modalContent.innerHTML = `<div class="alert alert-danger">Tafsilotlarni yuklashda xatolik yuz berdi.</div>`;
+        modalContent.innerHTML = `
+        <div class="alert alert-danger border-0" style="border-radius: var(--radius-md);">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          Ma'lumotlarni yuklashda xatolik yuz berdi.
+        </div>
+      `;
       });
   }
 
-  // Set active navigation
+  // Add hover effects for order cards
   document.addEventListener("DOMContentLoaded", function () {
-    // Mark collections nav as active
-    const collectionsNav = document.querySelector('a[href="/collections"]');
-    if (collectionsNav) {
-      collectionsNav.classList.add("active");
-    }
+    // Add hover effects to order cards
+    document.querySelectorAll(".order-card-enhanced").forEach((card) => {
+      const overlay = card.querySelector(".image-overlay");
+
+      card.addEventListener("mouseenter", function () {
+        if (overlay) {
+          overlay.style.opacity = "1";
+        }
+      });
+
+      card.addEventListener("mouseleave", function () {
+        if (overlay) {
+          overlay.style.opacity = "0";
+        }
+      });
+    });
+
+    // Initialize drag and drop functionality
+    initializeMultipleUpload();
+    initializeSingleUpload();
   });
+
+  // Global variable to store valid user codes for the current collection
+  let validUserCodes = [];
+
+  // Global array to store accumulated files
+  let accumulatedFiles = [];
+
+  // Multiple Reports Modal Functions
+  function openMultipleReportsModal(collectionId) {
+    // Check if collection is finished
+    const collectionStatus = "{{ collection.status }}";
+    if (collectionStatus !== "finish") {
+      showErrorMessage(
+        "Hisobotlar faqat tugallangan kolleksiyalarga yuboriladi!"
+      );
+      return;
+    }
+
+    document.getElementById("multipleCollectionId").value = collectionId;
+
+    // Fetch valid user codes for this collection
+    fetchValidUserCodes(collectionId)
+      .then(() => {
+        const modal = new bootstrap.Modal(
+          document.getElementById("multipleReportsModal")
+        );
+        modal.show();
+        resetMultipleUpload();
+      })
+      .catch((error) => {
+        console.error(
+          "Failed to fetch user codes, opening modal anyway:",
+          error
+        );
+        // Open modal even if user codes failed to load
+        const modal = new bootstrap.Modal(
+          document.getElementById("multipleReportsModal")
+        );
+        modal.show();
+        resetMultipleUpload();
+      });
+  }
+
+  async function fetchValidUserCodes(collectionId) {
+    try {
+      console.log(`Fetching user codes for collection ${collectionId}`);
+      const response = await fetch(
+        `/api/collections/${collectionId}/user-codes`
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("API response:", data);
+
+      if (data.success) {
+        validUserCodes = data.user_codes;
+        console.log(
+          `Loaded ${validUserCodes.length} valid user codes for collection ${collectionId}:`,
+          validUserCodes
+        );
+
+        if (validUserCodes.length === 0) {
+          showErrorMessage(
+            "Bu kolleksiyada hech qanday foydalanuvchi buyurtma bermagan"
+          );
+        }
+      } else {
+        console.error("Failed to fetch user codes:", data.error);
+        validUserCodes = [];
+        showErrorMessage(
+          `Foydalanuvchi kodlarini yuklashda xatolik: ${data.error}`
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching user codes:", error);
+      validUserCodes = [];
+      showErrorMessage(`Tarmoq xatoligi: ${error.message}`);
+    }
+  }
+
+  function initializeMultipleUpload() {
+    const uploadZone = document.getElementById("multipleUploadZone");
+    const fileInput = document.getElementById("multipleReportsInput");
+    const submitBtn = document.getElementById("multipleSubmitBtn");
+    const selectedFiles = document.getElementById("multipleSelectedFiles");
+    const filesList = document.getElementById("multipleFilesList");
+
+    // Drag and drop events
+    uploadZone.addEventListener("dragover", function (e) {
+      e.preventDefault();
+      uploadZone.style.borderColor = "#2c3e50";
+      uploadZone.style.background = "#e9ecef";
+      uploadZone.querySelector(".upload-icon i").style.color = "#2c3e50";
+      uploadZone.querySelector(".upload-icon i").style.transform = "scale(1.1)";
+    });
+
+    uploadZone.addEventListener("dragleave", function (e) {
+      e.preventDefault();
+      resetMultipleUploadZone();
+    });
+
+    uploadZone.addEventListener("drop", function (e) {
+      e.preventDefault();
+      const newFiles = Array.from(e.dataTransfer.files).filter(
+        (file) => file.type === "application/pdf"
+      );
+
+      // Add new files to accumulated files array
+      newFiles.forEach((newFile) => {
+        // Check if file with same name already exists
+        const existingIndex = accumulatedFiles.findIndex(
+          (f) => f.name === newFile.name && f.size === newFile.size
+        );
+        if (existingIndex === -1) {
+          accumulatedFiles.push(newFile);
+        }
+      });
+
+      // Update the file input with all accumulated files
+      const dt = new DataTransfer();
+      accumulatedFiles.forEach((file) => {
+        dt.items.add(file);
+      });
+      fileInput.files = dt.files;
+
+      // Handle all accumulated files
+      handleMultipleFiles(accumulatedFiles);
+      resetMultipleUploadZone();
+    });
+
+    fileInput.addEventListener("change", function (e) {
+      const newFiles = Array.from(e.target.files);
+
+      // Add new files to accumulated files array
+      newFiles.forEach((newFile) => {
+        // Check if file with same name already exists
+        const existingIndex = accumulatedFiles.findIndex(
+          (f) => f.name === newFile.name && f.size === newFile.size
+        );
+        if (existingIndex === -1) {
+          accumulatedFiles.push(newFile);
+        }
+      });
+
+      // Update the file input with all accumulated files
+      const dt = new DataTransfer();
+      accumulatedFiles.forEach((file) => {
+        dt.items.add(file);
+      });
+      fileInput.files = dt.files;
+
+      // Handle all accumulated files
+      handleMultipleFiles(accumulatedFiles);
+    });
+
+    // Form submission
+    document
+      .getElementById("multipleReportsForm")
+      .addEventListener("submit", function (e) {
+        e.preventDefault();
+        submitMultipleReports();
+      });
+  }
+
+  function handleMultipleFiles(files) {
+    if (files.length === 0) return;
+
+    // Validate filenames against valid user codes
+    const invalidFiles = [];
+    const validFiles = [];
+
+    files.forEach((file) => {
+      const filename = file.name.replace(".pdf", "").replace(".PDF", "");
+      const filenameUpper = filename.toUpperCase();
+
+      // Check if filename is exactly 4 characters
+      if (filename.length !== 4) {
+        invalidFiles.push({ file, filename, reason: "length" });
+      } else if (
+        validUserCodes.length > 0 &&
+        !validUserCodes.includes(filenameUpper)
+      ) {
+        // Only validate against user codes if they were successfully loaded
+        invalidFiles.push({ file, filename, reason: "invalid_code" });
+      } else {
+        validFiles.push({ file, filename });
+      }
+    });
+
+    const filesList = document.getElementById("multipleFilesList");
+    const selectedFiles = document.getElementById("multipleSelectedFiles");
+    const submitBtn = document.getElementById("multipleSubmitBtn");
+
+    filesList.innerHTML = "";
+
+    // Display all files (both valid and invalid)
+    [
+      ...validFiles,
+      ...invalidFiles.map((item) => ({
+        file: item.file,
+        filename: item.filename,
+        reason: item.reason,
+        isInvalid: true,
+      })),
+    ].forEach((fileInfo, index) => {
+      const file = fileInfo.file;
+      const filename = fileInfo.filename;
+      const isInvalid = fileInfo.isInvalid;
+      const reason = fileInfo.reason;
+
+      const fileElement = document.createElement("div");
+      fileElement.className =
+        "file-item d-flex align-items-center justify-content-between p-3 mb-2 rounded-3";
+
+      // Apply red background for invalid files
+      if (isInvalid) {
+        fileElement.style.background = "#f8d7da";
+        fileElement.style.border = "1px solid #dc3545";
+      } else {
+        fileElement.style.background = "#f8f9fa";
+        fileElement.style.border = "1px solid #dee2e6";
+      }
+
+      let errorBadge = "";
+      if (isInvalid) {
+        if (reason === "length") {
+          errorBadge = `<span class="badge bg-danger ms-2">Noto'g'ri! ${filename.length} belgi (4 belgi kerak)</span>`;
+        } else if (reason === "invalid_code") {
+          errorBadge = `<span class="badge bg-danger ms-2">Noto'g'ri foydalanuvchi kodi: ${filename}</span>`;
+        }
+      } else {
+        if (validUserCodes.length === 0) {
+          errorBadge = `<span class="badge bg-warning ms-2">⚠ ${filename} (kodlar tekshirilmadi)</span>`;
+        } else {
+          errorBadge = `<span class="badge bg-success ms-2">✓ ${filename} (to'g'ri kod)</span>`;
+        }
+      }
+
+      fileElement.innerHTML = `
+        <div class="d-flex align-items-center">
+          <div class="file-icon me-3">
+            <i class="fas fa-file-pdf ${
+              isInvalid ? "text-danger" : "text-danger"
+            }" style="font-size: 1.5rem;"></i>
+          </div>
+          <div class="file-info">
+            <div class="fw-semibold ${
+              isInvalid ? "text-danger" : "text-dark"
+            }">${file.name}</div>
+            <div class="text-muted small">
+              ${(file.size / 1024 / 1024).toFixed(2)} MB
+              ${errorBadge}
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeMultipleFile(${index})">
+          <i class="fas fa-times"></i>
+        </button>
+      `;
+      filesList.appendChild(fileElement);
+    });
+
+    selectedFiles.style.display = "block";
+
+    // Disable submit button if there are any invalid files or no valid files
+    submitBtn.disabled = invalidFiles.length > 0 || validFiles.length === 0;
+  }
+
+  function removeMultipleFile(index) {
+    // Remove file from accumulated files array
+    accumulatedFiles.splice(index, 1);
+
+    // Update the file input with remaining files
+    const fileInput = document.getElementById("multipleReportsInput");
+    const dt = new DataTransfer();
+
+    accumulatedFiles.forEach((file) => {
+      dt.items.add(file);
+    });
+
+    fileInput.files = dt.files;
+
+    // Refresh the display
+    if (accumulatedFiles.length === 0) {
+      resetMultipleUpload();
+    } else {
+      handleMultipleFiles(accumulatedFiles);
+    }
+  }
+
+  function resetMultipleUpload() {
+    document.getElementById("multipleReportsInput").value = "";
+    document.getElementById("multipleSelectedFiles").style.display = "none";
+    document.getElementById("multipleSubmitBtn").disabled = true;
+    accumulatedFiles = []; // Clear accumulated files
+    resetMultipleUploadZone();
+  }
+
+  function resetMultipleUploadZone() {
+    const uploadZone = document.getElementById("multipleUploadZone");
+    uploadZone.style.borderColor = "#6c757d";
+    uploadZone.style.background = "#f8f9fa";
+    uploadZone.querySelector(".upload-icon i").style.color = "#6c757d";
+    uploadZone.querySelector(".upload-icon i").style.transform = "scale(1)";
+  }
+
+  function submitMultipleReports() {
+    const fileInput = document.getElementById("multipleReportsInput");
+    const files = Array.from(fileInput.files);
+
+    // Check if all files have valid filenames (exactly 4 characters and valid user codes)
+    const invalidFiles = files.filter((file) => {
+      const filename = file.name.replace(".pdf", "").replace(".PDF", "");
+      const filenameUpper = filename.toUpperCase();
+
+      // Always check length
+      if (filename.length !== 4) return true;
+
+      // Only check user codes if they were loaded successfully
+      if (
+        validUserCodes.length > 0 &&
+        !validUserCodes.includes(filenameUpper)
+      ) {
+        return true;
+      }
+
+      return false;
+    });
+
+    if (invalidFiles.length > 0) {
+      if (validUserCodes.length === 0) {
+        showErrorMessage("Barcha fayllar nomi aniq 4 belgi bo'lishi kerak!");
+      } else {
+        showErrorMessage(
+          "Barcha fayllar nomi to'g'ri foydalanuvchi kodi bo'lishi kerak!"
+        );
+      }
+      return;
+    }
+
+    const form = document.getElementById("multipleReportsForm");
+    const formData = new FormData();
+    const submitBtn = document.getElementById("multipleSubmitBtn");
+
+    // Add collection ID
+    formData.append(
+      "collection_id",
+      document.getElementById("multipleCollectionId").value
+    );
+
+    // Add only valid files
+    files.forEach((file) => {
+      formData.append("reports", file);
+    });
+
+    submitBtn.innerHTML =
+      '<i class="fas fa-spinner fa-spin me-2"></i>Yuklanmoqda...';
+    submitBtn.disabled = true;
+
+    fetch("/api/send-multiple-reports", {
+      method: "POST",
+      body: formData,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          showSuccessMessage("Hisobotlar muvaffaqiyatli yuborildi!");
+          bootstrap.Modal.getInstance(
+            document.getElementById("multipleReportsModal")
+          ).hide();
+        } else {
+          showErrorMessage(data.message || "Xatolik yuz berdi");
+        }
+      })
+      .catch((error) => {
+        showErrorMessage("Tarmoq xatoligi");
+        console.error("Error:", error);
+      })
+      .finally(() => {
+        submitBtn.innerHTML =
+          '<i class="fas fa-paper-plane me-2"></i>Hisobotlarni Yuborish';
+        submitBtn.disabled = false;
+      });
+  }
+
+  // Single Report Modal Functions
+  function openSingleReportModal(userId, userName, collectionId, hasReport) {
+    // Check if collection is finished
+    const collectionStatus = "{{ collection.status }}";
+    if (collectionStatus !== "finish") {
+      showErrorMessage(
+        "Hisobotlar faqat tugallangan kolleksiyalarga yuboriladi!"
+      );
+      return;
+    }
+
+    document.getElementById("singleCollectionId").value = collectionId;
+    document.getElementById("singleUserId").value = userId;
+    document.getElementById("singleReportUserName").textContent = userName;
+    document.getElementById("singleHasReport").value = hasReport
+      ? "true"
+      : "false";
+
+    // Update modal title based on whether it's an update or new report
+    const modalTitle = document.getElementById("singleReportModalLabel");
+    if (hasReport) {
+      modalTitle.innerHTML = `
+        <div class="p-3 rounded-circle me-3" style="background: rgba(255, 255, 255, 0.1)">
+          <i class="fas fa-sync text-white"></i>
+        </div>
+        <span id="singleReportUserName">${userName}</span> uchun Hisobotni Yangilash
+      `;
+    } else {
+      modalTitle.innerHTML = `
+        <div class="p-3 rounded-circle me-3" style="background: rgba(255, 255, 255, 0.1)">
+          <i class="fas fa-file-pdf text-white"></i>
+        </div>
+        <span id="singleReportUserName">${userName}</span> Hisobot Yuborish
+      `;
+    }
+
+    const modal = new bootstrap.Modal(
+      document.getElementById("singleReportModal")
+    );
+    modal.show();
+    resetSingleUpload();
+    const submitBtn = document.getElementById("singleSubmitBtn");
+    if (hasReport) {
+      submitBtn.innerHTML =
+        '<i class="fas fa-sync me-2"></i>Hisobotni Yangilash';
+    } else {
+      submitBtn.innerHTML =
+        '<i class="fas fa-paper-plane me-2"></i>Hisobotni Yuborish';
+    }
+  }
+
+  function initializeSingleUpload() {
+    const uploadZone = document.getElementById("singleUploadZone");
+    const fileInput = document.getElementById("singleReportInput");
+    const submitBtn = document.getElementById("singleSubmitBtn");
+
+    // Drag and drop events
+    uploadZone.addEventListener("dragover", function (e) {
+      e.preventDefault();
+      uploadZone.style.borderColor = "#495057";
+      uploadZone.style.background = "#e9ecef";
+      uploadZone.querySelector(".upload-icon i").style.color = "#495057";
+      uploadZone.querySelector(".upload-icon i").style.transform = "scale(1.1)";
+    });
+
+    uploadZone.addEventListener("dragleave", function (e) {
+      e.preventDefault();
+      resetSingleUploadZone();
+    });
+
+    uploadZone.addEventListener("drop", function (e) {
+      e.preventDefault();
+      const files = Array.from(e.dataTransfer.files).filter(
+        (file) => file.type === "application/pdf"
+      );
+      if (files.length > 0) {
+        handleSingleFile(files[0]);
+      }
+      resetSingleUploadZone();
+    });
+
+    fileInput.addEventListener("change", function (e) {
+      if (e.target.files.length > 0) {
+        handleSingleFile(e.target.files[0]);
+      }
+    });
+
+    // Form submission
+    document
+      .getElementById("singleReportForm")
+      .addEventListener("submit", function (e) {
+        e.preventDefault();
+        submitSingleReport();
+      });
+  }
+
+  function handleSingleFile(file) {
+    const fileInfo = document.getElementById("singleFileInfo");
+    const selectedFile = document.getElementById("singleSelectedFile");
+    const submitBtn = document.getElementById("singleSubmitBtn");
+
+    // Ensure the file input actually contains the selected/dropped file
+    updateFileInput([file], "singleReportInput");
+
+    const filename = file.name.replace(".pdf", "").replace(".PDF", "");
+    fileInfo.innerHTML = `
+      <div class="file-item d-flex align-items-center justify-content-between p-3 rounded-3"
+           style="background: #f8f9fa; border: 1px solid #495057;">
+        <div class="d-flex align-items-center">
+          <div class="file-icon me-3">
+            <i class="fas fa-file-pdf text-danger" style="font-size: 1.5rem;"></i>
+          </div>
+          <div class="file-info">
+            <div class="fw-semibold text-dark">${file.name}</div>
+            <div class="text-muted small">
+              ${(file.size / 1024 / 1024).toFixed(2)} MB
+              <span class="badge bg-info ms-2">
+                <i class="fas fa-edit me-1"></i>Backend tomonida o'zgartiriladi
+              </span>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-danger" onclick="resetSingleUpload()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    `;
+
+    selectedFile.style.display = "block";
+    submitBtn.disabled = false;
+  }
+
+  function resetSingleUpload() {
+    document.getElementById("singleReportInput").value = "";
+    document.getElementById("singleSelectedFile").style.display = "none";
+    document.getElementById("singleSubmitBtn").disabled = true;
+    resetSingleUploadZone();
+  }
+
+  function resetSingleUploadZone() {
+    const uploadZone = document.getElementById("singleUploadZone");
+    uploadZone.style.borderColor = "#6c757d";
+    uploadZone.style.background = "#f8f9fa";
+    uploadZone.querySelector(".upload-icon i").style.color = "#6c757d";
+    uploadZone.querySelector(".upload-icon i").style.transform = "scale(1)";
+  }
+
+  function submitSingleReport() {
+    const form = document.getElementById("singleReportForm");
+    const formData = new FormData(form);
+    const submitBtn = document.getElementById("singleSubmitBtn");
+
+    submitBtn.innerHTML =
+      '<i class="fas fa-spinner fa-spin me-2"></i>Yuklanmoqda...';
+    submitBtn.disabled = true;
+
+    fetch("/api/send-single-report", {
+      method: "POST",
+      body: formData,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          showSuccessMessage("Hisobot muvaffaqiyatli yuborildi!");
+          bootstrap.Modal.getInstance(
+            document.getElementById("singleReportModal")
+          ).hide();
+          // Update UI: mark user as having a report and toggle button to Update
+          const uid = document.getElementById("singleUserId").value;
+          const reportBtn = document.getElementById("report-button-" + uid);
+          if (reportBtn) {
+            reportBtn.innerHTML =
+              '<i class="fas fa-sync me-1"></i>Hisobotni Yangilash';
+          }
+
+          // Show green indicator light
+          const indicator = document.getElementById("report-indicator-" + uid);
+          if (indicator && indicator.style.display === "none") {
+            indicator.style.cssText = `
+              position: absolute;
+              top: 0;
+              right: 0;
+              bottom: 0;
+              width: 8px;
+              background: linear-gradient(135deg, #10b981, #059669);
+              box-shadow: -2px 0 20px rgba(16, 185, 129, 0.5), -4px 0 40px rgba(16, 185, 129, 0.3);
+              border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+              z-index: 5;
+              animation: pulse-green-bg 2s ease-in-out infinite;
+              display: block;
+            `;
+            indicator.title = "Hisobot yuborilgan";
+          }
+
+          document.getElementById("singleHasReport").value = "true";
+        } else {
+          showErrorMessage(data.message || "Xatolik yuz berdi");
+        }
+      })
+      .catch((error) => {
+        showErrorMessage("Tarmoq xatoligi");
+        console.error("Error:", error);
+      })
+      .finally(() => {
+        const hasReport =
+          document.getElementById("singleHasReport").value === "true";
+        submitBtn.innerHTML = hasReport
+          ? '<i class="fas fa-sync me-2"></i>Hisobotni Yangilash'
+          : '<i class="fas fa-paper-plane me-2"></i>Hisobotni Yuborish';
+        submitBtn.disabled = false;
+      });
+  }
+
+  // Utility functions for notifications
+  function showSuccessMessage(message) {
+    // Create and show success toast or alert
+    const alertDiv = document.createElement("div");
+    alertDiv.className = "alert alert-success alert-dismissible position-fixed";
+    alertDiv.style.cssText =
+      "top: 20px; right: 20px; z-index: 9999; min-width: 300px;";
+    alertDiv.innerHTML = `
+      <i class="fas fa-check-circle me-2"></i>${message}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alertDiv);
+
+    setTimeout(() => {
+      if (alertDiv.parentNode) {
+        alertDiv.parentNode.removeChild(alertDiv);
+      }
+    }, 5000);
+  }
+
+  function showErrorMessage(message) {
+    // Create and show error toast or alert
+    const alertDiv = document.createElement("div");
+    alertDiv.className = "alert alert-danger alert-dismissible position-fixed";
+    alertDiv.style.cssText =
+      "top: 20px; right: 20px; z-index: 9999; min-width: 300px; max-width: 400px; white-space: pre-line;";
+    alertDiv.innerHTML = `
+      <i class="fas fa-exclamation-triangle me-2"></i>${message}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alertDiv);
+
+    setTimeout(() => {
+      if (alertDiv.parentNode) {
+        alertDiv.parentNode.removeChild(alertDiv);
+      }
+    }, 8000);
+  }
+
+  // Helper function to update file input with valid files
+  function updateFileInput(validFiles, inputId) {
+    const fileInput = document.getElementById(inputId);
+    const dt = new DataTransfer();
+
+    validFiles.forEach((file) => {
+      dt.items.add(file);
+    });
+
+    fileInput.files = dt.files;
+  }
 </script>
 {% endblock %}

@@ -573,7 +573,9 @@
             data-aos-delay="100"
           >
             <div class="stat-item">
-              <div class="stat-number counter" data-target="10000">0</div>
+              <div class="stat-number counter" data-target="{{ total_orders }}">
+                0
+              </div>
               <div class="stat-label">Muvaffaqiyatli Buyurtmalar</div>
             </div>
           </div>
@@ -583,7 +585,9 @@
             data-aos-delay="200"
           >
             <div class="stat-item">
-              <div class="stat-number counter" data-target="500">0</div>
+              <div class="stat-number counter" data-target="{{ total_users }}">
+                0
+              </div>
               <div class="stat-label">Mamnun Mijozlar</div>
             </div>
           </div>
@@ -593,8 +597,13 @@
             data-aos-delay="300"
           >
             <div class="stat-item">
-              <div class="stat-number counter" data-target="3">0</div>
-              <div class="stat-label">Soniyada Buyurtma</div>
+              <div
+                class="stat-number counter"
+                data-target="{{ active_collections }}"
+              >
+                0
+              </div>
+              <div class="stat-label">Aktiv Kolleksiyalar</div>
             </div>
           </div>
           <div
@@ -603,126 +612,8 @@
             data-aos-delay="400"
           >
             <div class="stat-item">
-              <div class="stat-number counter" data-target="24">0</div>
+              <div class="stat-number">24/7</div>
               <div class="stat-label">Soatlik Xizmat</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Features Section -->
-    <section id="features" class="section">
-      <div class="container">
-        <div class="text-center mb-5">
-          <h2 class="section-title" data-aos="fade-up">Nima Uchun Biz?</h2>
-          <p class="section-subtitle" data-aos="fade-up" data-aos-delay="100">
-            Buyurtma berishni oson va tez qiladigan ajoyib xususiyatlar
-          </p>
-        </div>
-
-        <div class="row g-4">
-          <div
-            class="col-lg-4 col-md-6"
-            data-aos="fade-up"
-            data-aos-delay="100"
-          >
-            <div class="feature-card">
-              <div class="feature-icon">
-                <i class="fas fa-mobile-alt"></i>
-              </div>
-              <h4 class="mb-3">Telegram orqali Oson</h4>
-              <p>
-                Hech qanday ilovani yuklab olishga hojat yo'q! Telegram orqali
-                to'g'ridan-to'g'ri buyurtma bering. Rasmini yuboring, tavsif
-                yozing - hammasi shu!
-              </p>
-            </div>
-          </div>
-
-          <div
-            class="col-lg-4 col-md-6"
-            data-aos="fade-up"
-            data-aos-delay="200"
-          >
-            <div class="feature-card">
-              <div class="feature-icon">
-                <i class="fas fa-clock"></i>
-              </div>
-              <h4 class="mb-3">24/7 Buyurtma Berish</h4>
-              <p>
-                Istalgan vaqtda, istalgan joydan buyurtma bering. Bizning tizim
-                24 soat davomida ishlab turadi va sizning buyurtmalaringizni
-                darhol qabul qiladi.
-              </p>
-            </div>
-          </div>
-
-          <div
-            class="col-lg-4 col-md-6"
-            data-aos="fade-up"
-            data-aos-delay="300"
-          >
-            <div class="feature-card">
-              <div class="feature-icon">
-                <i class="fas fa-eye"></i>
-              </div>
-              <h4 class="mb-3">Buyurtmalarni Kuzatish</h4>
-              <p>
-                Har bir buyurtmangizning holatini real vaqtda ko'ring. Qabul
-                qilindi, jarayonda, tayyor - hammasi bir joyda va aniq.
-              </p>
-            </div>
-          </div>
-
-          <div
-            class="col-lg-4 col-md-6"
-            data-aos="fade-up"
-            data-aos-delay="400"
-          >
-            <div class="feature-card">
-              <div class="feature-icon">
-                <i class="fas fa-bell"></i>
-              </div>
-              <h4 class="mb-3">Avtomatik Bildirishnomalar</h4>
-              <p>
-                Buyurtmangizning holati o'zgarganida darhol xabar oling. Hech
-                narsa o'tkazib yubormaysiz va doim xabardor bo'lasiz.
-              </p>
-            </div>
-          </div>
-
-          <div
-            class="col-lg-4 col-md-6"
-            data-aos="fade-up"
-            data-aos-delay="500"
-          >
-            <div class="feature-card">
-              <div class="feature-icon">
-                <i class="fas fa-shield-alt"></i>
-              </div>
-              <h4 class="mb-3">Xavfsiz va Ishonchli</h4>
-              <p>
-                Ma'lumotlaringiz xavfsizligi bizning ustuvor vazifamiz.
-                Buyurtmalaringiz va shaxsiy ma'lumotlaringiz himoyalangan.
-              </p>
-            </div>
-          </div>
-
-          <div
-            class="col-lg-4 col-md-6"
-            data-aos="fade-up"
-            data-aos-delay="600"
-          >
-            <div class="feature-card">
-              <div class="feature-icon">
-                <i class="fas fa-headset"></i>
-              </div>
-              <h4 class="mb-3">Yordam va Qo'llab-quvvatlash</h4>
-              <p>
-                Har qanday savol yoki muammo bo'lsa, bizning yordam xizmati har
-                doim sizga ko'mak berish uchun tayyor. Tez va samimiy yordam.
-              </p>
             </div>
           </div>
         </div>
@@ -936,169 +827,13 @@
                 Buyurtmalarimni Ko'rish
               </a>
               <a
-                href="https://t.me/YOUR_BOT_USERNAME"
+                href="https://t.me/{{ bot_username }}"
                 class="btn btn-outline-gradient"
                 target="_blank"
               >
                 <i class="fab fa-telegram"></i>
                 Buyurtma Berish
               </a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Benefits Section -->
-    <section class="section">
-      <div class="container">
-        <div class="text-center mb-5">
-          <h2 class="section-title" data-aos="fade-up">
-            Nega Aynan Bizni Tanlaysiz?
-          </h2>
-          <p class="section-subtitle" data-aos="fade-up" data-aos-delay="100">
-            Mijozlarimiz uchun qulay, tez va ishonchli xizmat taqdim etamiz
-          </p>
-        </div>
-
-        <div class="row align-items-center">
-          <div class="col-lg-6" data-aos="fade-right" data-aos-delay="200">
-            <div class="pe-lg-4">
-              <h3 class="mb-4">Sizning Qulayligingiz Uchun</h3>
-              <div class="row g-3">
-                <div class="col-md-6">
-                  <div
-                    class="d-flex align-items-center p-3 rounded-3"
-                    style="
-                      background: var(--bg-tertiary);
-                      border: 1px solid var(--border-color);
-                    "
-                  >
-                    <div class="flex-shrink-0 me-3">
-                      <i
-                        class="fas fa-shield-alt fa-2x"
-                        style="color: var(--accent-secondary)"
-                      ></i>
-                    </div>
-                    <div>
-                      <h6 class="mb-1">Xavfsiz va Ishonchli</h6>
-                      <small style="color: var(--text-secondary)"
-                        >Bank darajasidagi xavfsizlik protokollari</small
-                      >
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div
-                    class="d-flex align-items-center p-3 rounded-3"
-                    style="
-                      background: var(--bg-tertiary);
-                      border: 1px solid var(--border-color);
-                    "
-                  >
-                    <div class="flex-shrink-0 me-3">
-                      <i
-                        class="fas fa-rocket fa-2x"
-                        style="color: var(--accent-primary)"
-                      ></i>
-                    </div>
-                    <div>
-                      <h6 class="mb-1">Chaqmoq Tezligida</h6>
-                      <small style="color: var(--text-secondary)"
-                        >Darhol buyurtmalarni qayta ishlash</small
-                      >
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div
-                    class="d-flex align-items-center p-3 rounded-3"
-                    style="
-                      background: var(--bg-tertiary);
-                      border: 1px solid var(--border-color);
-                    "
-                  >
-                    <div class="flex-shrink-0 me-3">
-                      <i
-                        class="fas fa-expand-arrows-alt fa-2x"
-                        style="color: var(--accent-warning)"
-                      ></i>
-                    </div>
-                    <div>
-                      <h6 class="mb-1">Kengaytiriladigan</h6>
-                      <small style="color: var(--text-secondary)"
-                        >Biznesingiz bilan birga o'sadi</small
-                      >
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div
-                    class="d-flex align-items-center p-3 rounded-3"
-                    style="
-                      background: var(--bg-tertiary);
-                      border: 1px solid var(--border-color);
-                    "
-                  >
-                    <div class="flex-shrink-0 me-3">
-                      <i
-                        class="fas fa-headset fa-2x"
-                        style="color: var(--accent-info)"
-                      ></i>
-                    </div>
-                    <div>
-                      <h6 class="mb-1">24/7 Yordam</h6>
-                      <small style="color: var(--text-secondary)"
-                        >Har doim yordam berish uchun</small
-                      >
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-lg-6" data-aos="fade-left" data-aos-delay="300">
-            <div class="position-relative">
-              <div
-                class="p-5 rounded-4 text-center"
-                style="
-                  background: linear-gradient(
-                    135deg,
-                    var(--accent-secondary) 0%,
-                    var(--accent-primary) 100%
-                  );
-                  color: white;
-                "
-              >
-                <h4 class="mb-4">Tizim Unumdorligi</h4>
-                <div class="row g-3">
-                  <div class="col-6">
-                    <div class="border-bottom border-light pb-3 mb-3">
-                      <h2 class="display-4 fw-bold">99.9%</h2>
-                      <p class="mb-0 opacity-75">Ishga Tushish</p>
-                    </div>
-                  </div>
-                  <div class="col-6">
-                    <div class="border-bottom border-light pb-3 mb-3">
-                      <h2 class="display-4 fw-bold">&lt;1s</h2>
-                      <p class="mb-0 opacity-75">Javob Vaqti</p>
-                    </div>
-                  </div>
-                  <div class="col-6">
-                    <div>
-                      <h2 class="display-4 fw-bold">100%</h2>
-                      <p class="mb-0 opacity-75">Ma'lumotlar Xavfsizligi</p>
-                    </div>
-                  </div>
-                  <div class="col-6">
-                    <div>
-                      <h2 class="display-4 fw-bold">24/7</h2>
-                      <p class="mb-0 opacity-75">Monitoring</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -1185,7 +920,7 @@
               </li>
               <li class="mb-2">
                 <a
-                  href="https://t.me/YOUR_BOT_USERNAME"
+                  href="https://t.me/{{ bot_username }}"
                   class="text-decoration-none"
                   style="color: var(--text-secondary)"
                   target="_blank"
@@ -1459,7 +1194,7 @@
                 Hali kodingiz yo'qmi?
               </p>
               <a
-                href="https://t.me/YOUR_BOT_USERNAME"
+                href="https://t.me/{{ bot_username }}"
                 class="btn btn-sm"
                 style="
                   border-radius: var(--radius-md);

@@ -5,6 +5,7 @@ Provides a web interface to view collections and orders.
 import logging
 import asyncio
 import os
+import io
 import datetime
 from typing import List, Dict, Any, Optional
 from fastapi import FastAPI, Request, HTTPException, Form, Depends, status
@@ -15,6 +16,7 @@ from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.datastructures import URL
 from fastapi import APIRouter
+from fastapi import UploadFile, File
 from pydantic import BaseModel
 from telethon import TelegramClient, events
 from telethon.errors import SessionPasswordNeededError, PhoneCodeInvalidError
@@ -22,6 +24,7 @@ import uvicorn
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadTimeSignature
 from src.database.db_service import db_service
 from src.processor import message_processor
+from src.services.report_service import report_service
 
 # Global variable to hold the bot application instance
 bot_app = None
@@ -570,56 +573,7 @@ def get_thumbnail_url(file_path: str) -> str:
     # For videos without thumbnails, return empty (will show placeholder)
     return ""
 
-def get_collections_with_user_counts():
-    """Get all collections with user counts who have orders."""
-    try:
-        conn = db_service._get_connection()
-        cursor = conn.cursor()
-
-        # Get collections with user counts and order counts
-        sql = """
-            SELECT c.*,
-                   COUNT(DISTINCT o.user_id) as user_count,
-                   COUNT(o.id) as order_count
-            FROM collections c
-            LEFT JOIN orders o ON c.id = o.collection_id
-            GROUP BY c.id, c.status, c.created_at, c.close_at, c.finish_at
-            ORDER BY c.created_at DESC
-        """
-        cursor.execute(sql)
-        rows = cursor.fetchall()
-        return [dict(row) for row in rows]
-    except Exception as e:
-        print(f"Error getting collections: {e}")
-        return []
-
-def get_collection_users_with_orders(collection_id: int):
-    """Get all users who have orders in a specific collection."""
-    try:
-        conn = db_service._get_connection()
-        cursor = conn.cursor()
-        
-        sql = """
-            SELECT u.id, u.name, u.surname, u.phone, 
-                   u.code, COUNT(o.id) as order_count,
-                   MIN(o.id) as first_order_id
-            FROM users u
-            JOIN orders o ON u.id = o.user_id
-            WHERE o.collection_id = ?
-            GROUP BY u.id, u.name, u.surname, u.phone, u.code
-            ORDER BY u.name, u.surname
-        """
-        cursor.execute(sql, (collection_id,))
-        rows = cursor.fetchall()
-        return [dict(row) for row in rows]
-    except Exception as e:
-        print(f"Error getting collection users: {e}")
-        return []
-
-
-def get_user_orders_for_collection(user_id: int, collection_id: int):
-    """Deprecated: Use db_service.get_user_orders_by_collection instead."""
-    return db_service.get_user_orders_by_collection(user_id, collection_id, limit=100)
+ 
 
 def get_authenticated_user(code: str, phone: str) -> Optional[Dict[str, Any]]:
     user = db_service.get_user_by_code(code)
@@ -639,7 +593,41 @@ def get_authenticated_user(code: str, phone: str) -> Optional[Dict[str, Any]]:
 @user_router.get("/", response_class=HTMLResponse)
 async def landing_page(request: Request):
     """Landing page - Professional order management system introduction"""
-    return templates.TemplateResponse("landing.html", {"request": request})
+    # Get real statistics from database
+    try:
+        # Get total orders count
+        total_orders = db_service.get_total_orders_count() or 0
+
+        # Get total registered users count
+        total_users = db_service.get_total_users_count() or 0
+
+        # Get active collections count
+        collections = db_service.get_last_collections(limit=100)
+        active_collections = len([c for c in collections if c.get('status') == 'open']) if collections else 0
+
+        # Calculate average response time (for demo purposes, using a reasonable estimate)
+        avg_response_time = "< 3"
+
+    except Exception as e:
+        logger.error(f"Error fetching landing page stats: {e}")
+        total_orders = 0
+        total_users = 0
+        active_collections = 0
+        avg_response_time = "< 3"
+
+    # Get bot username from config
+    bot_username = getattr(config, 'TELEGRAM_BOT_USERNAME', 'YOUR_BOT_USERNAME')
+    if bot_username.startswith('@'):
+        bot_username = bot_username[1:]  # Remove @ if present
+
+    return templates.TemplateResponse("landing.html", {
+        "request": request,
+        "total_orders": total_orders,
+        "total_users": total_users,
+        "active_collections": active_collections,
+        "avg_response_time": avg_response_time,
+        "bot_username": bot_username
+    })
 
 @user_router.get("/{code}/")
 async def user_page_redirect(code: str):
@@ -673,6 +661,9 @@ async def user_login(request: UserLoginRequest):
     # Get collection summaries for this user
     collections = db_service.get_user_collections_summary(user['id'])
 
+    # Get reports for this user
+    reports = db_service.get_reports_for_user(user['id'])
+
     return {
         "success": True,
         "user": {
@@ -682,7 +673,8 @@ async def user_login(request: UserLoginRequest):
             "code": user.get('code')
         },
         "orders": active_orders,
-        "collections": collections
+        "collections": collections,
+        "reports": reports
     }
 
 @user_api_router.post("/orders/{order_id}/update")
@@ -831,6 +823,67 @@ async def get_user_orders_by_collection(user_code: str, collection_id: int):
         print(f"Error getting user orders by collection: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
+@user_api_router.get("/user/{user_code}/reports")
+async def get_user_reports(user_code: str):
+    """Get all reports for a specific user."""
+    try:
+        # Get user by code
+        user = db_service.get_user_by_code(user_code)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Get reports for this user
+        reports = db_service.get_reports_for_user(user['id'])
+        
+        return {
+            "success": True,
+            "reports": reports,
+            "count": len(reports)
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error getting user reports: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@user_api_router.get("/user/{user_code}/reports/{report_id}/download")
+async def download_user_report(user_code: str, report_id: int):
+    """Download a specific report file."""
+    try:
+        # Get user by code
+        user = db_service.get_user_by_code(user_code)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Get all reports for this user
+        reports = db_service.get_reports_for_user(user['id'])
+        
+        # Find the specific report
+        report = None
+        for r in reports:
+            if r['id'] == report_id:
+                report = r
+                break
+        
+        if not report:
+            raise HTTPException(status_code=404, detail="Report not found")
+        
+        # Check if file exists
+        file_path = report['file_path']
+        if not os.path.exists(file_path):
+            raise HTTPException(status_code=404, detail="Report file not found")
+        
+        # Return the file
+        return FileResponse(
+            path=file_path,
+            filename=f"Hisobot-Kolleksiya-{report['collection_id']}.pdf",
+            media_type="application/pdf"
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error downloading report: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @admin_router.get("/", response_class=HTMLResponse, dependencies=[Depends(verify_jwt)])
@@ -854,6 +907,29 @@ async def dashboard(request: Request):
 @admin_router.get("/collections", response_class=HTMLResponse, dependencies=[Depends(verify_jwt)])
 async def collections_list(request: Request):
     """Main page showing all collections."""
+    # Local helper to fetch collections with user and order counts
+    def get_collections_with_user_counts():
+        try:
+            conn = db_service._get_connection()
+            cursor = conn.cursor()
+            sql = (
+                """
+                SELECT c.*,
+                       COUNT(DISTINCT o.user_id) as user_count,
+                       COUNT(o.id) as order_count
+                FROM collections c
+                LEFT JOIN orders o ON c.id = o.collection_id
+                GROUP BY c.id, c.status, c.created_at, c.close_at, c.finish_at
+                ORDER BY c.created_at DESC
+                """
+            )
+            cursor.execute(sql)
+            rows = cursor.fetchall()
+            return [dict(row) for row in rows]
+        except Exception as e:
+            print(f"Error getting collections: {e}")
+            return []
+
     collections = get_collections_with_user_counts()
     
     # Add status styling info
@@ -1022,42 +1098,50 @@ async def orders_list(request: Request):
 @admin_router.get("/collection/{collection_id}", response_class=HTMLResponse, dependencies=[Depends(verify_jwt)])
 async def collection_detail(request: Request, collection_id: int):
     """Collection detail page showing users with orders."""
-    # Get collection info
-    collections = get_collections_with_user_counts()
-    collection = next((c for c in collections if c['id'] == collection_id), None)
+    collection_details = db_service.get_collection_details(collection_id)
     
-    if not collection:
+    if not collection_details:
         raise HTTPException(status_code=404, detail="Collection not found")
     
-    # Add status info
-    if collection['status'] == 'open':
-        collection['status_class'] = 'status-open'
-        collection['status_text'] = 'OCHIQ'
-        collection['status_icon'] = '🟢'
-    elif collection['status'] == 'close':
-        collection['status_class'] = 'status-close'
-        collection['status_text'] = 'YOPIQ'
-        collection['status_icon'] = '🔴'
-    elif collection['status'] == 'finish':
-        collection['status_class'] = 'status-finish'
-        collection['status_text'] = 'YAKUNLANGAN'
-        collection['status_icon'] = '✅'
+    # Add status info for template
+    status = collection_details['status']
+    if status == 'open':
+        collection_details['status_class'] = 'success'
+        collection_details['status_text'] = 'OCHIQ'
+        collection_details['status_icon'] = '🟢'
+    elif status == 'close':
+        collection_details['status_class'] = 'warning'
+        collection_details['status_text'] = 'YOPIQ'
+        collection_details['status_icon'] = '🔴'
+    elif status == 'finish':
+        collection_details['status_class'] = 'primary'
+        collection_details['status_text'] = 'YAKUNLANGAN'
+        collection_details['status_icon'] = '✅'
     else:
-        collection['status_class'] = 'status-unknown'
-        collection['status_text'] = 'NOMA\'LUM'
-        collection['status_icon'] = '⚪'
+        collection_details['status_class'] = 'secondary'
+        collection_details['status_text'] = 'NOMA\'LUM'
+        collection_details['status_icon'] = '⚪'
+
+    users_with_orders = db_service.get_users_with_orders_in_collection(collection_id)
     
-    # Get users with orders
-    users = get_collection_users_with_orders(collection_id)
-    
-    # Get orders for each user using efficient DB method
-    for user in users:
-        user['orders'] = db_service.get_user_orders_by_collection(user['id'], collection_id, limit=100)
-        # Add display image URLs for each order
+    # Annotate users with report status for this collection
+    try:
+        report_status_map = db_service.get_user_report_status_for_collection(collection_id)
+    except Exception:
+        report_status_map = {}
+
+    # Add display image URLs for each order
+    for user in users_with_orders:
+        user['order_count'] = len(user['orders'])
+        # Mark whether this user already has a report for this collection
+        try:
+            uid = int(user.get('id')) if user.get('id') is not None else None
+        except Exception:
+            uid = None
+        user['has_report'] = bool(uid and report_status_map.get(uid))
         for order in user['orders']:
-            files = order.get('files', [])
-            if files:
-                order['display_image_url'] = get_thumbnail_url(files[0])
+            if order.get('first_file_url'):
+                order['display_image_url'] = get_thumbnail_url(order['first_file_url'])
             else:
                 order['display_image_url'] = ''
     
@@ -1065,8 +1149,8 @@ async def collection_detail(request: Request, collection_id: int):
         "collection_detail.html",
         {
             "request": request, 
-            "collection": collection, 
-            "users": users,
+            "collection": collection_details, 
+            "users": users_with_orders,
             "current_user": request.state.current_user,
         }
     )
@@ -1274,29 +1358,6 @@ async def settings_userbot(request: Request):
     }
     return templates.TemplateResponse("settings_userbot.html", context)
 
-@admin_router.get("/settings/payment", response_class=HTMLResponse, dependencies=[Depends(verify_jwt)])
-async def settings_payment(request: Request):
-    """Payment settings page."""
-    current_user = request.state.current_user
-    if not current_user:
-        return RedirectResponse(url="/auth")
-
-    # Get payment statistics
-    payment_stats = {
-        "total_users": db_service.get_user_count(),
-        "active_subscribers": db_service.get_active_subscriber_count(),
-        "pending_payments": db_service.get_pending_payment_count(),
-        "total_revenue": db_service.get_total_revenue(),
-    }
-
-    context = {
-        "request": request,
-        "current_user": current_user,
-        "current_tab": "payment",
-        "settings": config_db_service.get_all_settings(),
-        "payment_stats": payment_stats,
-    }
-    return templates.TemplateResponse("settings_payment.html", context)
 
 @admin_router.get("/legacy-admin-panel", response_class=HTMLResponse, dependencies=[Depends(verify_jwt)])
 async def admin_panel_legacy(request: Request):
@@ -1358,12 +1419,6 @@ async def api_update_telegram_settings(request: Request):
         
         # Validate telegram-specific settings
         telegram_settings = {
-            "private_channel_id": settings_dict.get("private_channel_id", "").strip(),
-            "group_id": settings_dict.get("group_id", "").strip(),
-            "ai_confirmations_topic_id": settings_dict.get("ai_confirmations_topic_id", "").strip(),
-            "confirmation_topic_id": settings_dict.get("confirmation_topic_id", "").strip(),
-            "realtime_orders_topic_id": settings_dict.get("realtime_orders_topic_id", "").strip(),
-            "find_orders_topic_id": settings_dict.get("find_orders_topic_id", "").strip(),
             "default_ai_model": settings_dict.get("default_ai_model", "gemini-2.5-flash-lite")
         }
         
@@ -1506,36 +1561,6 @@ async def api_update_userbot_settings(request: Request):
         logger.error(f"Error updating userbot settings: {e}")
         return JSONResponse({"success": False, "message": str(e)})
 
-@api_router.post("/settings/payment", dependencies=[Depends(verify_jwt)])
-async def api_update_payment_settings(request: Request):
-    """API endpoint to update payment settings."""
-    current_user = request.state.current_user
-    if not current_user:
-        return JSONResponse({"success": False, "message": "Not authenticated"}, status_code=401)
-    
-    try:
-        form_data = await request.form()
-        settings_dict = dict(form_data)
-        
-        # Only allow timing-related payment settings from the web.
-        # Subscription price is managed exclusively via the bot.
-        payment_settings = {
-            "payment_checking_wait_time": settings_dict.get("payment_checking_wait_time", "60"),
-            "order_delay_time": settings_dict.get("order_delay_time", "1"),
-            # Force-enable AI payment confirmation (no toggle in UI)
-            "auto_payment_confirmation": "true",
-        }
-
-        success = config_db_service.update_settings(payment_settings, current_user)
-        if success:
-            config.load_from_db()  # Reload config into memory
-            return JSONResponse({"success": True, "message": "Payment settings updated successfully"})
-        else:
-            return JSONResponse({"success": False, "message": "Failed to update payment settings"})
-            
-    except Exception as e:
-        logger.error(f"Error updating payment settings: {e}")
-        return JSONResponse({"success": False, "message": str(e)})
 
 def _clean_userbot_session_files():
     """Clean up all userbot session files to prevent conflicts."""
@@ -2595,6 +2620,54 @@ async def get_users_api():
         return {"error": str(e)}
 
 
+@admin_app.get("/api/collections/{collection_id}/user-codes")
+async def get_collection_user_codes(collection_id: int):
+    """API endpoint to get valid user codes for a specific collection."""
+    try:
+        logger.info(f"Fetching user codes for collection {collection_id}")
+
+        # First, verify the collection exists
+        collection = db_service.get_collection_details(collection_id)
+        if not collection:
+            logger.warning(f"Collection {collection_id} not found")
+            return {
+                "success": False,
+                "error": f"Collection {collection_id} not found",
+                "user_codes": [],
+                "count": 0
+            }
+
+        users_with_orders = db_service.get_users_with_orders_in_collection(collection_id)
+        logger.info(f"Found {len(users_with_orders)} users with orders for collection {collection_id}")
+
+        # Extract unique user codes
+        user_codes = []
+        seen_codes = set()
+
+        for user_data in users_with_orders:
+            code = user_data.get('code')
+            if code and code not in seen_codes:
+                user_codes.append(code.upper())  # Normalize to uppercase
+                seen_codes.add(code)
+
+        logger.info(f"Extracted {len(user_codes)} unique user codes")
+
+        return {
+            "success": True,
+            "user_codes": user_codes,
+            "count": len(user_codes),
+            "collection_id": collection_id
+        }
+    except Exception as e:
+        logger.error(f"Error getting user codes for collection {collection_id}: {e}")
+        return {
+            "success": False,
+            "error": str(e),
+            "user_codes": [],
+            "count": 0
+        }
+
+
 @admin_app.get("/debug/orders")
 async def debug_orders():
     """Debug endpoint to check order image paths."""
@@ -2622,6 +2695,83 @@ async def debug_orders():
         return {"debug_info": debug_info}
     except Exception as e:
         return {"error": str(e)}
+
+
+@api_router.post("/send-multiple-reports", dependencies=[Depends(verify_jwt)])
+async def send_multiple_reports(
+    request: Request,
+    collection_id: int = Form(...),
+    reports: List[UploadFile] = File(...)
+):
+    """API endpoint to handle bulk PDF report uploads."""
+    current_user = request.state.current_user
+    if not current_user:
+        return JSONResponse({"success": False, "message": "Not authenticated"}, status_code=401)
+
+    collection = db_service.get_collection_by_id(collection_id)
+    if not collection or collection['status'] != 'finish':
+        raise HTTPException(status_code=400, detail="Reports can only be sent for finished collections.")
+
+    summary = await report_service.process_bulk_upload(collection_id, reports)
+    if summary['failed'] == 0:
+        return JSONResponse({
+            "success": True,
+            "message": f"{summary['success']} hisobotlar muvaffaqiyatli yuborildi."
+        })
+    else:
+        return JSONResponse({
+            "success": False,
+            "message": f"{summary['success']} hisobot yuborildi, {summary['failed']} xatolik yuz berdi.",
+            "errors": summary['errors']
+        }, status_code=400)
+
+
+@api_router.post("/send-single-report", dependencies=[Depends(verify_jwt)])
+async def send_single_report(
+    request: Request,
+    collection_id: int = Form(...),
+    user_id: int = Form(...),
+    report: UploadFile = File(...)
+):
+    """API endpoint to handle single PDF report upload."""
+    current_user = request.state.current_user
+    if not current_user:
+        return JSONResponse({"success": False, "message": "Not authenticated"}, status_code=401)
+
+    collection = db_service.get_collection_by_id(collection_id)
+    if not collection or collection['status'] != 'finish':
+        raise HTTPException(status_code=400, detail="Reports can only be sent for finished collections.")
+
+    if not report.filename or not report.filename.lower().endswith('.pdf'):
+        raise HTTPException(status_code=400, detail="Invalid file type. Only PDF is allowed.")
+
+    try:
+        # Prefer passing the underlying stream so large files are not fully buffered
+        if hasattr(report, 'file') and report.file is not None:
+            # Validate non-empty by peeking size without consuming
+            current_pos = report.file.tell()
+            report.file.seek(0, 2)
+            size = report.file.tell()
+            report.file.seek(current_pos)
+            if size <= 0:
+                raise HTTPException(status_code=400, detail="File must be non-empty")
+            file_stream = report.file
+        else:
+            # Fallback to reading into memory
+            content = await report.read()
+            if not content:
+                raise HTTPException(status_code=400, detail="File must be non-empty")
+            file_stream = io.BytesIO(content)
+
+        await report_service.process_individual_upload(user_id, collection_id, file_stream)
+        return JSONResponse({"success": True, "message": "Hisobot muvaffaqiyatli yuborildi."})
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error sending single report: {e}")
+        if isinstance(e, HTTPException):
+            raise
+        raise HTTPException(status_code=500, detail="Hisobotni yuborishda xatolik yuz berdi.")
 
 
 # Include routers BEFORE defining the catch-all route

@@ -361,9 +361,15 @@ Boshqaruvi{% endblock %} {% block content %}
         </div>
         {% endif %}
 
-        <div class="d-grid">
+        <div class="d-grid mt-auto">
+          <a href="/collection/{{ collection.id }}" class="btn btn-primary">
+            <i class="fas fa-info-circle me-2"></i>
+            Batafsil
+          </a>
+        </div>
+        <div class="d-grid mt-2">
           {% if collection.user_count and collection.user_count > 0 %}
-          <a href="/orders?collection={{ collection.id }}" class="btn btn-primary">
+          <a href="/orders?collection={{ collection.id }}" class="btn btn-outline-primary">
             <i class="fas fa-arrow-right me-2"></i>
             Buyurtmalarni ko'rish
           </a>

@@ -358,118 +358,12 @@
     </div>
   </div>
 
-  <!-- Channel & Group Settings (moved below Admin) -->
+  <!-- Channel & Group Settings -->
   <div class="settings-form-group">
     <h6 class="fw-bold text-primary mb-3">
-      <i class="fas fa-comments me-2"></i>Kanal va Guruh Sozlamalari
+      <i class="fas fa-comments me-2"></i>Kanal, Guruh va Topic Sozlamalari
     </h6>
-    <div class="settings-form-grid">
-      <div class="form-floating">
-        <input
-          type="text"
-          class="form-control"
-          id="private_channel_id"
-          name="private_channel_id"
-          placeholder="Channel ID"
-          value="{{ settings.private_channel_id or '' }}"
-        />
-        <label for="private_channel_id">
-          <i class="fas fa-broadcast-tower me-1"></i>Maxfiy Kanal ID
-        </label>
-        <div class="form-text">Foydalanuvchilar qo'shiladigan maxfiy kanal ID si</div>
-      </div>
-
-      <div class="form-floating">
-        <input
-          type="text"
-          class="form-control"
-          id="group_id"
-          name="group_id"
-          placeholder="Group ID"
-          value="{{ settings.group_id or '' }}"
-        />
-        <label for="group_id">
-          <i class="fas fa-users me-1"></i>Guruh ID
-        </label>
-        <div class="form-text">Admin guruhi ID si</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Topic ID Settings -->
-  <div class="settings-form-group">
-    <h6 class="fw-bold text-secondary mb-3">
-      <i class="fas fa-hashtag me-2"></i>Topic ID Sozlamalari
-    </h6>
-    <div class="row">
-      <div class="col-md-6 mb-3">
-        <div class="form-floating">
-          <input
-            type="text"
-            class="form-control"
-            id="ai_confirmations_topic_id"
-            name="ai_confirmations_topic_id"
-            placeholder="AI Confirmations Topic ID"
-            value="{{ settings.ai_confirmations_topic_id or '' }}"
-          />
-          <label for="ai_confirmations_topic_id">
-            <i class="fas fa-robot me-1"></i>AI Confirmations Topic ID
-          </label>
-          <div class="form-text">AI tomonidan to'lov tasdiqlash topic ID si</div>
-        </div>
-      </div>
-
-      <div class="col-md-6 mb-3">
-        <div class="form-floating">
-          <input
-            type="text"
-            class="form-control"
-            id="confirmation_topic_id"
-            name="confirmation_topic_id"
-            placeholder="Confirmations Topic ID"
-            value="{{ settings.confirmation_topic_id or '' }}"
-          />
-          <label for="confirmation_topic_id">
-            <i class="fas fa-clipboard-check me-1"></i>Confirmations Topic ID
-          </label>
-          <div class="form-text">Manual to'lov tasdiqlash topic ID si</div>
-        </div>
-      </div>
-
-      <div class="col-md-6 mb-3">
-        <div class="form-floating">
-          <input
-            type="text"
-            class="form-control"
-            id="realtime_orders_topic_id"
-            name="realtime_orders_topic_id"
-            placeholder="Realtime Orders Topic ID"
-            value="{{ settings.realtime_orders_topic_id or '' }}"
-          />
-          <label for="realtime_orders_topic_id">
-            <i class="fas fa-bolt me-1"></i>Realtime Orders Topic ID
-          </label>
-          <div class="form-text">Jonli buyurtmalar topic ID si</div>
-        </div>
-      </div>
-
-      <div class="col-md-6 mb-3">
-        <div class="form-floating">
-          <input
-            type="text"
-            class="form-control"
-            id="find_orders_topic_id"
-            name="find_orders_topic_id"
-            placeholder="Find Orders Topic ID"
-            value="{{ settings.find_orders_topic_id or '' }}"
-          />
-          <label for="find_orders_topic_id">
-            <i class="fas fa-search me-1"></i>Find Orders Topic ID
-          </label>
-          <div class="form-text">Buyurtma qidiruv topic ID si</div>
-        </div>
-      </div>
-    </div>
+    <div class="alert alert-info">Kanal, guruh va topic ID sozlamalari endi <code>.env</code> fayli orqali boshqariladi.</div>
   </div>
 
   <!-- AI Settings -->

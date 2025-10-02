@@ -1570,6 +1570,12 @@
                 </a>
               </li>
               <li class="nav-item">
+                <a class="nav-link" href="#" data-section="reports">
+                  <i class="fas fa-file-pdf me-1"></i>
+                  Hisobotlar
+                </a>
+              </li>
+              <li class="nav-item">
                 <a class="nav-link" href="#" data-section="profile">
                   <i class="fas fa-user-circle me-1"></i>
                   Profil
@@ -1908,6 +1914,23 @@
           </div>
         </section>
 
+        <!-- Reports Section -->
+        <section id="reports-section" class="content-section">
+          <div class="section-header" data-aos="fade-down">
+            <h1 class="section-title">
+              <i class="fas fa-file-pdf me-2"></i>
+              Mening Hisobotlarim
+            </h1>
+            <p class="section-subtitle">
+              Barcha kolleksiyalar bo'yicha hisobotlaringizni ko'ring
+            </p>
+          </div>
+
+          <div class="row" id="reports-container">
+            <!-- Reports will be rendered here -->
+          </div>
+        </section>
+
         <!-- Profile Section -->
         <section id="profile-section" class="content-section">
           <div class="section-header" data-aos="fade-down">
@@ -1981,6 +2004,10 @@
           <a href="#" class="mobile-nav-item" data-section="collections">
             <i class="fas fa-folder-open"></i>
             <span>Kolleksiyalar</span>
+          </a>
+          <a href="#" class="mobile-nav-item" data-section="reports">
+            <i class="fas fa-file-pdf"></i>
+            <span>Hisobotlar</span>
           </a>
           <a href="#" class="mobile-nav-item" data-section="profile">
             <i class="fas fa-user-circle"></i>
@@ -3161,6 +3188,9 @@
         // Render collections using the new collections data
         renderCollections(data.collections || []);
 
+        // Render reports
+        renderReports(data.reports || []);
+
         // Show dashboard with animation
         loader.style.display = "none";
         loginScreen.style.display = "none";
@@ -3876,6 +3906,108 @@
                 <i class="fas fa-chart-bar"></i>
                 <h4>Kolleksiyalar topilmadi</h4>
                 <p>Siz hali hech qanday kolleksiyaga buyurtma yubormagansiz.</p>
+              </div>
+            </div>
+          `;
+        }
+      }
+
+      function renderReports(reports) {
+        const reportsContainer = document.getElementById("reports-container");
+        reportsContainer.innerHTML = "";
+
+        if (reports && reports.length > 0) {
+          reports.forEach((report, index) => {
+            const formatDate = (dateString) => {
+              if (!dateString) return "N/A";
+              return new Date(dateString).toLocaleDateString("uz-UZ", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+              });
+            };
+
+            const reportCard = `
+              <div class="col-xl-4 col-lg-6 mb-4" data-aos="fade-up" data-aos-delay="${
+                index * 100
+              }">
+                <div class="custom-card">
+                  <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                      <h5 class="card-title mb-0">
+                        <i class="fas fa-file-pdf me-2 text-danger"></i>
+                        Kolleksiya #${report.collection_id}
+                      </h5>
+                      <span class="badge bg-success">
+                        <i class="fas fa-check-circle me-1"></i>
+                        Tayyor
+                      </span>
+                    </div>
+                    
+                    <div class="info-grid mb-4">
+                      <div class="info-item">
+                        <i class="fas fa-calendar me-2"></i>
+                        <div>
+                          <div class="info-label">Yuborilgan</div>
+                          <div class="info-value">${formatDate(
+                            report.sent_at
+                          )}</div>
+                        </div>
+                      </div>
+                      
+                      ${
+                        report.updated_at
+                          ? `
+                      <div class="info-item">
+                        <i class="fas fa-sync-alt me-2"></i>
+                        <div>
+                          <div class="info-label">Yangilangan</div>
+                          <div class="info-value">${formatDate(
+                            report.updated_at
+                          )}</div>
+                        </div>
+                      </div>
+                      `
+                          : ""
+                      }
+                      
+                      <div class="info-item">
+                        <i class="fas fa-layer-group me-2"></i>
+                        <div>
+                          <div class="info-label">Kolleksiya</div>
+                          <div class="info-value">${formatDate(
+                            report.collection_date
+                          )}</div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div class="mt-auto pt-3 border-top">
+                      <a href="/api/user/${userCode}/reports/${
+              report.id
+            }/download" 
+                         class="btn btn-primary btn-sm w-100" 
+                         download>
+                        <i class="fas fa-download me-2"></i>
+                        Hisobotni yuklab olish
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+
+            reportsContainer.insertAdjacentHTML("beforeend", reportCard);
+          });
+        } else {
+          reportsContainer.innerHTML = `
+            <div class="col-12">
+              <div class="empty-state" data-aos="fade-up">
+                <i class="fas fa-file-pdf"></i>
+                <h4>Hisobotlar topilmadi</h4>
+                <p>Siz uchun hali hech qanday hisobot tayyorlanmagan.</p>
               </div>
             </div>
           `;

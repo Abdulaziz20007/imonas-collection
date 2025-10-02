@@ -45,8 +45,9 @@ class DatabaseService:
                     name TEXT NULL,
                     surname TEXT NULL,
                     phone TEXT NULL,
+                    region TEXT NULL,
                     is_active BOOLEAN NOT NULL DEFAULT 1,
-                    reg_step TEXT NOT NULL DEFAULT 'name' CHECK (reg_step IN ('name', 'surname', 'phone', 'done')),
+                    reg_step TEXT NOT NULL DEFAULT 'name' CHECK (reg_step IN ('name', 'surname', 'phone', 'region', 'done')),
                     code TEXT UNIQUE NULL,
                     subscription_status TEXT NOT NULL DEFAULT 'none' CHECK (subscription_status IN ('none', 'pending_payment', 'active')),
                     target_amount REAL,
@@ -62,7 +63,8 @@ class DatabaseService:
                     status TEXT NOT NULL CHECK (status IN ('open', 'close', 'finish')),
                     finish_at DATETIME NULL,
                     close_at DATETIME NULL,
-                    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+                    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    all_reports_sent BOOLEAN NOT NULL DEFAULT 0
                 )
             """)
             
@@ -125,6 +127,15 @@ class DatabaseService:
                 logger.warning(f"Could not add status column to orders table: {e}")
 
             # Migration: Ensure order_files supports many-to-many (remove UNIQUE on file_unique_id, add UNIQUE(order_id,file_unique_id))
+            # Migration: Add all_reports_sent to collections if it doesn't exist
+            try:
+                cursor.execute("PRAGMA table_info(collections)")
+                columns = [column[1] for column in cursor.fetchall()]
+                if 'all_reports_sent' not in columns:
+                    cursor.execute("ALTER TABLE collections ADD COLUMN all_reports_sent BOOLEAN NOT NULL DEFAULT 0") # type: ignore
+                    logger.info("Added all_reports_sent column to collections table")
+            except Exception as e:
+                logger.warning(f"Could not add all_reports_sent column to collections table: {e}")
             try:
                 needs_migration = False
                 has_composite_unique = False
@@ -247,6 +258,23 @@ class DatabaseService:
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_orders_collection ON orders(collection_id)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_order_files_order_id ON order_files(order_id)")
+
+            # Create user_reports table - idempotent
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS user_reports (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    collection_id INTEGER NOT NULL,
+                    file_path TEXT NOT NULL,
+                    sent_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    updated_at DATETIME NULL,
+                    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+                    FOREIGN KEY (collection_id) REFERENCES collections (id)
+                )
+            """)
+            # Helpful indexes for reports
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_user_reports_user ON user_reports(user_id)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_user_reports_collection ON user_reports(collection_id)")
             
             conn.commit()
             logger.info("Database initialized safely (no destructive changes).")
@@ -284,7 +312,7 @@ class DatabaseService:
 
     def update_user_info(self, telegram_id: int, field: str, value: Any) -> bool:
         """Update a specific field for a user."""
-        if field not in ['name', 'surname', 'phone', 'code']:
+        if field not in ['name', 'surname', 'phone', 'code', 'region']:
             logger.error(f"Invalid field to update: {field}")
             return False
         sql = f"UPDATE users SET {field} = ? WHERE telegram_id = ?" # type: ignore
@@ -335,6 +363,36 @@ class DatabaseService:
         finally:
             cursor.close()
     
+    def find_existing_order(self, user_id: int, collection_id: int, original_message_id: int, original_channel_id: int) -> Optional[Dict[str, Any]]:
+        """
+        Finds an existing, active order for a user, collection, and specific product.
+        Args:
+            user_id: The internal user ID.
+            collection_id: The ID of the active collection.
+            original_message_id: The ID of the forwarded message.
+            original_channel_id: The ID of the source channel.
+        Returns:
+            Dict containing order data if found, otherwise None.
+        """
+        sql = """
+            SELECT * FROM orders
+            WHERE user_id = ?
+              AND collection_id = ?
+              AND original_message_id = ?
+              AND original_channel_id = ?
+              AND status = 1
+            LIMIT 1
+        """
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            cursor.execute(sql, (user_id, collection_id, original_message_id, original_channel_id))
+            row = cursor.fetchone()
+            return dict(row) if row else None
+        except Exception as e:
+            logger.error(f"Error finding existing order: {e}")
+            return None
+
     def add_order_file(self, order_id: int, file_unique_id: str) -> bool:
         """Adds a placeholder for a file in an order with 'pending' status.
 
@@ -725,7 +783,7 @@ class DatabaseService:
 
     def update_user_registration_step(self, telegram_id: int, reg_step: str) -> bool:
         """Update the registration step for a user (compat shim)."""
-        if reg_step not in ['name', 'surname', 'phone', 'done']:
+        if reg_step not in ['name', 'surname', 'phone', 'region', 'done']:
             logger.error(f"Invalid registration step: {reg_step}")
             return False
         sql = "UPDATE users SET reg_step = ? WHERE telegram_id = ?" # type: ignore
@@ -978,23 +1036,63 @@ class DatabaseService:
 
     def merge_collections(self, from_collection_id: int, to_collection_id: int) -> bool:
         """
-        Merge orders from one collection to another.
-        Args:
-            from_collection_id: Source collection ID to merge from
-            to_collection_id: Target collection ID to merge to
-        Returns:
-            bool: True if successful, False otherwise
+        Merge orders from one collection to another, merging duplicate products for the same user.
         """
-        sql = "UPDATE orders SET collection_id = ? WHERE collection_id = ?"
+        conn = self._get_connection()
+        cursor = conn.cursor()
         try:
-            conn = self._get_connection()
-            cursor = conn.cursor()
-            cursor.execute(sql, (to_collection_id, from_collection_id))
-            affected_rows = cursor.rowcount
+            # Get all active orders from the 'from' collection
+            cursor.execute("SELECT * FROM orders WHERE collection_id = ? AND status = 1", (from_collection_id,))
+            from_orders = [dict(row) for row in cursor.fetchall()]
+
+            for from_order in from_orders:
+                # Check for a matching order in the 'to' collection
+                cursor.execute("""
+                    SELECT id, amount FROM orders
+                    WHERE user_id = ?
+                      AND collection_id = ?
+                      AND original_message_id = ?
+                      AND original_channel_id = ?
+                      AND status = 1
+                    LIMIT 1
+                """, (from_order['user_id'], to_collection_id, from_order['original_message_id'], from_order['original_channel_id']))
+                
+                to_order_match = cursor.fetchone()
+
+                if to_order_match:
+                    to_order_id = to_order_match['id']
+                    to_order_amount = to_order_match['amount'] or 0
+                    from_order_amount = from_order['amount'] or 0
+                    
+                    new_amount = to_order_amount + from_order_amount
+                    
+                    # Update the 'to' order with the merged amount
+                    cursor.execute("UPDATE orders SET amount = ? WHERE id = ?", (new_amount, to_order_id))
+                    
+                    # Move files from 'from' order to 'to' order, ignoring duplicates
+                    cursor.execute("SELECT file_url, file_unique_id, status FROM order_files WHERE order_id = ?", (from_order['id'],))
+                    from_files = cursor.fetchall()
+                    for file_row in from_files:
+                        cursor.execute("""
+                            INSERT OR IGNORE INTO order_files (order_id, file_url, file_unique_id, status) 
+                            VALUES (?, ?, ?, ?)
+                        """, (to_order_id, file_row['file_url'], file_row['file_unique_id'], file_row['status']))
+
+                    # Delete the now-merged 'from' order
+                    cursor.execute("DELETE FROM orders WHERE id = ?", (from_order['id'],))
+                    logger.info(f"Merged order #{from_order['id']} into #{to_order_id}. New amount: {new_amount}")
+                else:
+                    # No match, just move the order
+                    cursor.execute("UPDATE orders SET collection_id = ? WHERE id = ?", (to_collection_id, from_order['id']))
+            
+            # Move any non-active (cancelled) orders as well, without merging
+            cursor.execute("UPDATE orders SET collection_id = ? WHERE collection_id = ? AND status != 1", (to_collection_id, from_collection_id))
+
             conn.commit()
-            logger.info(f"Merged {affected_rows} orders from collection {from_collection_id} to {to_collection_id}")
+            logger.info(f"Finished merging orders from collection {from_collection_id} to {to_collection_id}")
             return True
         except Exception as e:
+            conn.rollback()
             logger.error(f"Error merging collections: {str(e)}")
             return False
 
@@ -1028,24 +1126,28 @@ class DatabaseService:
         Returns:
             List[str]: List of file URLs/paths for the order
         """
-        sql = "SELECT file_url FROM order_files WHERE order_id = ? ORDER BY id ASC"
+        sql = "SELECT file_url FROM order_files WHERE order_id = ? AND status = 'downloaded' AND file_url IS NOT NULL ORDER BY id ASC"
         try:
             conn = self._get_connection()
             cursor = conn.cursor()
             cursor.execute(sql, (order_id,))
             rows = cursor.fetchall()
-            file_urls = [row[0] for row in rows]
+            file_urls = [row[0] for row in rows if row[0]]
 
             # Fallback: if no order_files, try resolving via product_media using order's original message
             if not file_urls:
                 try:
-                    order = self.get_order_by_id(order_id)
-                    if order and order.get('original_channel_id') and order.get('original_message_id'):
-                        pm = self.get_product_media_by_message_id(order['original_channel_id'], order['original_message_id'])
+                    # Get order details directly to avoid recursion
+                    order_sql = "SELECT original_channel_id, original_message_id FROM orders WHERE id = ?"
+                    cursor.execute(order_sql, (order_id,))
+                    order_row = cursor.fetchone()
+                    
+                    if order_row and order_row['original_channel_id'] and order_row['original_message_id']:
+                        pm = self.get_product_media_by_message_id(order_row['original_channel_id'], order_row['original_message_id'])
                         if pm and pm.get('file_path'):
                             file_urls = [pm['file_path']]
                 except Exception as _e:
-                    logger.warning(f"Fallback to product_media failed for order {order_id}: {_e}")
+                    logger.warning(f"Fallback to product_media failed for order {order_id}: {_e}", exc_info=True)
 
             return file_urls
         except Exception as e:
@@ -1148,16 +1250,22 @@ class DatabaseService:
             logger.error(f"Error getting order details for order_id {order_id}: {e}")
             return None
 
-    def update_order_amount(self, order_id: int, new_amount: int) -> bool:
-        """Update the amount for a specific order."""
-        sql = "UPDATE orders SET amount = ? WHERE id = ?"
+    def update_order_amount(self, order_id: int, amount: int, merge: bool = False) -> bool:
+        """Update the amount for a specific order. Can set or add to the existing amount."""
+        if merge:
+            sql = "UPDATE orders SET amount = COALESCE(amount, 0) + ? WHERE id = ?"
+        else:
+            sql = "UPDATE orders SET amount = ? WHERE id = ?"
         try:
             conn = self._get_connection()
             cursor = conn.cursor()
-            cursor.execute(sql, (new_amount, order_id))
+            cursor.execute(sql, (amount, order_id))
             conn.commit()
             if cursor.rowcount > 0:
-                logger.info(f"Order {order_id} amount updated to {new_amount}")
+                if merge:
+                    logger.info(f"Order {order_id} amount merged with {amount}")
+                else:
+                    logger.info(f"Order {order_id} amount updated to {amount}")
                 return True
             logger.warning(f"Order {order_id} not found for amount update.")
             return False
@@ -1952,6 +2060,212 @@ class DatabaseService:
             logger.error(f"Error getting order IDs by collection: {e}")
             return []
 
+    # --- Stale data batch queries for cleanup ---
+    def get_stale_orders_batch(self, cutoff_iso: str, limit: int = 50) -> List[Dict[str, Any]]:
+        """Return a batch of stale orders older than cutoff with associated file paths.
+
+        Each item: { 'id': int, 'file_paths': List[str] }
+        """
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            # Fetch order ids older than cutoff in small batches
+            cursor.execute(
+                """
+                SELECT o.id
+                FROM orders o
+                WHERE o.created_at < ?
+                ORDER BY o.id ASC
+                LIMIT ?
+                """,
+                (cutoff_iso, int(limit)),
+            )
+            order_rows = cursor.fetchall()
+            if not order_rows:
+                return []
+
+            order_ids = [int(row[0]) for row in order_rows]
+
+            # Fetch files for these orders in one query
+            placeholders = ','.join('?' for _ in order_ids)
+            cursor.execute(
+                f"""
+                SELECT order_id, file_url
+                FROM order_files
+                WHERE order_id IN ({placeholders}) AND file_url IS NOT NULL AND status = 'downloaded'
+                ORDER BY order_id, id
+                """,
+                order_ids,
+            )
+            files_by_order: Dict[int, List[str]] = {}
+            for row in cursor.fetchall():
+                oid = int(row[0])
+                fpath = row[1]
+                if oid not in files_by_order:
+                    files_by_order[oid] = []
+                if fpath:
+                    files_by_order[oid].append(fpath)
+
+            return [{"id": oid, "file_paths": files_by_order.get(oid, [])} for oid in order_ids]
+        except Exception as e:
+            logger.error(f"Error fetching stale orders batch: {e}")
+            return []
+
+    def get_stale_payments_batch(self, cutoff_iso: str, limit: int = 50) -> List[Dict[str, Any]]:
+        """Return a batch of stale payments older than cutoff with receipt paths if any."""
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                SELECT id, receipt_url
+                FROM payment
+                WHERE created_at < ?
+                ORDER BY id ASC
+                LIMIT ?
+                """,
+                (cutoff_iso, int(limit)),
+            )
+            rows = cursor.fetchall()
+            items: List[Dict[str, Any]] = []
+            for row in rows:
+                pid = int(row[0])
+                rurl = row[1]
+                file_paths: List[str] = [rurl] if rurl else []
+                items.append({"id": pid, "file_paths": file_paths})
+            return items
+        except Exception as e:
+            logger.error(f"Error fetching stale payments batch: {e}")
+            return []
+
+    def get_stale_product_media_batch(self, cutoff_iso: str, limit: int = 50) -> List[Dict[str, Any]]:
+        """Return a batch of stale product_media older than cutoff with file and thumbnail paths."""
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                SELECT id, file_path, thumbnail_path
+                FROM product_media
+                WHERE created_at < ?
+                ORDER BY id ASC
+                LIMIT ?
+                """,
+                (cutoff_iso, int(limit)),
+            )
+            rows = cursor.fetchall()
+            items: List[Dict[str, Any]] = []
+            for row in rows:
+                mid = int(row[0])
+                fpath = row[1]
+                tpath = row[2]
+                file_paths: List[str] = []
+                if fpath:
+                    file_paths.append(fpath)
+                if tpath:
+                    file_paths.append(tpath)
+                items.append({"id": mid, "file_paths": file_paths})
+            return items
+        except Exception as e:
+            logger.error(f"Error fetching stale product media batch: {e}")
+            return []
+
+    def get_stale_transactions_batch(self, cutoff_iso: str, limit: int = 50) -> List[Dict[str, Any]]:
+        """Return a batch of stale transactions older than cutoff that are not linked to any payment. No files to delete."""
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                SELECT t.id
+                FROM transactions t
+                WHERE t.created_at < ?
+                  AND NOT EXISTS (
+                      SELECT 1 FROM payment p WHERE p.transaction_id = t.id
+                  )
+                ORDER BY id ASC
+                LIMIT ?
+                """,
+                (cutoff_iso, int(limit)),
+            )
+            rows = cursor.fetchall()
+            return [{"id": int(row[0]), "file_paths": []} for row in rows]
+        except Exception as e:
+            logger.error(f"Error fetching stale transactions batch: {e}")
+            return []
+
+    def get_stale_collections_batch(self, cutoff_iso: str, limit: int = 50) -> List[Dict[str, Any]]:
+        """Return a batch of stale collections older than cutoff that have no dependent orders or reports."""
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                SELECT c.id
+                FROM collections c
+                WHERE c.created_at < ?
+                  AND NOT EXISTS (SELECT 1 FROM orders o WHERE o.collection_id = c.id)
+                  AND NOT EXISTS (SELECT 1 FROM user_reports ur WHERE ur.collection_id = c.id)
+                ORDER BY id ASC
+                LIMIT ?
+                """,
+                (cutoff_iso, int(limit)),
+            )
+            rows = cursor.fetchall()
+            return [{"id": int(row[0]), "file_paths": []} for row in rows]
+        except Exception as e:
+            logger.error(f"Error fetching stale collections batch: {e}")
+            return []
+
+    def get_stale_reports_batch(self, cutoff_iso: str, limit: int = 50) -> List[Dict[str, Any]]:
+        """Return a batch of stale reports older than cutoff based on updated_at/sent_at."""
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                SELECT id, file_path
+                FROM user_reports
+                WHERE COALESCE(updated_at, sent_at) < ?
+                ORDER BY id ASC
+                LIMIT ?
+                """,
+                (cutoff_iso, int(limit)),
+            )
+            rows = cursor.fetchall()
+            items: List[Dict[str, Any]] = []
+            for row in rows:
+                rid = int(row[0])
+                fpath = row[1]
+                file_paths: List[str] = [fpath] if fpath else []
+                items.append({"id": rid, "file_paths": file_paths})
+            return items
+        except Exception as e:
+            logger.error(f"Error fetching stale reports batch: {e}")
+            return []
+
+    def delete_records_by_ids(self, table_name: str, ids: List[int]) -> bool:
+        """Bulk delete records by ids with a whitelist of tables."""
+        try:
+            if not ids:
+                return True
+            allowed_tables = {"orders", "payment", "user_reports", "product_media", "transactions", "collections"}
+            if table_name not in allowed_tables:
+                logger.error(f"Attempted delete on non-allowed table: {table_name}")
+                return False
+
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            placeholders = ','.join('?' for _ in ids)
+            sql = f"DELETE FROM {table_name} WHERE id IN ({placeholders})"
+            cursor.execute(sql, [int(i) for i in ids])
+            conn.commit()
+            logger.info(f"Deleted {cursor.rowcount} rows from {table_name} (ids count: {len(ids)})")
+            return True
+        except Exception as e:
+            logger.error(f"Error bulk deleting from {table_name}: {e}")
+            return False
+
     def get_product_media_by_message_id(self, channel_id: int, message_id: int) -> Optional[Dict[str, Any]]:
         """Fetch product_media by (source_channel_id, source_message_id)."""
         sql = (
@@ -2053,6 +2367,207 @@ class DatabaseService:
         except Exception as e:
             logger.error(f"Error getting pending product_media: {e}")
             return []
+
+    def get_collection_details(self, collection_id: int) -> Optional[Dict[str, Any]]:
+        """Get collection metadata and key statistics."""
+        sql = """
+            SELECT
+                c.*,
+                COUNT(o.id) as total_orders,
+                COUNT(DISTINCT o.user_id) as unique_users,
+                COALESCE(SUM(o.amount), 0) as total_revenue
+            FROM collections c
+            LEFT JOIN orders o ON c.id = o.collection_id AND o.status = 1
+            WHERE c.id = ?
+            GROUP BY c.id
+        """
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            cursor.execute(sql, (collection_id,))
+            row = cursor.fetchone()
+            return dict(row) if row else None
+        except Exception as e:
+            logger.error(f"Error getting collection details for id {collection_id}: {e}")
+            return None
+
+    def get_users_with_orders_in_collection(self, collection_id: int) -> List[Dict[str, Any]]:
+        """
+        Fetches all users and their orders for a specific collection in an optimized way.
+        Returns a list of users, each containing their list of orders.
+        """
+        sql = """
+            SELECT
+                u.id as user_id,
+                u.name,
+                u.surname,
+                u.username,
+                u.telegram_id,
+                u.region,
+                u.code,
+                u.phone,
+                o.id as order_id,
+                o.amount,
+                o.created_at,
+                o.status as order_status,
+                (SELECT COUNT(*) FROM order_files ofc WHERE ofc.order_id = o.id) as file_count,
+                (SELECT of.file_url FROM order_files of WHERE of.order_id = o.id ORDER BY of.id LIMIT 1) as first_file_url
+            FROM orders o
+            JOIN users u ON o.user_id = u.id
+            WHERE o.collection_id = ? AND o.status = 1
+            ORDER BY u.name, u.surname, o.id DESC
+        """
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            cursor.execute(sql, (collection_id,))
+            rows = cursor.fetchall()
+
+            users_dict = {}
+            for row in rows:
+                user_id = row['user_id']
+                if user_id not in users_dict:
+                    users_dict[user_id] = {
+                        'id': user_id,
+                        'name': row['name'],
+                        'surname': row['surname'],
+                        'username': row['username'],
+                        'telegram_id': row['telegram_id'],
+                        'region': row['region'],
+                        'code': row['code'],
+                        'phone': row['phone'],
+                        'orders': []
+                    }
+            
+                users_dict[user_id]['orders'].append({
+                    'id': row['order_id'],
+                    'amount': row['amount'],
+                    'created_at': row['created_at'],
+                    'status': row['order_status'],
+                    'file_count': row['file_count'],
+                    'first_file_url': row['first_file_url']
+                })
+            
+            return list(users_dict.values())
+        except Exception as e:
+            logger.error(f"Error getting users with orders for collection {collection_id}: {e}")
+            return []
+
+    def get_reports_for_user(self, user_id: int) -> List[Dict[str, Any]]:
+        """Get all reports for a specific user, joined with collection date."""
+        sql = (
+            """
+            SELECT ur.*, c.created_at as collection_date
+            FROM user_reports ur
+            JOIN collections c ON ur.collection_id = c.id
+            WHERE ur.user_id = ?
+            ORDER BY ur.sent_at DESC
+            """
+        )
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            cursor.execute(sql, (user_id,))
+            rows = cursor.fetchall()
+            return [dict(row) for row in rows]
+        except Exception as e:
+            logger.error(f"Error getting reports for user {user_id}: {e}")
+            return []
+
+    def create_or_update_user_report(self, user_id: int, collection_id: int, file_path: str) -> Optional[int]:
+        """Create or update a report for a user in a collection."""
+        conn = self._get_connection()
+        cursor = conn.cursor()
+        try:
+            # Check if a report already exists
+            cursor.execute(
+                "SELECT id FROM user_reports WHERE user_id = ? AND collection_id = ?",
+                (user_id, collection_id),
+            )
+            existing_report = cursor.fetchone()
+
+            if existing_report:
+                report_id = existing_report[0]
+                sql = "UPDATE user_reports SET file_path = ?, updated_at = datetime('now') WHERE id = ?"
+                cursor.execute(sql, (file_path, report_id))
+                logger.info(
+                    f"Updated report {report_id} for user {user_id}, collection {collection_id}"
+                )
+            else:
+                sql = (
+                    "INSERT INTO user_reports (user_id, collection_id, file_path) VALUES (?, ?, ?)"
+                )
+                cursor.execute(sql, (user_id, collection_id, file_path))
+                report_id = cursor.lastrowid
+                logger.info(
+                    f"Created new report {report_id} for user {user_id}, collection {collection_id}"
+                )
+
+            conn.commit()
+            return int(report_id)
+        except Exception as e:
+            try:
+                conn.rollback()
+            except Exception:
+                pass
+            logger.error(
+                f"Error creating/updating report for user {user_id}, collection {collection_id}: {e}"
+            )
+            return None
+
+    def get_user_report_status_for_collection(self, collection_id: int) -> Dict[int, bool]:
+        """
+        Get a dictionary of user_id -> has_report for a given collection.
+        """
+        sql = "SELECT user_id FROM user_reports WHERE collection_id = ?"
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            cursor.execute(sql, (collection_id,))
+            rows = cursor.fetchall()
+            return {int(row[0]): True for row in rows}
+        except Exception as e:
+            logger.error(f"Error getting report status for collection {collection_id}: {e}")
+            return {}
+
+    def check_and_set_all_reports_sent(self, collection_id: int) -> bool:
+        """
+        Check if all users with orders in a collection have a report.
+        If so, set the all_reports_sent flag on the collection.
+        """
+        try:
+            users_with_orders = self.get_users_with_orders_in_collection(collection_id)
+            if not users_with_orders:
+                return False  # No users, so nothing to do
+
+            user_ids_with_orders = {int(user['id']) for user in users_with_orders}
+
+            users_with_reports = self.get_user_report_status_for_collection(collection_id)
+            user_ids_with_reports = set(users_with_reports.keys())
+
+            if user_ids_with_orders.issubset(user_ids_with_reports):
+                conn = self._get_connection()
+                cursor = conn.cursor()
+                cursor.execute(
+                    "UPDATE collections SET all_reports_sent = 1 WHERE id = ?",
+                    (collection_id,),
+                )
+                conn.commit()
+                logger.info(
+                    f"All reports sent for collection {collection_id}. Flag set."
+                )
+                return True
+            else:
+                missing_ids = user_ids_with_orders - user_ids_with_reports
+                logger.info(
+                    f"Not all reports sent for collection {collection_id}. Missing for users: {missing_ids}"
+                )
+                return False
+        except Exception as e:
+            logger.error(
+                f"Error in check_and_set_all_reports_sent for collection {collection_id}: {e}"
+            )
+            return False
 
 # Create a global database service instance
 db_service = DatabaseService()

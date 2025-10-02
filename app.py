@@ -7,6 +7,7 @@ import os
 import asyncio
 from datetime import time as dt_time
 import uvicorn
+from zoneinfo import ZoneInfo
 from urllib.parse import urlparse
 try:
     # Optional: PTB specific timeout/network error types
@@ -14,15 +15,25 @@ try:
 except Exception:  # pragma: no cover - if not available, we'll fallback to string checks
     PTBTimedOut = tuple()
     PTBNetworkError = tuple()
-from telegram import Update, InputMediaPhoto, InputMediaVideo, ReplyKeyboardRemove, ReplyKeyboardMarkup
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackQueryHandler
+from telegram import Update, InputMediaPhoto, InputMediaVideo, ReplyKeyboardRemove, ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackQueryHandler, ConversationHandler
 from telegram.ext.filters import MessageFilter
 from src.database.db_service import db_service
+from src.services.report_service import report_service
 from src.database.config_db_service import config_db_service
 from src.config import config
 from src.processor import message_processor
-from src.bot.handlers import start as start_handler, mystats as mystats_handler, edit_profile as edit_profile_handler, handle_media as handle_media_handler
+from src.bot.handlers import (
+    start as start_handler,
+    mystats as mystats_handler,
+    edit_profile as edit_profile_handler,
+    handle_media as handle_media_handler,
+    myreports,
+    send_reports_start, select_collection_for_report, handle_report_document, send_reports_cancel,
+    SELECTING_COLLECTION, AWAITING_REPORTS
+)
 from src.bot.callbacks import button_callback as callbacks_button_callback
+from src.services.data_optimizer_service import data_optimizer_service
 
 # Configure logging
 logging.basicConfig(
@@ -645,10 +656,10 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
                 return
 
         # Check if user is in file collection mode - ignore text input
-        if context.user_data.get('state') == 'collecting_files':
-            await update.message.reply_text(
-                "✅ Fayllarni qabul qilyapman. Iltimos, fayllarni yuborib tugating yoki 2 soniya kuting."
-            )
+        # if context.user_data.get('state') == 'collecting_files':
+        #     await update.message.reply_text(
+        #         "✅ Fayllarni qabul qilyapman. Iltimos, fayllarni yuborib tugating yoki 2 soniya kuting."
+        #     )
             return
 
         # Check if user is replying with an amount
@@ -851,6 +862,14 @@ async def cleanup_old_order_files(context: ContextTypes.DEFAULT_TYPE):
         logger.error(f"Error during cleanup_old_order_files job: {e}")
 
 
+async def run_data_cleanup_job(context: ContextTypes.DEFAULT_TYPE) -> None:
+    """JobQueue wrapper to run DataOptimizerService cleanup cycle."""
+    logger.info("Running scheduled job: data optimizer cleanup")
+    try:
+        await data_optimizer_service.run_cleanup_cycle()
+    except Exception as e:
+        logger.error(f"Error during data optimizer cleanup job: {e}")
+
 def setup_bot_application() -> Application:
     """Set up and configure the Telegram bot application."""
     # Create the Application and pass it your bot's token.
@@ -860,6 +879,7 @@ def setup_bot_application() -> Application:
     application.add_handler(CommandHandler("start", start_handler))
     application.add_handler(CommandHandler("mystats", mystats_handler))
     application.add_handler(CommandHandler("edit", edit_profile_handler))
+    application.add_handler(CommandHandler("myreports", myreports))
     application.add_handler(CallbackQueryHandler(callbacks_button_callback))
 
     # Add handlers for different message types in order of priority
@@ -883,6 +903,18 @@ def setup_bot_application() -> Application:
     other_filters = ~filters.COMMAND & ~filters.PHOTO & ~filters.VIDEO & ~filters.TEXT & ~filters.CONTACT
     application.add_handler(MessageHandler(other_filters, handle_other))
 
+    # Add conversation handler for sending reports
+    report_conv_handler = ConversationHandler(
+        entry_points=[CommandHandler('send_reports', send_reports_start)],
+        states={
+            SELECTING_COLLECTION: [CallbackQueryHandler(select_collection_for_report, pattern='^report_coll_')],
+            AWAITING_REPORTS: [MessageHandler(filters.Document.PDF, handle_report_document)],
+        },
+        fallbacks=[CommandHandler('cancel', send_reports_cancel)],
+        conversation_timeout=300
+    )
+    application.add_handler(report_conv_handler)
+
     return application
 
 
@@ -901,6 +933,7 @@ async def run_bot(application: Application):
             
             # Set bot application in message processor for notifications
             message_processor.set_bot_app(application)
+            report_service.set_bot(application.bot)
 
             # Initialize concurrent services
             from src.services.concurrent_integration import initialize_concurrent_services
@@ -925,6 +958,25 @@ async def run_bot(application: Application):
                     name="daily_cleanup_job"
                 )
                 logger.info("Scheduled daily cleanup job for old order files.")
+
+                # Schedule DataOptimizer cleanup at 00:00 Asia/Tashkent daily
+                try:
+                    tz_name = getattr(config, 'TIMEZONE', 'Asia/Tashkent') or 'Asia/Tashkent'
+                except Exception:
+                    tz_name = 'Asia/Tashkent'
+                tz = None
+                try:
+                    tz = ZoneInfo(tz_name)
+                except Exception:
+                    tz = None
+                schedule_time = dt_time(hour=0, minute=0, tzinfo=tz)
+
+                application.job_queue.run_daily(
+                    run_data_cleanup_job,
+                    time=schedule_time,
+                    name="daily_data_optimizer_cleanup"
+                )
+                logger.info("Scheduled DataOptimizer cleanup daily at 00:00 Asia/Tashkent (config TIMEZONE applied if available).")
 
             logger.info("✅ Telegram bot started successfully")
             

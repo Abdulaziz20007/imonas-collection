@@ -18,11 +18,27 @@ class Config:
     GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
     SECRET_KEY = os.getenv('SECRET_KEY')
     TEST_ACCOUNT_ID = int(os.getenv('TEST_ACCOUNT_ID')) if os.getenv('TEST_ACCOUNT_ID') else None
-    PAYMENT_CHECKING_WAIT_TIME = int(os.getenv('PAYMENT_CHECKING_WAIT_TIME', '60'))
+    PAYMENT_CHECKING_WAIT_TIME = int(os.getenv('PAYMENT_TIME', '30'))
     ORDER_DELAY_TIME = int(os.getenv('ORDER_DELAY_TIME', '1'))  # seconds for product prompt debounce
     AI_CONFIRMATION_TIME_WINDOW_MINUTES = int(os.getenv('AI_CONFIRMATION_TIME_WINDOW_MINUTES', '10'))
     TIMEZONE = os.getenv('TIMEZONE', 'Asia/Tashkent')
     # Comma-separated list of allowed bank bot IDs (e.g., "856254490,915326936")
+    PRIVATE_CHANNEL_ID = os.getenv('PRIVATE_CHANNEL_ID')
+    GROUP_ID = os.getenv('GROUP_ID')
+    FIND_ORDERS_TOPIC_ID = os.getenv('FIND_ORDERS_TOPIC_ID')
+    REALTIME_ORDERS_TOPIC_ID = os.getenv('REALTIME_ORDERS_TOPIC_ID')
+    CONFIRMATION_TOPIC_ID = os.getenv('CONFIRMATION_TOPIC_ID')
+    AI_CONFIRMATIONS_TOPIC_ID = os.getenv('AI_CONFIRMATIONS_TOPIC_ID')
+
+    # Cleanup/Retention settings (configurable via .env)
+    DATA_RETENTION_DAYS = int(os.getenv('DATA_RETENTION_DAYS', '60'))
+    CLEANUP_BATCH_SIZE = int(os.getenv('CLEANUP_BATCH_SIZE', '50'))
+    CLEANUP_BATCH_DELAY_SECONDS = int(os.getenv('CLEANUP_BATCH_DELAY_SECONDS', '2'))
+    CLEANUP_DRY_RUN = os.getenv('CLEANUP_DRY_RUN', 'false').lower() in ('1', 'true', 'yes', 'y')
+    # Daily cleanup schedule (24h time)
+    CLEANUP_DAILY_HOUR = int(os.getenv('CLEANUP_DAILY_HOUR', '3'))
+    CLEANUP_DAILY_MINUTE = int(os.getenv('CLEANUP_DAILY_MINUTE', '0'))
+
     try:
         _allowed_ids_env = os.getenv('ALLOWED_BANK_BOT_IDS', '856254490,915326936')
         ALLOWED_BANK_BOT_IDS = {
@@ -35,7 +51,8 @@ class Config:
     # Concurrency settings
     THREAD_POOL_SIZE = int(os.getenv('THREAD_POOL_SIZE', '8'))  # Number of background worker threads
     MAX_CONCURRENT_DOWNLOADS = int(os.getenv('MAX_CONCURRENT_DOWNLOADS', '5'))  # Max concurrent file downloads
-    DOWNLOAD_TIMEOUT = int(os.getenv('DOWNLOAD_TIMEOUT', '60'))  # Download timeout in seconds
+    MAX_CONCURRENT_IO_TASKS = int(os.getenv('MAX_CONCURRENT_IO_TASKS', '10')) # Max concurrent async I/O tasks
+    DOWNLOAD_TIMEOUT = int(os.getenv('DOWNLOAD_TIMEOUT', '600'))  # Download timeout in seconds (10 minutes)
     RETRY_ATTEMPTS = int(os.getenv('RETRY_ATTEMPTS', '3'))  # Number of retry attempts for failed operations
     
     # Telegram API credentials from environment (.env)
@@ -44,14 +61,9 @@ class Config:
 
     # Settings from config database (will be populated by load_from_db)
     ADMIN_IDS = []
-    PRIVATE_CHANNEL_ID = None
-    GROUP_ID = None
-    FIND_ORDERS_TOPIC_ID = None
-    REALTIME_ORDERS_TOPIC_ID = None
-    CONFIRMATION_TOPIC_ID = None
-    AI_CONFIRMATIONS_TOPIC_ID = None
     PHONE_NUMBER = None
     PASSWORD = None
+    TELEGRAM_BOT_USERNAME = os.getenv('TELEGRAM_BOT_USERNAME', 'YOUR_BOT_USERNAME')
 
     @classmethod
     def load_from_db(cls):
@@ -75,14 +87,12 @@ class Config:
         except Exception as e:
             logger.error(f"Error loading admins from JSON file: {e}")
             cls.ADMIN_IDS = []
-        cls.PRIVATE_CHANNEL_ID = get_setting('private_channel_id')
-        cls.GROUP_ID = get_setting('group_id')
-        cls.FIND_ORDERS_TOPIC_ID = get_setting('find_orders_topic_id')
-        cls.REALTIME_ORDERS_TOPIC_ID = get_setting('realtime_orders_topic_id')
-        cls.CONFIRMATION_TOPIC_ID = get_setting('confirmation_topic_id')
-        cls.AI_CONFIRMATIONS_TOPIC_ID = get_setting('ai_confirmations_topic_id')
         cls.PHONE_NUMBER = get_setting('userbot_phone_number')
         cls.PASSWORD = get_setting('userbot_password')
+        # Bot username (configurable via DB with env default)
+        bot_username = get_setting('telegram_bot_username')
+        if bot_username:
+            cls.TELEGRAM_BOT_USERNAME = bot_username
         # AI confirmation window (configurable via DB with env default)
         try:
             cls.AI_CONFIRMATION_TIME_WINDOW_MINUTES = int(
@@ -90,14 +100,6 @@ class Config:
             )
         except Exception:
             # Fallback to existing value if parsing fails
-            pass
-        # Load order delay time for prompting series number (seconds)
-        try:
-            loaded_delay = get_setting('order_delay_time', None)
-            if loaded_delay is not None:
-                cls.ORDER_DELAY_TIME = int(loaded_delay)
-        except Exception:
-            # Keep existing env/default value on parse error
             pass
         # Optionally load timezone from config DB
         try:
@@ -132,6 +134,12 @@ class Config:
             'SECRET_KEY': cls.SECRET_KEY,
             'APP_ID': cls.API_ID,
             'API_HASH': cls.API_HASH,
+            'PRIVATE_CHANNEL_ID': cls.PRIVATE_CHANNEL_ID,
+            'GROUP_ID': cls.GROUP_ID,
+            'FIND_ORDERS_TOPIC_ID': cls.FIND_ORDERS_TOPIC_ID,
+            'REALTIME_ORDERS_TOPIC_ID': cls.REALTIME_ORDERS_TOPIC_ID,
+            'CONFIRMATION_TOPIC_ID': cls.CONFIRMATION_TOPIC_ID,
+            'AI_CONFIRMATIONS_TOPIC_ID': cls.AI_CONFIRMATIONS_TOPIC_ID,
         }
         
         missing_vars = [name for name, value in required_vars.items() if not value]
@@ -143,7 +151,6 @@ class Config:
         required_db_vars = {
             'PHONE_NUMBER': cls.PHONE_NUMBER,
             'PASSWORD': cls.PASSWORD,
-            'PRIVATE_CHANNEL_ID': cls.PRIVATE_CHANNEL_ID,
         }
         
         missing_db_vars = [name for name, value in required_db_vars.items() if not value]
