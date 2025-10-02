@@ -3,14 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Buyurtmalar Boshqaruv Tizimi - Professional Kuzatuv Tizimi</title>
+    <title>Buyurtmalar Boshqaruv Tizimi</title>
     <meta
       name="description"
-      content="Telegram-ga asoslangan professional buyurtmalar boshqaruv tizimi real vaqtda kuzatuv, kolleksiyalar boshqaruvi va avtomatik bildirishnomalar bilan."
-    />
-    <meta
-      name="keywords"
-      content="buyurtmalarni kuzatish, telegram bot, kolleksiyalar boshqaruvi, mahsulot buyurtmalari"
+      content="Telegram-ga asoslangan professional buyurtmalar boshqaruv tizimi"
     />
 
     <!-- CSS Libraries -->
@@ -22,31 +18,19 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       rel="stylesheet"
     />
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
 
     <style>
       :root {
         --bg-primary: #0d1117;
         --bg-secondary: #161b22;
         --bg-tertiary: #21262d;
-        --bg-quaternary: #30363d;
         --text-primary: #f0f6fc;
         --text-secondary: #8b949e;
-        --text-muted: #6e7681;
         --border-color: #30363d;
         --accent-primary: #238636;
         --accent-secondary: #1f6feb;
-        --accent-warning: #d29922;
-        --accent-danger: #da3633;
-        --accent-info: #2ea043;
-        --hover-bg: #262c36;
-        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
-        --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
-        --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
-        --radius-sm: 6px;
         --radius-md: 8px;
         --radius-lg: 12px;
-        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
 
       * {
@@ -56,134 +40,38 @@
       }
 
       body {
-        background: linear-gradient(135deg, var(--bg-primary) 0%, #0a0e14 100%);
+        background: var(--bg-primary);
         color: var(--text-primary);
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans",
           Helvetica, Arial, sans-serif;
-        line-height: 1.6;
-        overflow-x: hidden;
+        height: 100vh;
+        overflow: hidden;
       }
 
-      /* Hero Section */
-      .hero-section {
-        background: linear-gradient(
-          135deg,
-          var(--bg-primary) 0%,
-          var(--bg-secondary) 100%
-        );
-        position: relative;
-        min-height: 100vh;
+      .landing-container {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .main-content {
+        flex: 1;
         display: flex;
         align-items: center;
-        overflow: hidden;
-      }
-
-      .hero-section::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: radial-gradient(
-            circle at 20% 80%,
-            rgba(35, 134, 54, 0.1) 0%,
-            transparent 50%
-          ),
-          radial-gradient(
-            circle at 80% 20%,
-            rgba(31, 111, 235, 0.1) 0%,
-            transparent 50%
-          );
-        animation: float 20s ease-in-out infinite;
-      }
-
-      @keyframes float {
-        0%,
-        100% {
-          transform: translate(0, 0) rotate(0deg);
-        }
-        25% {
-          transform: translate(-10px, -10px) rotate(1deg);
-        }
-        50% {
-          transform: translate(10px, -5px) rotate(-1deg);
-        }
-        75% {
-          transform: translate(-5px, 10px) rotate(1deg);
-        }
-      }
-
-      /* Hero Content */
-      .hero-content {
-        position: relative;
-        z-index: 2;
-      }
-
-      .hero-title {
-        font-size: 3.5rem;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: 1.5rem;
-        line-height: 1.2;
-      }
-
-      .hero-subtitle {
-        font-size: 1.4rem;
-        color: var(--text-secondary);
-        margin-bottom: 2rem;
-        font-weight: 400;
-      }
-
-      /* Feature Cards */
-      .feature-card {
-        background: linear-gradient(
-          135deg,
-          var(--bg-secondary) 0%,
-          var(--bg-tertiary) 100%
-        );
-        border: 1px solid var(--border-color);
-        border-radius: var(--radius-lg);
+        justify-content: center;
         padding: 2rem;
-        box-shadow: var(--shadow-md);
-        transition: var(--transition);
-        height: 100%;
-        position: relative;
-        overflow: hidden;
       }
 
-      .feature-card::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: linear-gradient(
-          90deg,
-          var(--accent-secondary) 0%,
-          var(--accent-primary) 100%
-        );
-        opacity: 0;
-        transition: opacity 0.3s ease;
+      .hero-box {
+        max-width: 900px;
+        text-align: center;
       }
 
-      .feature-card:hover {
-        transform: translateY(-4px);
-        box-shadow: var(--shadow-lg);
-        border-color: var(--accent-secondary);
+      .logo-section {
+        margin-bottom: 2rem;
       }
 
-      .feature-card:hover::before {
-        opacity: 1;
-      }
-
-      .feature-card:hover .feature-icon {
-        transform: scale(1.1);
-        color: var(--accent-secondary);
-      }
-
-      .feature-icon {
+      .logo-icon {
         width: 80px;
         height: 80px;
         margin: 0 auto 1.5rem;
@@ -192,65 +80,44 @@
           var(--accent-secondary) 0%,
           var(--accent-primary) 100%
         );
-        border-radius: 50%;
+        border-radius: 20px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 2rem;
-        color: white;
-        transition: var(--transition);
       }
 
-      /* Step Cards */
-      .step-card {
-        background: linear-gradient(
-          135deg,
-          var(--bg-secondary) 0%,
-          var(--bg-tertiary) 100%
-        );
-        border: 1px solid var(--border-color);
-        border-radius: var(--radius-lg);
-        padding: 2rem;
-        box-shadow: var(--shadow-md);
-        transition: var(--transition);
-        border-left: 4px solid var(--accent-primary);
-        position: relative;
-      }
-
-      .step-card:hover {
-        transform: translateX(8px);
-        box-shadow: var(--shadow-lg);
-        border-left-color: var(--accent-secondary);
-      }
-
-      .step-number {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        background: linear-gradient(
-          135deg,
-          var(--accent-secondary) 0%,
-          var(--accent-primary) 100%
-        );
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        font-size: 1.5rem;
+      .hero-title {
+        font-size: 3rem;
+        font-weight: 700;
+        color: var(--text-primary);
         margin-bottom: 1rem;
-        box-shadow: var(--shadow-sm);
       }
 
-      /* Interactive Buttons */
-      .btn-gradient {
+      .hero-subtitle {
+        font-size: 1.25rem;
+        color: var(--text-secondary);
+        margin-bottom: 2.5rem;
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .cta-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-bottom: 3rem;
+        flex-wrap: wrap;
+      }
+
+      .btn-primary-custom {
         background: linear-gradient(
           135deg,
           var(--accent-secondary) 0%,
           var(--accent-primary) 100%
         );
         border: none;
-        padding: 1rem 2.5rem;
+        padding: 0.875rem 2rem;
         border-radius: var(--radius-md);
         color: white;
         font-weight: 500;
@@ -258,824 +125,231 @@
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        transition: var(--transition);
-        box-shadow: var(--shadow-md);
-        position: relative;
-        overflow: hidden;
       }
 
-      .btn-gradient::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(
-          90deg,
-          transparent,
-          rgba(255, 255, 255, 0.2),
-          transparent
-        );
-        transition: left 0.5s;
-      }
-
-      .btn-gradient:hover::before {
-        left: 100%;
-      }
-
-      .btn-gradient:hover {
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-lg);
-      }
-
-      .btn-outline-gradient {
-        background: var(--bg-tertiary);
-        border: 1px solid var(--border-color);
-        color: var(--accent-secondary);
-        padding: 0.8rem 2rem;
-        border-radius: var(--radius-md);
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        transition: var(--transition);
-        position: relative;
-        overflow: hidden;
-      }
-
-      .btn-outline-gradient::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(
-          135deg,
-          var(--accent-secondary) 0%,
-          var(--accent-primary) 100%
-        );
-        transform: scaleX(0);
-        transform-origin: left;
-        transition: transform 0.3s ease;
-        z-index: -1;
-      }
-
-      .btn-outline-gradient:hover::before {
-        transform: scaleX(1);
-      }
-
-      .btn-outline-gradient:hover {
-        color: white;
-        border-color: var(--accent-secondary);
-        transform: translateY(-2px);
-      }
-
-      /* Statistics Section */
-      .stats-section {
+      .btn-secondary-custom {
         background: var(--bg-secondary);
-        position: relative;
         border: 1px solid var(--border-color);
-        border-radius: var(--radius-lg);
-        margin: 2rem 0;
+        color: var(--text-primary);
+        padding: 0.875rem 2rem;
+        border-radius: var(--radius-md);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
       }
 
-      .stat-item {
+      .instructions-section {
+        max-width: 1000px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 0;
+      }
+
+      .instruction-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
         text-align: center;
-        padding: 1.5rem;
+        padding: 1.5rem 1.25rem;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        flex: 1;
+        max-width: 280px;
       }
 
-      .stat-number {
-        font-size: 3rem;
-        font-weight: bold;
+      .arrow-separator {
+        color: var(--accent-secondary);
+        font-size: 2rem;
+        margin: 0 1rem;
+        opacity: 0.6;
+      }
+
+      .instruction-icon {
+        width: 48px;
+        height: 48px;
+        min-width: 48px;
         background: linear-gradient(
           135deg,
           var(--accent-secondary) 0%,
           var(--accent-primary) 100%
         );
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        margin-bottom: 0.5rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.25rem;
       }
 
-      .stat-label {
-        color: var(--text-secondary);
-        font-size: 1rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        font-weight: 500;
-      }
-
-      /* Floating Elements */
-      .floating-element {
-        position: absolute;
-        pointer-events: none;
-        opacity: 0.1;
-      }
-
-      .floating-1 {
-        top: 10%;
-        right: 10%;
-        animation: floatY 6s ease-in-out infinite;
-      }
-      .floating-2 {
-        bottom: 10%;
-        left: 10%;
-        animation: floatY 8s ease-in-out infinite reverse;
-      }
-      .floating-3 {
-        top: 50%;
-        right: 5%;
-        animation: floatX 10s ease-in-out infinite;
-      }
-
-      @keyframes floatY {
-        0%,
-        100% {
-          transform: translateY(0px);
-        }
-        50% {
-          transform: translateY(-20px);
-        }
-      }
-
-      @keyframes floatX {
-        0%,
-        100% {
-          transform: translateX(0px);
-        }
-        50% {
-          transform: translateX(20px);
-        }
-      }
-
-      /* Section Spacing */
-      .section {
-        padding: 4rem 0;
-        position: relative;
-      }
-
-      .section-title {
-        font-size: 2.5rem;
-        font-weight: 700;
-        text-align: center;
-        margin-bottom: 1rem;
+      .instruction-text strong {
+        display: block;
         color: var(--text-primary);
+        margin-bottom: 0.25rem;
+        font-size: 1rem;
       }
 
-      .section-subtitle {
-        font-size: 1.2rem;
-        text-align: center;
+      .instruction-text p {
         color: var(--text-secondary);
-        margin-bottom: 3rem;
+        margin: 0;
+        font-size: 0.875rem;
+        line-height: 1.5;
       }
 
-      /* Responsive Design */
+      .footer-minimal {
+        padding: 1.5rem;
+        text-align: center;
+        border-top: 1px solid var(--border-color);
+        background: var(--bg-secondary);
+      }
+
+      .footer-minimal p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+      }
+
       @media (max-width: 768px) {
         .hero-title {
-          font-size: 2.5rem;
+          font-size: 2rem;
         }
 
         .hero-subtitle {
-          font-size: 1.2rem;
+          font-size: 1rem;
         }
 
-        .feature-card {
-          margin-bottom: 2rem;
+        .logo-icon {
+          width: 60px;
+          height: 60px;
         }
 
-        .section {
-          padding: 3rem 0;
+        .instructions-section {
+          flex-direction: column;
+          gap: 1.5rem;
         }
 
-        .section-title {
-          font-size: 2rem;
-        }
-      }
-
-      @media (max-width: 576px) {
-        .hero-title {
-          font-size: 2rem;
+        .arrow-separator {
+          transform: rotate(90deg);
+          margin: 0;
         }
 
-        .btn-gradient {
-          padding: 0.8rem 1.5rem;
-          font-size: 0.9rem;
+        .instruction-item {
+          padding: 1rem;
+          max-width: 100%;
         }
 
-        .feature-card {
-          padding: 2rem 1.5rem;
+        .instruction-icon {
+          width: 40px;
+          height: 40px;
+          min-width: 40px;
+          font-size: 1rem;
         }
-      }
 
-      /* Loading Animation */
-      .loading {
-        opacity: 0;
-        transform: translateY(30px);
-        transition: all 0.6s ease;
-      }
+        .cta-buttons {
+          flex-direction: column;
+          align-items: stretch;
+        }
 
-      .loading.loaded {
-        opacity: 1;
-        transform: translateY(0);
-      }
-
-      /* Scroll Progress Bar */
-      .scroll-progress {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 0%;
-        height: 4px;
-        background: var(--primary-gradient);
-        z-index: 1000;
-        transition: width 0.1s ease;
+        .btn-primary-custom,
+        .btn-secondary-custom {
+          justify-content: center;
+          width: 100%;
+        }
       }
     </style>
   </head>
   <body>
-    <div class="scroll-progress"></div>
+    <div class="landing-container">
+      <!-- Main Content -->
+      <div class="main-content">
+        <div class="hero-box">
+          <!-- Logo -->
+          <div class="logo-section">
+            <div class="logo-icon">
+              <i class="fas fa-box fa-3x text-white"></i>
+            </div>
+          </div>
 
-    <!-- Hero Section -->
-    <section class="hero-section">
-      <div class="floating-element floating-1">
-        <i class="fas fa-cube fa-4x"></i>
-      </div>
-      <div class="floating-element floating-2">
-        <i class="fas fa-chart-line fa-3x"></i>
-      </div>
-      <div class="floating-element floating-3">
-        <i class="fas fa-cogs fa-3x"></i>
-      </div>
-
-      <div class="container">
-        <div class="row align-items-center">
-          <div class="col-lg-6">
-            <div
-              class="hero-content"
-              data-aos="fade-right"
-              data-aos-duration="1000"
-            >
-              <h1 class="hero-title loading">
-                Buyurtmalaringizni<br />
-                Oson Bering
-              </h1>
-              <p class="hero-subtitle loading">
-                Telegram orqali buyurtmalaringizni bir necha soniyada yuboring!
-                Rasmini jo'nating, tavsifini yozing va buyurtmangiz tayyor. Tez,
-                oddiy va qulay.
-              </p>
-              <div class="d-flex flex-wrap gap-3 loading">
-                <a href="#tutorial" class="btn btn-gradient">
-                  <i class="fas fa-play-circle"></i>
-                  Qanday Buyurtma Beraman?
-                </a>
-                <a
-                  href="#user-access"
-                  class="btn btn-outline-gradient"
-                  data-bs-toggle="modal"
-                  data-bs-target="#userAccessModal"
-                >
-                  <i class="fas fa-sign-in-alt"></i>
-                  Buyurtmalarimni Ko'rish
-                </a>
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-6">
-            <div
-              class="text-center"
-              data-aos="fade-left"
-              data-aos-duration="1000"
-              data-aos-delay="200"
-            >
-              <div
-                class="d-inline-block p-4 rounded-circle bg-white bg-opacity-10 backdrop-blur loading"
-              >
-                <i class="fas fa-mobile-alt fa-8x text-white"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Stats Section -->
-    <section class="stats-section section">
-      <div class="container">
-        <div class="row">
-          <div
-            class="col-lg-3 col-md-6 mb-4"
-            data-aos="fade-up"
-            data-aos-delay="100"
-          >
-            <div class="stat-item">
-              <div class="stat-number counter" data-target="{{ total_orders }}">
-                0
-              </div>
-              <div class="stat-label">Muvaffaqiyatli Buyurtmalar</div>
-            </div>
-          </div>
-          <div
-            class="col-lg-3 col-md-6 mb-4"
-            data-aos="fade-up"
-            data-aos-delay="200"
-          >
-            <div class="stat-item">
-              <div class="stat-number counter" data-target="{{ total_users }}">
-                0
-              </div>
-              <div class="stat-label">Mamnun Mijozlar</div>
-            </div>
-          </div>
-          <div
-            class="col-lg-3 col-md-6 mb-4"
-            data-aos="fade-up"
-            data-aos-delay="300"
-          >
-            <div class="stat-item">
-              <div
-                class="stat-number counter"
-                data-target="{{ active_collections }}"
-              >
-                0
-              </div>
-              <div class="stat-label">Aktiv Kolleksiyalar</div>
-            </div>
-          </div>
-          <div
-            class="col-lg-3 col-md-6 mb-4"
-            data-aos="fade-up"
-            data-aos-delay="400"
-          >
-            <div class="stat-item">
-              <div class="stat-number">24/7</div>
-              <div class="stat-label">Soatlik Xizmat</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Tutorial Section -->
-    <section
-      id="tutorial"
-      class="section"
-      style="background: var(--bg-secondary)"
-    >
-      <div class="container">
-        <div class="text-center mb-5">
-          <h2 class="section-title" data-aos="fade-up">
-            Buyurtma Berish Qo'llanmasi
-          </h2>
-          <p class="section-subtitle" data-aos="fade-up" data-aos-delay="100">
-            3 oddiy qadamda buyurtmangizni bering. Juda oson va tez!
+          <!-- Hero Text -->
+          <h1 class="hero-title">Miss Imona</h1>
+          <p class="hero-subtitle">
+            Miss Imona bilan Telegram bot orqali mahsulotlarga buyurtma buyurtma
+            bering.
           </p>
-        </div>
 
-        <div class="row g-4">
-          <div class="col-lg-6" data-aos="fade-right" data-aos-delay="100">
-            <div class="step-card">
-              <div class="step-number">1</div>
-              <h4 class="mb-3">Botni Toping va Boshlang</h4>
-              <p class="mb-3">
-                Telegram orqali buyurtma berish juda oddiy! Faqat quyidagi
-                qadamlarni bajaring:
-              </p>
-              <ul class="list-unstyled">
-                <li class="mb-2">
-                  <i
-                    class="fas fa-telegram me-2"
-                    style="color: var(--accent-secondary)"
-                  ></i
-                  >Telegram ilovasini oching
-                </li>
-                <li class="mb-2">
-                  <i
-                    class="fas fa-search me-2"
-                    style="color: var(--accent-secondary)"
-                  ></i
-                  >Bizning botimizni qidiring yoki havolaga bosing
-                </li>
-                <li class="mb-2">
-                  <i
-                    class="fas fa-play me-2"
-                    style="color: var(--accent-secondary)"
-                  ></i
-                  ><strong>/start</strong>
-                  buyrug'ini yuboring
-                </li>
-                <li>
-                  <i
-                    class="fas fa-user-plus me-2"
-                    style="color: var(--accent-secondary)"
-                  ></i
-                  >Ismingiz va telefon raqamingizni kiriting
-                </li>
-              </ul>
-            </div>
+          <!-- CTA Buttons -->
+          <div class="cta-buttons">
+            <a
+              href="https://t.me/{{ bot_username }}"
+              class="btn-primary-custom"
+              target="_blank"
+            >
+              <i class="fab fa-telegram"></i>
+              Botga Kirish
+            </a>
+            <a
+              href="#"
+              class="btn-secondary-custom"
+              data-bs-toggle="modal"
+              data-bs-target="#userAccessModal"
+            >
+              <i class="fas fa-user"></i>
+              Shaxsiy Panel
+            </a>
           </div>
 
-          <div class="col-lg-6" data-aos="fade-left" data-aos-delay="200">
-            <div class="step-card">
-              <div class="step-number">2</div>
-              <h4 class="mb-3">Rasmini Yuboring</h4>
-              <p class="mb-3">
-                Buyurtma bermoqchi bo'lgan mahsulotingizning rasmini yoki
-                videosini yuboring:
-              </p>
-              <ul class="list-unstyled">
-                <li class="mb-2">
-                  <i
-                    class="fas fa-camera me-2"
-                    style="color: var(--accent-primary)"
-                  ></i
-                  >Mahsulotning aniq va yorqin rasmini oling
-                </li>
-                <li class="mb-2">
-                  <i
-                    class="fas fa-upload me-2"
-                    style="color: var(--accent-primary)"
-                  ></i
-                  >Rasmni botga yuboring
-                </li>
-                <li class="mb-2">
-                  <i
-                    class="fas fa-video me-2"
-                    style="color: var(--accent-primary)"
-                  ></i
-                  >Video ham yuborish mumkin (ixtiyoriy)
-                </li>
-                <li>
-                  <i
-                    class="fas fa-images me-2"
-                    style="color: var(--accent-primary)"
-                  ></i
-                  >Bir nechta rasm yuborish mumkin
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div class="col-lg-6" data-aos="fade-right" data-aos-delay="300">
-            <div class="step-card">
-              <div class="step-number">3</div>
-              <h4 class="mb-3">Tavsifini Yozing</h4>
-              <p class="mb-3">
-                Mahsulot haqida kerakli ma'lumotlarni yozing va buyurtmangizni
-                yakunlang:
-              </p>
-              <ul class="list-unstyled">
-                <li class="mb-2">
-                  <i
-                    class="fas fa-edit me-2"
-                    style="color: var(--accent-warning)"
-                  ></i
-                  >Mahsulot nomi va tavsifini yozing
-                </li>
-                <li class="mb-2">
-                  <i
-                    class="fas fa-sort-numeric-up me-2"
-                    style="color: var(--accent-warning)"
-                  ></i
-                  >Miqdorni belgilang (nechta kerak)
-                </li>
-                <li class="mb-2">
-                  <i
-                    class="fas fa-palette me-2"
-                    style="color: var(--accent-warning)"
-                  ></i
-                  >Rang, o'lcham kabilarni ko'rsating
-                </li>
-                <li>
-                  <i
-                    class="fas fa-paper-plane me-2"
-                    style="color: var(--accent-warning)"
-                  ></i
-                  >Yuboring va tasdiqni kuting!
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div class="col-lg-6" data-aos="fade-left" data-aos-delay="400">
-            <div class="step-card">
-              <div class="step-number">✓</div>
-              <h4 class="mb-3">Tayyor! Kuzatib Boring</h4>
-              <p class="mb-3">
-                Buyurtmangiz muvaffaqiyatli yuborildi. Endi quyidagi
-                imkoniyatlardan foydalaning:
-              </p>
-              <ul class="list-unstyled">
-                <li class="mb-2">
-                  <i
-                    class="fas fa-check-circle me-2"
-                    style="color: var(--accent-info)"
-                  ></i
-                  >Darhol tasdiqlash xabari olasiz
-                </li>
-                <li class="mb-2">
-                  <i
-                    class="fas fa-eye me-2"
-                    style="color: var(--accent-info)"
-                  ></i
-                  >Buyurtma holatini real vaqtda kuzating
-                </li>
-                <li class="mb-2">
-                  <i
-                    class="fas fa-bell me-2"
-                    style="color: var(--accent-info)"
-                  ></i
-                  >Holat o'zgarsa avtomatik xabar olasiz
-                </li>
-                <li>
-                  <i
-                    class="fas fa-history me-2"
-                    style="color: var(--accent-info)"
-                  ></i
-                  >Barcha buyurtmalaringizni bir joyda ko'ring
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <div class="text-center mt-5" data-aos="fade-up" data-aos-delay="500">
-          <div
-            style="
-              background: var(--bg-tertiary);
-              border: 1px solid var(--border-color);
-            "
-            class="p-4 rounded-3 shadow-lg d-inline-block"
-          >
-            <h5 class="mb-3">Hoziroq Boshlang!</h5>
-            <p class="mb-3" style="color: var(--text-secondary)">
-              Birinchi buyurtmangizni bering yoki buyurtmalaringizni kuzatib
-              boring
-            </p>
-            <div class="d-flex flex-wrap justify-content-center gap-3">
-              <a
-                href="#user-access"
-                class="btn btn-gradient"
-                data-bs-toggle="modal"
-                data-bs-target="#userAccessModal"
-              >
-                <i class="fas fa-eye"></i>
-                Buyurtmalarimni Ko'rish
-              </a>
-              <a
-                href="https://t.me/{{ bot_username }}"
-                class="btn btn-outline-gradient"
-                target="_blank"
-              >
+          <!-- Instructions -->
+          <div class="instructions-section">
+            <div class="instruction-item">
+              <div class="instruction-icon">
                 <i class="fab fa-telegram"></i>
-                Buyurtma Berish
-              </a>
+              </div>
+              <div class="instruction-text">
+                <strong>1. Botni Boshlang</strong>
+                <p>
+                  Telegram botga /start buyrug'ini yuboring va ro'yxatdan
+                  o'ting.
+                </p>
+              </div>
+            </div>
+            <div class="arrow-separator">
+              <i class="fas fa-arrow-right"></i>
+            </div>
+            <div class="instruction-item">
+              <div class="instruction-icon">
+                <i class="fas fa-image"></i>
+              </div>
+              <div class="instruction-text">
+                <strong>2. Mahsulotni Yuboring</strong>
+                <p>Buyurtma qilmoqchi bo'lgan mahsulotni yuboring.</p>
+              </div>
+            </div>
+            <div class="arrow-separator">
+              <i class="fas fa-arrow-right"></i>
+            </div>
+            <div class="instruction-item">
+              <div class="instruction-icon">
+                <i class="fas fa-edit"></i>
+              </div>
+              <div class="instruction-text">
+                <strong>3. Seriyani Kiriting</strong>
+                <p>Mahsulot seriyasini raqamda kiriting.</p>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </section>
 
-    <!-- Footer -->
-    <footer
-      class="section"
-      style="
-        background: var(--bg-secondary);
-        border-top: 1px solid var(--border-color);
-        color: var(--text-primary);
-      "
-    >
-      <div class="container">
-        <div class="row g-4">
-          <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
-            <h5 class="mb-4">Buyurtmalar Boshqaruv Tizimi</h5>
-            <p style="color: var(--text-secondary)" class="mb-4">
-              Zamonaviy bizneslar uchun mo'ljallangan professional buyurtmalarni
-              kuzatish va boshqarish yechimi. Kuchli Telegram integratsiyamiz
-              bilan ish oqimingizni soddalashtiring.
-            </p>
-            <div class="d-flex gap-3">
-              <a
-                href="#"
-                class="btn btn-sm rounded-circle"
-                style="
-                  background: var(--bg-tertiary);
-                  border: 1px solid var(--border-color);
-                  color: var(--accent-secondary);
-                "
-              >
-                <i class="fab fa-telegram"></i>
-              </a>
-              <a
-                href="#"
-                class="btn btn-sm rounded-circle"
-                style="
-                  background: var(--bg-tertiary);
-                  border: 1px solid var(--border-color);
-                  color: var(--accent-secondary);
-                "
-              >
-                <i class="fas fa-envelope"></i>
-              </a>
-              <a
-                href="#"
-                class="btn btn-sm rounded-circle"
-                style="
-                  background: var(--bg-tertiary);
-                  border: 1px solid var(--border-color);
-                  color: var(--accent-secondary);
-                "
-              >
-                <i class="fas fa-phone"></i>
-              </a>
-            </div>
-          </div>
-
-          <div
-            class="col-lg-2 col-md-3 col-6"
-            data-aos="fade-up"
-            data-aos-delay="200"
-          >
-            <h6 class="mb-4">Tezkor Havolalar</h6>
-            <ul class="list-unstyled">
-              <li class="mb-2">
-                <a
-                  href="#features"
-                  class="text-decoration-none"
-                  style="color: var(--text-secondary)"
-                  >Imkoniyatlar</a
-                >
-              </li>
-              <li class="mb-2">
-                <a
-                  href="#tutorial"
-                  class="text-decoration-none"
-                  style="color: var(--text-secondary)"
-                  >Buyurtma Berish Qo'llanmasi</a
-                >
-              </li>
-              <li class="mb-2">
-                <a
-                  href="https://t.me/{{ bot_username }}"
-                  class="text-decoration-none"
-                  style="color: var(--text-secondary)"
-                  target="_blank"
-                  >Telegram Bot</a
-                >
-              </li>
-              <li class="mb-2">
-                <a
-                  href="#user-access"
-                  class="text-decoration-none"
-                  style="color: var(--text-secondary)"
-                  data-bs-toggle="modal"
-                  data-bs-target="#userAccessModal"
-                  >Foydalanuvchi Kirishi</a
-                >
-              </li>
-            </ul>
-          </div>
-
-          <div
-            class="col-lg-2 col-md-3 col-6"
-            data-aos="fade-up"
-            data-aos-delay="300"
-          >
-            <h6 class="mb-4">Yordam</h6>
-            <ul class="list-unstyled">
-              <li class="mb-2">
-                <a
-                  href="#"
-                  class="text-decoration-none"
-                  style="color: var(--text-secondary)"
-                  >Yordam Markazi</a
-                >
-              </li>
-              <li class="mb-2">
-                <a
-                  href="#"
-                  class="text-decoration-none"
-                  style="color: var(--text-secondary)"
-                  >Hujjatlar</a
-                >
-              </li>
-              <li class="mb-2">
-                <a
-                  href="#"
-                  class="text-decoration-none"
-                  style="color: var(--text-secondary)"
-                  >Biz Bilan Bog'laning</a
-                >
-              </li>
-              <li class="mb-2">
-                <a
-                  href="#"
-                  class="text-decoration-none"
-                  style="color: var(--text-secondary)"
-                  >Holat Sahifasi</a
-                >
-              </li>
-            </ul>
-          </div>
-
-          <div
-            class="col-lg-4 col-md-6"
-            data-aos="fade-up"
-            data-aos-delay="400"
-          >
-            <h6 class="mb-4">Tizim Holati</h6>
-            <div class="row g-3">
-              <div class="col-6">
-                <div class="d-flex align-items-center">
-                  <div class="flex-shrink-0 me-2">
-                    <div
-                      style="
-                        background-color: var(--accent-primary);
-                        width: 12px;
-                        height: 12px;
-                        border-radius: 50%;
-                      "
-                    ></div>
-                  </div>
-                  <small style="color: var(--text-secondary)">Bot Onlayn</small>
-                </div>
-              </div>
-              <div class="col-6">
-                <div class="d-flex align-items-center">
-                  <div class="flex-shrink-0 me-2">
-                    <div
-                      style="
-                        background-color: var(--accent-primary);
-                        width: 12px;
-                        height: 12px;
-                        border-radius: 50%;
-                      "
-                    ></div>
-                  </div>
-                  <small style="color: var(--text-secondary)"
-                    >Veb Interfeys</small
-                  >
-                </div>
-              </div>
-              <div class="col-6">
-                <div class="d-flex align-items-center">
-                  <div class="flex-shrink-0 me-2">
-                    <div
-                      style="
-                        background-color: var(--accent-primary);
-                        width: 12px;
-                        height: 12px;
-                        border-radius: 50%;
-                      "
-                    ></div>
-                  </div>
-                  <small style="color: var(--text-secondary)"
-                    >Ma'lumotlar bazasi</small
-                  >
-                </div>
-              </div>
-              <div class="col-6">
-                <div class="d-flex align-items-center">
-                  <div class="flex-shrink-0 me-2">
-                    <div
-                      style="
-                        background-color: var(--accent-primary);
-                        width: 12px;
-                        height: 12px;
-                        border-radius: 50%;
-                      "
-                    ></div>
-                  </div>
-                  <small style="color: var(--text-secondary)"
-                    >Bildirishnomalar</small
-                  >
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <hr style="margin: 2rem 0; border-color: var(--border-color)" />
-
-        <div class="row align-items-center">
-          <div class="col-md-6">
-            <p style="color: var(--text-secondary)" class="mb-0 small">
-              &copy; 2024 Buyurtmalar Boshqaruv Tizimi. Barcha huquqlar
-              himoyalangan.
-            </p>
-          </div>
-          <div class="col-md-6 text-md-end">
-            <p style="color: var(--text-secondary)" class="mb-0 small">
-              Zamonaviy bizneslar uchun ❤️ bilan yaratildi
-            </p>
-          </div>
-        </div>
-      </div>
-    </footer>
+      <!-- Footer -->
+      <footer class="footer-minimal">
+        <p>&copy; 2025 Miss Imona. Barcha huquqlar himoyalangan.</p>
+      </footer>
+    </div>
 
     <!-- User Access Modal -->
     <div
@@ -1215,17 +489,8 @@
 
     <!-- JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 
     <script>
-      // Initialize AOS
-      AOS.init({
-        duration: 800,
-        easing: "ease-out-quart",
-        once: true,
-        offset: 50,
-      });
-
       // User Access Form Handler
       function handleUserAccess(event) {
         event.preventDefault();
@@ -1235,175 +500,13 @@
           .toUpperCase();
 
         if (!userCode) {
-          showToast("Please enter your user code", "warning");
+          alert("Iltimos, foydalanuvchi kodingizni kiriting");
           return;
         }
 
         // Redirect to user page
         window.location.href = `/${userCode}`;
       }
-
-      // Toast notification system
-      function showToast(message, type = "info") {
-        const toastContainer = getOrCreateToastContainer();
-        const toastId = "toast-" + Date.now();
-        const toastColors = {
-          success: "text-bg-success",
-          danger: "text-bg-danger",
-          warning: "text-bg-warning",
-          info: "text-bg-primary",
-        };
-
-        const toastHTML = `
-                <div id="${toastId}" class="toast align-items-center ${toastColors[type]} border-0" role="alert" style="border-radius: 15px;">
-                    <div class="d-flex">
-                        <div class="toast-body">${message}</div>
-                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-                    </div>
-                </div>
-            `;
-
-        toastContainer.insertAdjacentHTML("beforeend", toastHTML);
-        const toastEl = document.getElementById(toastId);
-        const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
-        toast.show();
-        toastEl.addEventListener("hidden.bs.toast", () => toastEl.remove());
-      }
-
-      // Create toast container if it doesn't exist
-      function getOrCreateToastContainer() {
-        let container = document.querySelector(".toast-container");
-        if (!container) {
-          container = document.createElement("div");
-          container.className =
-            "toast-container position-fixed top-0 end-0 p-3";
-          container.style.zIndex = "9999";
-          document.body.appendChild(container);
-        }
-        return container;
-      }
-
-      // Scroll Progress Bar
-      window.addEventListener("scroll", function () {
-        const scrollProgress = document.querySelector(".scroll-progress");
-        const scrollPercent =
-          (window.scrollY / (document.body.scrollHeight - window.innerHeight)) *
-          100;
-        scrollProgress.style.width = scrollPercent + "%";
-      });
-
-      // Counter Animation
-      function animateCounters() {
-        const counters = document.querySelectorAll(".counter");
-        counters.forEach((counter) => {
-          const target = parseInt(counter.getAttribute("data-target"));
-          const current = parseInt(counter.textContent);
-          const increment = target / 100;
-
-          if (current < target) {
-            counter.textContent = Math.ceil(current + increment);
-            setTimeout(() => animateCounters(), 50);
-          }
-        });
-      }
-
-      // Intersection Observer for counter animation
-      const counterSection = document.querySelector(".stats-section");
-      const counterObserver = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            animateCounters();
-            counterObserver.unobserve(entry.target);
-          }
-        });
-      });
-
-      if (counterSection) {
-        counterObserver.observe(counterSection);
-      }
-
-      // Smooth scrolling for anchor links
-      document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-        anchor.addEventListener("click", function (e) {
-          e.preventDefault();
-          const target = document.querySelector(this.getAttribute("href"));
-          if (target) {
-            target.scrollIntoView({
-              behavior: "smooth",
-              block: "start",
-            });
-          }
-        });
-      });
-
-      // Loading animation
-      window.addEventListener("load", function () {
-        const loadingElements = document.querySelectorAll(".loading");
-        loadingElements.forEach((element, index) => {
-          setTimeout(() => {
-            element.classList.add("loaded");
-          }, index * 200);
-        });
-      });
-
-      // Parallax effect for floating elements
-      window.addEventListener("scroll", function () {
-        const scrolled = window.pageYOffset;
-        const floating1 = document.querySelector(".floating-1");
-        const floating2 = document.querySelector(".floating-2");
-        const floating3 = document.querySelector(".floating-3");
-
-        if (floating1)
-          floating1.style.transform = `translateY(${scrolled * 0.1}px)`;
-        if (floating2)
-          floating2.style.transform = `translateY(${scrolled * -0.1}px)`;
-        if (floating3)
-          floating3.style.transform = `translateX(${scrolled * 0.05}px)`;
-      });
-
-      // Button click effects
-      document
-        .querySelectorAll(".btn-gradient, .btn-outline-gradient")
-        .forEach((button) => {
-          button.addEventListener("click", function (e) {
-            const ripple = document.createElement("span");
-            const rect = this.getBoundingClientRect();
-            const size = Math.max(rect.width, rect.height);
-            const x = e.clientX - rect.left - size / 2;
-            const y = e.clientY - rect.top - size / 2;
-
-            ripple.style.width = ripple.style.height = size + "px";
-            ripple.style.left = x + "px";
-            ripple.style.top = y + "px";
-            ripple.style.position = "absolute";
-            ripple.style.borderRadius = "50%";
-            ripple.style.background = "rgba(255,255,255,0.3)";
-            ripple.style.pointerEvents = "none";
-            ripple.style.animation = "ripple 0.6s ease-out";
-
-            this.appendChild(ripple);
-
-            setTimeout(() => {
-              ripple.remove();
-            }, 600);
-          });
-        });
-
-      // Add ripple animation
-      const style = document.createElement("style");
-      style.textContent = `
-            @keyframes ripple {
-                0% {
-                    transform: scale(0);
-                    opacity: 1;
-                }
-                100% {
-                    transform: scale(2);
-                    opacity: 0;
-                }
-            }
-        `;
-      document.head.appendChild(style);
     </script>
   </body>
 </html>
