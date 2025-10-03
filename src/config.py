@@ -19,14 +19,12 @@ class Config:
     SECRET_KEY = os.getenv('SECRET_KEY')
     TEST_ACCOUNT_ID = int(os.getenv('TEST_ACCOUNT_ID')) if os.getenv('TEST_ACCOUNT_ID') else None
     PAYMENT_CHECKING_WAIT_TIME = int(os.getenv('PAYMENT_TIME', '30'))
-    ORDER_DELAY_TIME = int(os.getenv('ORDER_DELAY_TIME', '1'))  # seconds for product prompt debounce
     AI_CONFIRMATION_TIME_WINDOW_MINUTES = int(os.getenv('AI_CONFIRMATION_TIME_WINDOW_MINUTES', '10'))
     TIMEZONE = os.getenv('TIMEZONE', 'Asia/Tashkent')
     # Comma-separated list of allowed bank bot IDs (e.g., "856254490,915326936")
     PRIVATE_CHANNEL_ID = os.getenv('PRIVATE_CHANNEL_ID')
     GROUP_ID = os.getenv('GROUP_ID')
     FIND_ORDERS_TOPIC_ID = os.getenv('FIND_ORDERS_TOPIC_ID')
-    REALTIME_ORDERS_TOPIC_ID = os.getenv('REALTIME_ORDERS_TOPIC_ID')
     CONFIRMATION_TOPIC_ID = os.getenv('CONFIRMATION_TOPIC_ID')
     AI_CONFIRMATIONS_TOPIC_ID = os.getenv('AI_CONFIRMATIONS_TOPIC_ID')
 
@@ -137,7 +135,6 @@ class Config:
             'PRIVATE_CHANNEL_ID': cls.PRIVATE_CHANNEL_ID,
             'GROUP_ID': cls.GROUP_ID,
             'FIND_ORDERS_TOPIC_ID': cls.FIND_ORDERS_TOPIC_ID,
-            'REALTIME_ORDERS_TOPIC_ID': cls.REALTIME_ORDERS_TOPIC_ID,
             'CONFIRMATION_TOPIC_ID': cls.CONFIRMATION_TOPIC_ID,
             'AI_CONFIRMATIONS_TOPIC_ID': cls.AI_CONFIRMATIONS_TOPIC_ID,
         }

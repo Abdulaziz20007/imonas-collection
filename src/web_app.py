@@ -656,6 +656,11 @@ async def user_login(request: UserLoginRequest):
         if order.get('status', 1) == 1:
             collection = db_service.get_collection_by_id(order['collection_id'])
             order['collection_status'] = collection['status'] if collection else 'unknown'
+            if order.get('original_channel_id') and order.get('original_message_id'):
+                channel_id = str(order['original_channel_id']).replace('-100', '')
+                message_id = order['original_message_id']
+                order['post_link'] = f"https://t.me/c/{channel_id}/{message_id}"
+
             active_orders.append(order)
 
     # Get collection summaries for this user
@@ -810,6 +815,11 @@ async def get_user_orders_by_collection(user_code: str, collection_id: int):
         active_orders = []
         for order in orders:
             if order.get('status', 1) == 1:
+                if order.get('original_channel_id') and order.get('original_message_id'):
+                    channel_id = str(order['original_channel_id']).replace('-100', '')
+                    message_id = order['original_message_id']
+                    order['post_link'] = f"https://t.me/c/{channel_id}/{message_id}"
+
                 active_orders.append(order)
         
         return {
@@ -2549,6 +2559,11 @@ async def get_order_details_api(order_id: int):
     if not order_details:
         raise HTTPException(status_code=404, detail="Order not found")
     
+    if order_details.get('original_channel_id') and order_details.get('original_message_id'):
+        channel_id = str(order_details['original_channel_id']).replace('-100', '')
+        message_id = order_details['original_message_id']
+        order_details['post_link'] = f"https://t.me/c/{channel_id}/{message_id}"
+
     return order_details
 
 @admin_app.get("/api/user/{user_code}/orders")

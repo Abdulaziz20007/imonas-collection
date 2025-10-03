@@ -545,6 +545,16 @@ class MessageProcessor:
                 await message.reply_text("Iltimos, mahsulotlarni faqat bizning kanalimizdan yuboring.")
                 return False, None
 
+            # If user sends a media group, reject it as only single media posts are allowed.
+            media_group_id = message.media_group_id
+            if media_group_id:
+                # To avoid spamming the user with replies for each item in the group,
+                # we check if we've already replied for this group.
+                if context.user_data.get('rejected_media_group_id') == media_group_id:
+                    return False, None  # Silently ignore subsequent parts of the group
+                context.user_data['rejected_media_group_id'] = media_group_id
+                return False, "❌ Bir vaqtda bir nechta media yuborish mumkin emas.\n\nIltimos, mahsulotlarni bittadan yuboring."
+
             # Get active collection
             active_collection = self.db_service.get_active_collection()
             if not active_collection:
@@ -571,19 +581,16 @@ class MessageProcessor:
                 await message.reply_text("Bu mahsulot sotuvda yo'q.")
                 return False, None
 
-            # Create or reuse order (first media per submission)
-            if 'order_id' not in context.user_data:
-                order_id = self.db_service.create_order(
-                    user_id=user['id'],
-                    collection_id=active_collection['id'],
-                    original_message_id=original_message_id,
-                    original_channel_id=original_channel_id
-                )
-                if not order_id:
-                    return False, "❌ Buyurtma yaratishda xatolik."
-                context.user_data['order_id'] = order_id
-            else:
-                order_id = context.user_data['order_id']
+            # Each forwarded post is a new order. Create it.
+            order_id = self.db_service.create_order(
+                user_id=user['id'],
+                collection_id=active_collection['id'],
+                original_message_id=original_message_id,
+                original_channel_id=original_channel_id
+            )
+            if not order_id:
+                return False, "❌ Buyurtma yaratishda xatolik."
+            context.user_data['order_id'] = order_id
 
             # Determine media
             file_to_download = None
@@ -840,169 +847,19 @@ class MessageProcessor:
                 logger.debug(f"Order {order_id} not ready for finalization - files still downloading. Statuses: {statuses}")
                 return False
 
-            # Mark notification as sent BEFORE sending to prevent race condition
+            # Mark notification as sent BEFORE any external side-effects to prevent race condition
             if not self.db_service.mark_final_notification_sent(order_id):
                 logger.error(f"Failed to mark final notification as sent for order {order_id}")
                 return False
 
-            # Send the final notification
-            logger.info(f"FINALIZATION: Sending final notification for order {order_id}")
-            await self._send_realtime_order_notification(context, order_id, None)
-            logger.info(f"FINALIZATION: Successfully sent final notification for order {order_id}")
+            logger.info(f"FINALIZATION: Marked order {order_id} as finalized (no realtime notification)")
             return True
 
         except Exception as e:
             logger.error(f"Error in attempt_to_finalize_order for order {order_id}: {e}", exc_info=True)
             return False
 
-    async def _send_realtime_order_notification(self, context: ContextTypes.DEFAULT_TYPE, order_id: int, message: Message) -> None:
-        """Send a notification about a new order to the Telegram group topic."""
-        try:
-            logger.info(f"NOTIFICATION_TRIGGER: Sending realtime notification for order {order_id}")
-            # Get order details
-            order = self.db_service.get_order_by_id(order_id)
-            if not order or not context:
-                logger.error(f"Could not find order {order_id} for real-time notification")
-                return
-            
-            # Get user details
-            user = self.db_service.get_user_by_id(order['user_id'])
-            if not user:
-                logger.error(f"Could not find user {order['user_id']} for real-time notification")
-                return
-            
-            # Construct user's code for this collection
-            user_code = f"{order['collection_id']}-{user.get('code', 'N/A')}"
-            
-            # Get current timestamp
-            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            
-            # Format the notification message
-            notification_text = (
-                f"✅ Yangi buyurtma!\n\n"
-                f"👤 Foydalanuvchi: {user.get('name', 'N/A')} {user.get('surname', '')}\n"
-                f"📞 Telefon: {user.get('phone', 'N/A')}\n"
-                f"🏷 Kod: {user_code}\n"
-                f"📦 Buyurtma ID: #{order_id}\n"
-                f"🏷 Kolleksiya: #{order['collection_id']}\n"
-                f"🔢 Serya: {order.get('amount', 'N/A')}\n"
-                f"📷 Fayllar soni: {len(order.get('file_urls', []))}\n"
-                f"⏰ Vaqt: {current_time}"
-            )
-            
-            # Get all files for this order
-            file_paths = order.get('file_urls', [])
-            logger.info(f"Realtime notification for order {order_id}: Found {len(file_paths)} files: {file_paths}")
-            
-            # Thumbnails are generated at media ingestion time and stored under
-            # uploads/products/thumbnails. Avoid regenerating here to prevent
-            # duplicates and extra I/O.
-
-            # Send the notification to the realtime orders topic
-            if config.GROUP_ID and config.REALTIME_ORDERS_TOPIC_ID:
-                if not file_paths:
-                    # No files - do not send text-only fallback; retries will handle media
-                    logger.info(f"Skipping text-only notification for order {order_id} (no files)")
-                elif len(file_paths) == 1:
-                    # Single file - send as photo or video with caption
-                    file_path = file_paths[0]
-                    if os.path.exists(file_path):
-                        max_retries = 3
-                        for attempt in range(max_retries):
-                            try:
-                                # Check file size and use appropriate timeout
-                                file_size = os.path.getsize(file_path) if os.path.exists(file_path) else 0
-                                timeout_seconds = min(300, max(60, file_size // 100000))  # 60s-300s based on file size
-                                
-                                if file_path.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.tif', '.webp', '.ico', '.svg')):
-                                    await asyncio.wait_for(
-                                        context.bot.send_photo(
-                                            chat_id=config.GROUP_ID,
-                                            photo=file_path,
-                                            caption=notification_text,
-                                            message_thread_id=int(config.REALTIME_ORDERS_TOPIC_ID)
-                                        ),
-                                        timeout=timeout_seconds
-                                    )
-                                elif file_path.lower().endswith(('.mp4', '.webm', '.mov')):
-                                    await asyncio.wait_for(
-                                        context.bot.send_video(
-                                            chat_id=config.GROUP_ID,
-                                            video=file_path,
-                                            caption=notification_text,
-                                            message_thread_id=int(config.REALTIME_ORDERS_TOPIC_ID)
-                                        ),
-                                        timeout=timeout_seconds
-                                    )
-                                logger.info(f"Real-time notification sent for order {order_id}")
-                                break  # Success, exit retry loop
-                            except Exception as e:
-                                logger.error(f"Error sending file for order {order_id} (attempt {attempt + 1}/{max_retries}): {e}")
-                                if attempt < max_retries - 1:
-                                    await asyncio.sleep(5 * (attempt + 1))  # Exponential backoff
-                                else:
-                                    # Final attempt failed, log and continue
-                                    logger.error(f"Final attempt failed to send file for order {order_id}")
-                    else:
-                        # Suppress text-only missing file note
-                        logger.warning(f"Media file missing for order {order_id}: {file_path}")
-                else:
-                    # Multiple files - send as media group
-                    max_retries = 3
-                    for attempt in range(max_retries):
-                        media_group = []
-                        valid_files = []
-                        opened_files = []
-                        try:
-                            # Prepare media group
-                            for j, file_path in enumerate(file_paths):
-                                if os.path.exists(file_path):
-                                    file_obj = open(file_path, 'rb')
-                                    opened_files.append(file_obj)
-                                    caption = notification_text if j == 0 else None
-                                    if file_path.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.tif', '.webp', '.ico', '.svg')):
-                                        media_group.append(InputMediaPhoto(media=file_obj, caption=caption))
-                                    elif file_path.lower().endswith(('.mp4', '.webm', '.mov')):
-                                        media_group.append(InputMediaVideo(media=file_obj, caption=caption))
-                                    else:
-                                        media_group.append(InputMediaPhoto(media=file_obj, caption=caption))
-                                    valid_files.append(file_path)
-
-                            if not media_group:
-                                logger.warning(f"No valid files to send for order {order_id}")
-                                break # No point retrying
-
-                            # Send media group
-                            total_size = sum(os.path.getsize(f) for f in valid_files)
-                            timeout_seconds = min(600, max(120, total_size // 50000))
-                            await asyncio.wait_for(
-                                context.bot.send_media_group(
-                                    chat_id=config.GROUP_ID,
-                                    media=media_group,
-                                    message_thread_id=int(config.REALTIME_ORDERS_TOPIC_ID)
-                                ),
-                                timeout=timeout_seconds
-                            )
-                            logger.info(f"Real-time notification sent for order {order_id}")
-                            break # Success
-                        except Exception as e:
-                            logger.error(f"Error sending media group for order {order_id} (attempt {attempt + 1}/{max_retries}): {e}")
-                            if attempt < max_retries - 1:
-                                await asyncio.sleep(5 * (attempt + 1))
-                            else:
-                                logger.error(f"Final attempt failed to send media group for order {order_id}")
-                        finally:
-                            for file_obj in opened_files:
-                                try:
-                                    file_obj.close()
-                                except:
-                                    pass
-            else:
-                logger.warning("GROUP_ID or REALTIME_ORDERS_TOPIC_ID not configured")
-            
-                
-        except Exception as e:
-            logger.error(f"Error sending real-time order notification: {str(e)}")
+    # Realtime order notification feature removed.
     
     def _format_collection_message(self, collection) -> Tuple[str, InlineKeyboardMarkup]:
         """Format a collection message with appropriate buttons based on status."""
@@ -1485,14 +1342,71 @@ class MessageProcessor:
                 if new_price != 0 and new_price < 1000:
                     back_keyboard = ReplyKeyboardMarkup([["⬅️ Asosiy menyu"]], resize_keyboard=True)
                     return "❌ Obuna narxi 1 000 UZS dan kam bo'lmasligi kerak (yoki 0).", back_keyboard
-                # Ask policy
-                price_formatted = f"{new_price:,.0f}".replace(',', ' ')
-                buttons = [
-                    [InlineKeyboardButton("🆕 Faqat yangi foydalanuvchilar", callback_data=f"apply_price_new:{int(new_price)}")],
-                    [InlineKeyboardButton("👥 Hamma to'lov qilmaganlarga", callback_data=f"apply_price_all:{int(new_price)}")],
-                    [InlineKeyboardButton("❌ Bekor qilish", callback_data="apply_price_cancel")]
+
+                # Persist new price immediately
+                try:
+                    config_db_service.update_settings({'subscription_price': str(new_price)}, 'bot-admin')
+                    try:
+                        config.load_from_db()
+                    except Exception:
+                        pass
+                except Exception as e:
+                    logger.error(f"Failed to save new subscription price: {e}")
+                    back_keyboard = ReplyKeyboardMarkup([["⬅️ Asosiy menyu"]], resize_keyboard=True)
+                    return "❌ Narxni saqlashda xatolik yuz berdi.", back_keyboard
+
+                # Apply to all users with pending payment automatically
+                try:
+                    pending_users = self.db_service.get_users_by_subscription_status('pending_payment')
+                    for user_dict in pending_users:
+                        user = dict(user_dict)
+                        telegram_id = user['telegram_id']
+
+                        # Update user's target amount
+                        self.db_service.update_user_subscription_amounts(telegram_id, target_amount=new_price)
+
+                        # If already paid enough, activate and send invite
+                        paid_amount = float(user.get('paid_amount') or 0)
+                        if paid_amount >= new_price:
+                            self.db_service.update_user_subscription_status(telegram_id, 'active')
+                            try:
+                                link = await context.bot.create_chat_invite_link(
+                                    chat_id=config.PRIVATE_CHANNEL_ID,
+                                    member_limit=1,
+                                    name=user.get('name', f'User {telegram_id}')
+                                )
+
+                                message = (
+                                    "✅ Admin obuna narxini o'zgartirdi. Sizning to'lovingiz endi yetarli!\n\n"
+                                    f"Kanalga qo'shilish uchun havola:\n{link.invite_link}"
+                                )
+
+                                overpaid_amount = paid_amount - new_price
+                                if overpaid_amount > 0.01:
+                                    overpaid_formatted = f"{overpaid_amount:,.0f}".replace(',', ' ')
+                                    message += (
+                                        f"\n\nSiz {overpaid_formatted} UZS ortiqcha to'lov qildingiz. Pulni qaytarish uchun admin bilan bog'laning."
+                                    )
+
+                                await context.bot.send_message(chat_id=telegram_id, text=message)
+                                logger.info(f"User {telegram_id} automatically subscribed due to price change.")
+                            except Exception as send_err:
+                                logger.error(f"Failed to notify user {telegram_id} after price change: {send_err}")
+                except Exception as apply_err:
+                    logger.error(f"Failed to apply new price to all pending users: {apply_err}")
+
+                # Clear flow and return to admin menu
+                context.user_data.pop('subscription_price_flow', None)
+                admin_keyboard = [
+                    ['🆕 Yangi kolleksiya', '📀 Aktiv kolleksiyani ko\'rish'], 
+                    ['📋 Oxirgi 10 ta kolleksiya','🔍 Mahsulotlarni qidirish'],
+                    ['💳 Kartalar','💰 Obuna narxini o\'zgartirish'],
+                    ['🔗 Link olish']
                 ]
-                return f"Yangi narx: {price_formatted} UZS\n\nQaysi foydalanuvchilarga qo'llaymiz?", InlineKeyboardMarkup(buttons)
+                admin_markup = ReplyKeyboardMarkup(admin_keyboard, resize_keyboard=True)
+                price_formatted = f"{new_price:,.0f}".replace(',', ' ')
+                return (f"✅ Obuna narxi yangilandi va hamma to'lov qilmaganlarga avtomatik qo'llandi: {price_formatted} UZS",
+                        admin_markup)
 
             # Check if the text might be a user code for search
             if '-' in text and len(text.split('-')) == 2:
@@ -1705,30 +1619,47 @@ class MessageProcessor:
             return {"text": text, "keyboard": None}
 
         elif callback_data.startswith("apply_price_"):
-            # Handle policy selection after entering new price
+            # For backward compatibility if any old inline button is pressed, treat as auto-apply-to-all
             try:
-                if callback_data == 'apply_price_cancel':
-                    await query.answer("Bekor qilindi")
-                    admin_keyboard = [
-                        ['🆕 Yangi kolleksiya', '📀 Aktiv kolleksiya ni ko\'rish'], 
-                        ['📋 Oxirgi 10 ta kolleksiya','🔍 Mahsulotlarni qidirish'],
-                        ['💳 Kartalar','💰 Obuna narxini o\'zgartirish'],
-                        ['🔗 Link olish']
-                    ]
-                    return {"text": "Bekor qilindi.", "keyboard": ReplyKeyboardMarkup(admin_keyboard, resize_keyboard=True)}
-
-                policy, amount_str = callback_data.split(':', 1)
+                _, amount_str = callback_data.split(':', 1)
                 new_price = float(amount_str)
-                # Persist price
+
+                # Persist new price
                 config_db_service.update_settings({'subscription_price': str(new_price)}, 'bot-admin')
                 try:
                     config.load_from_db()
                 except Exception:
                     pass
 
-                msg = f"✅ Obuna narxi yangilandi: {int(new_price):,} UZS".replace(',', ' ')
-                if policy == 'apply_price_new':
-                    msg += "\n\n✔️ Faqat yangi foydalanuvchilar uchun qo'llanadi."
+                # Apply to all pending users
+                try:
+                    pending_users = self.db_service.get_users_by_subscription_status('pending_payment')
+                    for user_dict in pending_users:
+                        user = dict(user_dict)
+                        telegram_id = user['telegram_id']
+                        self.db_service.update_user_subscription_amounts(telegram_id, target_amount=new_price)
+                        paid_amount = float(user.get('paid_amount') or 0)
+                        if paid_amount >= new_price:
+                            self.db_service.update_user_subscription_status(telegram_id, 'active')
+                            try:
+                                link = await context.bot.create_chat_invite_link(
+                                    chat_id=config.PRIVATE_CHANNEL_ID,
+                                    member_limit=1,
+                                    name=user.get('name', f'User {telegram_id}')
+                                )
+                                message = (
+                                    "✅ Admin obuna narxini o'zgartirdi. Sizning to'lovingiz endi yetarli!\n\n"
+                                    f"Kanalga qo'shilish uchun havola:\n{link.invite_link}"
+                                )
+                                overpaid_amount = paid_amount - new_price
+                                if overpaid_amount > 0.01:
+                                    overpaid_formatted = f"{overpaid_amount:,.0f}".replace(',', ' ')
+                                    message += f"\n\nSiz {overpaid_formatted} UZS ortiqcha to'lov qildingiz. Pulni qaytarish uchun admin bilan bog'laning."
+                                await context.bot.send_message(chat_id=telegram_id, text=message)
+                            except Exception as send_err:
+                                logger.error(f"Failed to notify user {telegram_id} after price change: {send_err}")
+                except Exception as apply_err:
+                    logger.error(f"Failed to apply new price via callback to all pending users: {apply_err}")
 
                 admin_keyboard = [
                     ['🆕 Yangi kolleksiya', '📀 Aktiv kolleksiya ni ko\'rish'], 
@@ -1737,6 +1668,7 @@ class MessageProcessor:
                     ['🔗 Link olish']
                 ]
                 await query.answer("Saqlandi")
+                msg = f"✅ Obuna narxi yangilandi va hamma to'lov qilmaganlarga qo'llandi: {int(new_price):,} UZS".replace(',', ' ')
                 return {"text": msg, "keyboard": ReplyKeyboardMarkup(admin_keyboard, resize_keyboard=True)}
             except Exception as e:
                 await query.answer("Xatolik")
@@ -1940,7 +1872,6 @@ class MessageProcessor:
             card_id = int(callback_data.split("_")[-1])
             if context:
                 context.user_data['cards_flow'] = {'state': 'awaiting_edit_name_only', 'card_id': card_id}
-            from telegram import InlineKeyboardButton, InlineKeyboardMarkup
             kb = InlineKeyboardMarkup([[InlineKeyboardButton("❌ Bekor qilish", callback_data="cancel_card_edit")]])
             return {"text": "📛 Yangi kartaning nomini kiriting:", "keyboard": kb}
 
@@ -1948,7 +1879,6 @@ class MessageProcessor:
             card_id = int(callback_data.split("_")[-1])
             if context:
                 context.user_data['cards_flow'] = {'state': 'awaiting_edit_number_only', 'card_id': card_id}
-            from telegram import InlineKeyboardButton, InlineKeyboardMarkup
             kb = InlineKeyboardMarkup([[InlineKeyboardButton("❌ Bekor qilish", callback_data="cancel_card_edit")]])
             return {"text": "💳 Yangi kartaning raqamini kiriting (16 raqam):", "keyboard": kb}
 
@@ -1984,7 +1914,6 @@ class MessageProcessor:
             card = next((c for c in cards if c['id'] == card_id), None)
             if not card:
                 return {"text": "❌ Xatolik: Karta topilmadi.", "keyboard": None}
-            from telegram import InlineKeyboardButton, InlineKeyboardMarkup
             kb = InlineKeyboardMarkup([
                 [InlineKeyboardButton("✅ Ha, o'chirilsin", callback_data=f"confirm_delete_card_{card_id}")],
                 [InlineKeyboardButton("❌ Yo'q, bekor qilish", callback_data=f"cancel_delete_card_{card_id}")]
@@ -2026,7 +1955,6 @@ class MessageProcessor:
             if not card:
                 return {"text": "❌ Xatolik: Karta topilmadi.", "keyboard": None}
             # Offer choice: edit name or number
-            from telegram import InlineKeyboardButton, InlineKeyboardMarkup
             kb = InlineKeyboardMarkup([
                 [InlineKeyboardButton("📛 Nomni o'zgartirish", callback_data=f"edit_card_name_{card_id}")],
                 [InlineKeyboardButton("💳 Raqamni o'zgartirish", callback_data=f"edit_card_number_{card_id}")],

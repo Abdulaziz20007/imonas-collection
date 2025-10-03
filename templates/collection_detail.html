@@ -1052,6 +1052,20 @@ Buyurtmalar Boshqaruvi{% endblock %} {% block head %}
               `
                   : ""
               }
+              ${
+                data.post_link
+                  ? `
+              <div class="col-md-6">
+                <div class="detail-item">
+                  <label class="text-muted small mb-1">Post Link</label>
+                  <div class="fw-medium">
+                    <a href="${data.post_link}" target="_blank" class="text-break">${data.post_link}</a>
+                  </div>
+                </div>
+              </div>
+              `
+                  : ""
+              }
               <div class="col-md-6">
                 <div class="detail-item">
                   <label class="text-muted small mb-1">Fayllar soni</label>

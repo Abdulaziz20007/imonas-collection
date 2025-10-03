@@ -180,56 +180,14 @@ async def handle_media(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
             if media_group_id and 'order_id' in context.user_data:
                 context.user_data.clear()
             return
-        if media_group_id:
-            job_name = f"product_order_prompt_{user_id}_group_{media_group_id}"
-        elif update.message.forward_origin:
-            forward_message_id = update.message.forward_origin.message_id
-            job_name = f"product_order_prompt_{user_id}_single_{forward_message_id}"
-        else:
-            job_name = f"product_order_prompt_{user_id}"
-        if context.job_queue is not None:
-            existing_jobs = context.job_queue.get_jobs_by_name(job_name)
-            for job in existing_jobs:
-                job.schedule_removal()
-            job_context = {"user_data": context.user_data.copy() if context.user_data else {}}
-            try:
-                logger.info(f"Using ORDER_DELAY_TIME: {getattr(config, 'ORDER_DELAY_TIME', 1)} seconds for job {job_name}")
-            except Exception:
-                pass
-            context.job_queue.run_once(
-                prompt_for_series,
-                when=int(getattr(config, 'ORDER_DELAY_TIME', 1) or 1),
-                chat_id=chat_id,
-                user_id=user_id,
-                name=job_name,
-                data=job_context,
-            )
-        else:
-            try:
-                import asyncio as _asyncio
-                debounce_tasks = getattr(message_processor, 'debounce_tasks', {})
-                existing_task = debounce_tasks.get(job_name)
-                if existing_task and not existing_task.done():
-                    existing_task.cancel()
-                saved_user_data = context.user_data.copy() if context.user_data else {}
-                async def _delayed_prompt_series():
-                    try:
-                        await _asyncio.sleep(int(getattr(config, 'ORDER_DELAY_TIME', 1) or 1))
-                        if 'order_id' in saved_user_data:
-                            context.user_data.clear()
-                            context.user_data.update(saved_user_data)
-                            context.user_data['state'] = 'awaiting_series_amount'
-                            cancel_keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("❌ Bekor qilish", callback_data=f"cancel_order_{saved_user_data['order_id']}")]])
-                            await context.bot.send_message(chat_id=chat_id, text="📝 Seriyani kiriting", reply_markup=cancel_keyboard)
-                    except Exception as _e:
-                        logger.error(f"Async debounce prompt error for job {job_name}: {_e}")
-                debounce_tasks[job_name] = _asyncio.create_task(_delayed_prompt_series())
-            except Exception as _fb_err:
-                logger.error(f"Failed fallback debounce for job {job_name}: {_fb_err}")
-                from telegram import ReplyKeyboardRemove
-                order_id = context.user_data.get('order_id', 'unknown')
-                cancel_keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("❌ Bekor qilish", callback_data=f"cancel_order_{order_id}")]])
-                await update.message.reply_text("📝 Seriyani kiriting", reply_markup=cancel_keyboard)
+
+        # Prompt for series immediately, as each forwarded post is a separate order
+        order_id = context.user_data.get('order_id')
+        if order_id:
+            context.user_data['awaiting_order_id'] = order_id
+            context.user_data['state'] = 'awaiting_series_amount'
+            cancel_keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("❌ Bekor qilish", callback_data=f"cancel_order_{order_id}")]])
+            await update.message.reply_text("📝 Seriyani kiriting", reply_markup=cancel_keyboard)
 
 
 # States for conversation handler

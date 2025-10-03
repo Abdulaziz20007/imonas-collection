@@ -812,12 +812,12 @@ async def handle_contact(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         # Handle contact during registration
         reg_response, reg_keyboard = await message_processor.process_contact_message(message_dict, context)
         if reg_response:
-            # Check if this was a successful registration completion
+            # Check if we moved to region step or completed registration
             user = db_service.get_user_by_telegram_id(user_id)
-            if user and user['reg_step'] == 'done' and reg_keyboard:
-                # Registration completed - remove the contact keyboard first
+            if user and user.get('reg_step') in ('region', 'done') and reg_keyboard:
+                # Remove the contact keyboard first
                 await update.message.reply_text("✅ Telefon raqami qabul qilindi!", reply_markup=ReplyKeyboardRemove(), parse_mode="Markdown")
-                # Then send the main response with inline keyboard
+                # Then send the main response with inline keyboard (region selection or next step)
                 await update.message.reply_text(reg_response, reply_markup=reg_keyboard, parse_mode="Markdown")
             else:
                 await update.message.reply_text(reg_response, reply_markup=reg_keyboard, parse_mode="Markdown")

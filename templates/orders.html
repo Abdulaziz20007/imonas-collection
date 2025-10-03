@@ -449,10 +449,11 @@ Boshqaruvi{% endblock %} {% block content %}
                 class="w-100"
                 style="height: 150px; object-fit: cover; cursor: pointer"
                 onclick="viewOrderDetails({{ order.id }})"
-                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                onload="if(this.nextElementSibling){ this.nextElementSibling.style.display='none'; }"
+                onerror="this.style.display='none'; if(this.nextElementSibling){ this.nextElementSibling.style.display='flex'; }"
               />
               <div
-                class="w-100 d-flex align-items-center justify-content-center"
+                class="w-100 align-items-center justify-content-center"
                 style="
                   height: 150px;
                   display: none;
@@ -1031,6 +1032,20 @@ Boshqaruvi{% endblock %} {% block content %}
                     <tr style="border-bottom: 1px solid var(--separator);"><td style="padding: var(--spacing-xs) 0; font-weight: 600; color: var(--text-secondary);"><strong>Seriya:</strong></td><td style="padding: var(--spacing-xs) 0; color: var(--text-primary);">${
                       data.amount || "N/A"
                     }</td></tr>
+                    ${
+                      data.post_link
+                        ? '<tr style="border-bottom: 1px solid var(--separator);">' +
+                          '<td style="padding: var(--spacing-xs) 0; font-weight: 600; color: var(--text-secondary);"><strong>Post Link:</strong></td>' +
+                          '<td style="padding: var(--spacing-xs) 0; color: var(--text-primary);">' +
+                          '<a href="' +
+                          data.post_link +
+                          '" target="_blank" class="text-break">' +
+                          data.post_link +
+                          "</a>" +
+                          "</td>" +
+                          "</tr>"
+                        : ""
+                    }
                     <tr><td style="padding: var(--spacing-xs) 0; font-weight: 600; color: var(--text-secondary);"><strong>Yaratilgan:</strong></td><td style="padding: var(--spacing-xs) 0; color: var(--text-primary);">${new Date(
                       data.created_at
                     ).toLocaleString("uz-UZ")}</td></tr>

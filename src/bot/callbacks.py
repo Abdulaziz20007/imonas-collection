@@ -3,7 +3,7 @@ CallbackQuery handlers for Telegram bot.
 """
 import logging
 import os
-from telegram import Update, InlineKeyboardMarkup, ReplyKeyboardMarkup
+from telegram import Update, InlineKeyboardMarkup, ReplyKeyboardMarkup, InlineKeyboardButton
 
 # Compatibility import for FSInputFile/InputFile
 try:
@@ -45,6 +45,11 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
                 return
 
             if db_service.cancel_order(order_id, user['id']):
+                # Clear any pending state that may block new orders
+                try:
+                    context.user_data.clear()
+                except Exception:
+                    pass
                 await query.edit_message_text(text=f"✅ Mavjud buyurtma #{order_id} bekor qilindi.")
             else:
                 await query.edit_message_text(text="❌ Buyurtmani bekor qilishda xatolik yoki u sizga tegishli emas.")
@@ -66,11 +71,34 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             await query.edit_message_text(
                 text="Bu mahsulot allaqachon buyurtma qilingan.\n\n✏️ Tahrirlash tanlandi..."
             )
-            # Use reply_text on the original message to send a new prompt
-            await query.message.reply_text("📝 Seriyani kiriting")
+            # Use reply_to_message.reply_text to prompt on the original message and provide cancel
+            # During editing, cancel should only cancel the editing step, not delete order
+            cancel_keyboard = InlineKeyboardMarkup([
+                [InlineKeyboardButton("❌ Bekor qilish", callback_data=f"cancel_edit_{order_id}")]
+            ])
+            original_message = query.message.reply_to_message or query.message
+            await original_message.reply_text("📝 Seriyani kiriting", reply_markup=cancel_keyboard)
 
         except (ValueError, IndexError) as e:
             logger.error(f"Error parsing edit_existing_order callback: {e}")
+            await query.edit_message_text(text="❌ Noto'g'ri so'rov.")
+        return
+
+    # Cancel only the editing step (do not cancel order)
+    if query.data.startswith("cancel_edit_"):
+        try:
+            # Extract order_id just for logging/consistency, though not used
+            _ = int(query.data.split("_")[-1])
+            # Remove editing-related state so new orders/inputs are accepted
+            for key in ("state", "awaiting_order_id", "is_editing_order"):
+                try:
+                    context.user_data.pop(key, None)
+                except Exception:
+                    pass
+
+            await query.edit_message_text(text="✋ Tahrirlash bekor qilindi.")
+        except (ValueError, IndexError) as e:
+            logger.error(f"Error parsing cancel_edit callback: {e}")
             await query.edit_message_text(text="❌ Noto'g'ri so'rov.")
         return
 

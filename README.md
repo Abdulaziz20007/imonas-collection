@@ -59,7 +59,6 @@ A comprehensive order tracking system with both Telegram bot integration and web
    ADMIN_ID=your_telegram_user_id
    GROUP_ID=your_group_id_for_notifications
    FIND_ORDERS_TOPIC_ID=topic_id_for_order_search
-   REALTIME_ORDERS_TOPIC_ID=topic_id_for_real_time_notifications
    DATABASE_FILE=database.db
    ```
 
@@ -165,7 +164,6 @@ telegram/
 - `ADMIN_ID` - Telegram user ID for admin access
 - `GROUP_ID` - Group for notifications
 - `FIND_ORDERS_TOPIC_ID` - Topic for order search
-- `REALTIME_ORDERS_TOPIC_ID` - Topic for real-time notifications
 - `DATABASE_FILE` - SQLite database file path
 
 ## Deployment

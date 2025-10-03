@@ -2097,6 +2097,21 @@
                       <span class="badge" id="modal-order-status"></span>
                     </span>
                   </div>
+                  <div
+                    class="order-detail-row"
+                    id="modal-post-link-row"
+                    style="display: none"
+                  >
+                    <span class="detail-label">Post Link</span>
+                    <span class="detail-value">
+                      <a
+                        href="#"
+                        target="_blank"
+                        class="text-break"
+                        id="modal-post-link"
+                      ></a>
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -4132,6 +4147,17 @@
         const statusEl = document.getElementById("modal-order-status");
         statusEl.textContent = status.text;
         statusEl.className = status.class;
+
+        // Handle post link
+        const postLinkRow = document.getElementById("modal-post-link-row");
+        if (order.post_link) {
+          const postLinkA = document.getElementById("modal-post-link");
+          postLinkA.href = order.post_link;
+          postLinkA.textContent = order.post_link;
+          postLinkRow.style.display = "flex";
+        } else {
+          postLinkRow.style.display = "none";
+        }
 
         // Setup media thumbnails and main display
         setupMediaThumbnails(order.files || []);
