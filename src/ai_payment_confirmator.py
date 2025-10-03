@@ -152,11 +152,16 @@ Please analyze the receipt data against the pending transactions and provide con
             logger.info(f"First AI confirmation attempt for payment {payment_data.get('payment_id')}")
             result = await self.confirm_payment(payment_data, pending_transactions)
             
-            if result and result.get('confirm', False):
+            # Strict boolean parsing for 'confirm'
+            first_confirm_raw = result.get('confirm', False) if result else False
+            first_is_confirmed = (first_confirm_raw is True) or (
+                isinstance(first_confirm_raw, str) and first_confirm_raw.strip().lower() == 'true'
+            )
+            if result and first_is_confirmed:
                 logger.info(f"Payment {payment_data.get('payment_id')} confirmed on first attempt")
                 return result
             
-            if result and not result.get('confirm', False):
+            if result and not first_is_confirmed:
                 logger.info(f"Payment {payment_data.get('payment_id')} not confirmed on first attempt. Reason: {result.get('reason', 'Unknown')}")
                 logger.info(f"Waiting {retry_delay_minutes} minutes before retry...")
                 
@@ -168,7 +173,11 @@ Please analyze the receipt data against the pending transactions and provide con
                 retry_result = await self.confirm_payment(payment_data, pending_transactions)
                 
                 if retry_result:
-                    if retry_result.get('confirm', False):
+                    retry_confirm_raw = retry_result.get('confirm', False)
+                    retry_is_confirmed = (retry_confirm_raw is True) or (
+                        isinstance(retry_confirm_raw, str) and retry_confirm_raw.strip().lower() == 'true'
+                    )
+                    if retry_is_confirmed:
                         logger.info(f"Payment {payment_data.get('payment_id')} confirmed on retry attempt")
                     else:
                         logger.info(f"Payment {payment_data.get('payment_id')} still not confirmed on retry. Reason: {retry_result.get('reason', 'Unknown')}")

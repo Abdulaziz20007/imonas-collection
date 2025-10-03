@@ -1193,7 +1193,7 @@ class MessageProcessor:
             cards = self.db_service.get_all_cards()
             return "SHOW_CARDS_LIST", cards
 
-        elif text == '🔗 Get link':
+        elif text == '🔗 Link olish':
             if not config.PRIVATE_CHANNEL_ID:
                 return "❌ Maxfiy kanal ID sozlanmagan.", None
             try:
@@ -1721,19 +1721,14 @@ class MessageProcessor:
                     if remaining <= 0.001:
                         # Fully paid: confirm and invite
                         self.db_service.update_user_payment_step(user_telegram_id, 'confirmed')
-                        link = await context.bot.create_chat_invite_link(
-                            chat_id=config.PRIVATE_CHANNEL_ID,
-                            member_limit=1,
-                            name=user.get('name', f'User {user_telegram_id}')
-                        )
                         await context.bot.send_message(
                             chat_id=user_telegram_id,
                             text=(
                                 "✅ To'lovingiz qabul qilindi va tasdiqlandi!\n\n"
                                 f"Jami to'langan: {int(new_paid):,} UZS\n\n".replace(',', ' ')
-                                + f"Kanalga qo'shilish havolasi:\n{link.invite_link}"
                             )
                         )
+                        await self._generate_and_send_invite_link(user_telegram_id, context)
                         await query.answer("✅ Tasdiqlandi")
                         await delete_receipt()
                         return {"text": f"✅ QABUL QILINDI VA TASDIQLANDI\nFoydalanuvchi: {user.get('name', '')} ({user_telegram_id})", "keyboard": None}
@@ -1780,23 +1775,16 @@ class MessageProcessor:
                     )
                     self.db_service.update_user_payment_step(user_telegram_id, 'confirmed') # set status to active
 
-                    # Create invite link
-                    link = await context.bot.create_chat_invite_link(
-                        chat_id=config.PRIVATE_CHANNEL_ID,
-                        member_limit=1,
-                        name=user.get('name', f'User {user_telegram_id}')
-                    )
-
                     # Send success message to user
                     target_amount_str = f"{int(round(target_amount)):,}".replace(',', ' ')
                     await context.bot.send_message(
                         chat_id=user_telegram_id,
                         text=(
                             "✅ To'lovingiz admin tomonidan tasdiqlandi!\n\n"
-                            f"To'langan summa: {target_amount_str} UZS\n\n"
-                            f"Kanalga qo'shilish havolasi:\n{link.invite_link}"
+                            f"To'langan summa: {target_amount_str} UZS"
                         )
                     )
+                    await self._generate_and_send_invite_link(user_telegram_id, context)
                     await query.answer("✅ Tasdiqlandi")
                     await delete_receipt()
                     return {"text": f"✅ QO'LDA TASDIQLANDI\nFoydalanuvchi: {user.get('name', '')} ({user_telegram_id})", "keyboard": None}
@@ -3299,14 +3287,27 @@ class MessageProcessor:
         Handle the result from AI payment confirmation.
         """
         try:
-            confirm = confirmation_result.get('confirm', False)
-            transaction_id = confirmation_result.get('transaction_id')
+            confirm_raw = confirmation_result.get('confirm', False)
+            transaction_id_raw = confirmation_result.get('transaction_id')
             reason = confirmation_result.get('reason', 'No reason provided')
             confidence = confirmation_result.get('confidence', 0.0)
             
-            logger.info(f"AI confirmation result for payment {payment_id}: confirm={confirm}, reason='{reason}', confidence={confidence}")
+            logger.info(f"AI confirmation result for payment {payment_id}: confirm={confirm_raw}, reason='{reason}', confidence={confidence}")
+            logger.info(f"AI confirmation types for payment {payment_id}: confirm={type(confirm_raw).__name__}, transaction_id={type(transaction_id_raw).__name__}")
             
-            if confirm and transaction_id:
+            # Safely coerce 'confirm' to a strict boolean: only explicit True or 'true' string
+            is_confirmed = (confirm_raw is True) or (
+                isinstance(confirm_raw, str) and confirm_raw.strip().lower() == 'true'
+            )
+            
+            # Safely coerce 'transaction_id' to an integer if possible
+            transaction_id = None
+            if isinstance(transaction_id_raw, int):
+                transaction_id = transaction_id_raw
+            elif isinstance(transaction_id_raw, str) and transaction_id_raw.strip().isdigit():
+                transaction_id = int(transaction_id_raw.strip())
+            
+            if is_confirmed and transaction_id is not None:
                 # AI confirmed the payment - finalize it
                 logger.info(f"AI confirmed payment {payment_id} matches transaction {transaction_id}")
                 
@@ -3321,11 +3322,6 @@ class MessageProcessor:
                     payment = self.db_service.get_payment_by_id(payment_id)
                     if payment:
                         await self._notify_payment_verified(payment)
-                        
-                        # Update user's payment step to confirmed
-                        user = self.db_service.get_user_by_id(payment['user_id'])
-                        if user:
-                            self.db_service.update_user_payment_step(user['telegram_id'], 'confirmed')
                         
                         # Send success notification to admin channel
                         await self._notify_admins_ai_success(payment_id, transaction_id, confidence, reason)
@@ -3479,28 +3475,26 @@ class MessageProcessor:
                 self.db_service.update_user_payment_step(user_telegram_id, 'confirmed')
 
                 try:
-                    link = await self.bot_app.bot.create_chat_invite_link(
-                        chat_id=config.PRIVATE_CHANNEL_ID,
-                        member_limit=1,
-                        name=user.get('name', f'User {user_telegram_id}')
-                    )
                     new_paid_str = f"{int(new_paid):,}".replace(',', ' ')
                     success_text = (
-                        "\U0001F389 To'lovingiz tasdiqlandi!\n\n"
-                        f"\U0001F4B0 Jami to'langan: {new_paid_str} UZS\n"
-                        "\u2705 Status: Tasdiqlangan\n\n"
-                        "Kanalga qo'shilish uchun havoladan foydalaning:\n\n"
-                        f"{link.invite_link}"
+                        "🎉 To'lovingiz tasdiqlandi!\n\n"
+                        f"💰 Jami to'langan: {new_paid_str} UZS\n"
+                        "✅ Status: Tasdiqlangan"
                     )
                     await self.bot_app.bot.send_message(chat_id=user_telegram_id, text=success_text)
+
+                    class MockContext:
+                        def __init__(self, bot_instance):
+                            self.bot = bot_instance
+                    mock_context = MockContext(self.bot_app.bot)
+                    await self._generate_and_send_invite_link(user_telegram_id, mock_context)
                 except Exception as e:
                     logger.error(f"Error creating invite link or sending full-payment notification to user {user_telegram_id}: {e}")
                     try:
-                        new_paid_str = f"{int(new_paid):,}".replace(',', ' ')
                         fallback_text = (
-                            "\U0001F389 To'lovingiz tasdiqlandi!\n\n"
-                            f"\U0001F4B0 Jami to'langan: {new_paid_str} UZS\n"
-                            "\u2705 Status: Tasdiqlangan\n\n"
+                            "🎉 To'lovingiz tasdiqlandi!\n\n"
+                            f"💰 Jami to'langan: {new_paid_str} UZS\n"
+                            "✅ Status: Tasdiqlangan\n\n"
                             "Tez orada siz kanalga qo'shilasiz."
                         )
                         await self.bot_app.bot.send_message(chat_id=user_telegram_id, text=fallback_text)
@@ -3527,6 +3521,51 @@ class MessageProcessor:
                     
         except Exception as e:
             logger.error(f"Error in _notify_payment_verified for payment {payment.get('id', 'unknown')}: {e}")
+
+    async def _generate_and_send_invite_link(self, user_telegram_id: int, context: ContextTypes.DEFAULT_TYPE):
+        """Generates and sends a one-time, non-expiring invite link to the user."""
+        if not config.PRIVATE_CHANNEL_ID:
+            logger.error("PRIVATE_CHANNEL_ID is not configured. Cannot generate invite link.")
+            if config.GROUP_ID:
+                try:
+                    await context.bot.send_message(
+                        chat_id=config.GROUP_ID,
+                        text="⚠️ Xatolik: Maxfiy kanal ID sozlanmagan. Taklifnoma havolasini yaratib bo'lmaydi."
+                    )
+                except Exception as e:
+                    logger.error(f"Failed to notify admin about missing PRIVATE_CHANNEL_ID: {e}")
+            return
+
+        try:
+            user = self.db_service.get_user_by_telegram_id(user_telegram_id)
+            user_name = user.get('name', f'User {user_telegram_id}') if user else f'User {user_telegram_id}'
+
+            link = await context.bot.create_chat_invite_link(
+                chat_id=config.PRIVATE_CHANNEL_ID,
+                member_limit=1,
+                name=user_name
+            )
+
+            message_text = (
+                "Kanalga qo'shilish uchun quyidagi bir martalik havoladan foydalaning:\n\n"
+                f"{link.invite_link}"
+            )
+            await context.bot.send_message(chat_id=user_telegram_id, text=message_text)
+            logger.info(f"Sent one-time invite link to user {user_telegram_id}")
+
+        except Exception as e:
+            logger.error(f"Error creating or sending invite link for user {user_telegram_id}: {e}")
+            if config.GROUP_ID:
+                try:
+                    error_message = (
+                        f"⚠️ Xatolik: Foydalanuvchi uchun taklifnoma havolasini yaratib bo'lmadi.\n\n"
+                        f"Foydalanuvchi ID: {user_telegram_id}\n"
+                        f"Xato: {e}\n\n"
+                        "Iltimos, botning kanalda admin ekanligini va 'Invite users via link' ruxsati borligini tekshiring."
+                    )
+                    await context.bot.send_message(chat_id=config.GROUP_ID, text=error_message)
+                except Exception as notify_e:
+                    logger.error(f"Failed to notify admin about invite link failure: {notify_e}")
 
     def process_my_orders_button(self, message: Dict[str, Any]) -> Tuple[str, Optional[InlineKeyboardMarkup]]:
         """
