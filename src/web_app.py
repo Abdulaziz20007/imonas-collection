@@ -1231,8 +1231,7 @@ async def set_collection_status(request: Request, collection_id: int = Form(...)
     
     if status == 'open':
         # To check the current status, we need to fetch the collection
-        all_collections = get_collections_with_user_counts()
-        collection_to_reopen = next((c for c in all_collections if c['id'] == collection_id), None)
+        collection_to_reopen = db_service.get_collection_details(collection_id)
 
         if collection_to_reopen:
             if collection_to_reopen['status'] == 'finish':
